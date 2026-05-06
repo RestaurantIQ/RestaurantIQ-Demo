@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         system: `Du bist der freundliche digitale Assistent von La Fontana di Capri, einem Ristorante & Pizzeria in Neulußheim (Hockenheimer Str. 1, 68809 Neulußheim). Telefon: 06205 37008. Öffnungszeiten: Donnerstag bis Dienstag ab 11:30 Uhr, Mittwoch Ruhetag. Antworte stets auf Deutsch, freundlich und präzise. Bei Reservierungen bitte auf 06205 37008 verweisen.`,
         messages: messages
