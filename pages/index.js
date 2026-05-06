@@ -19,7 +19,7 @@ export default function Home() {
       body: JSON.stringify({ messages: newMessages })
     });
     const data = await res.json();
-    const reply = data.content?.[0]?.text || 'Entschuldigung, ein Fehler ist aufgetreten.';
+    const reply = data.reply || 'Entschuldigung, ein Fehler ist aufgetreten.';
     setMessages([...newMessages, { role: 'assistant', content: reply }]);
     setLoading(false);
   }
