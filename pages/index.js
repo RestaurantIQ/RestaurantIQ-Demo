@@ -1,18 +1,39 @@
 import { useState, useRef, useEffect } from 'react';
 
+const suggestions = [
+  "Was empfehlt ihr heute?",
+  "Gibt es vegetarische Gerichte?",
+  "Welche Pizzen habt ihr?",
+  "Ich möchte reservieren",
+  "Wann habt ihr geöffnet?"
+];
+
 export default function Home() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setMessages([{
+        role: 'assistant',
+        content: 'Willkommen bei **La Fontana di Capri**.\n\nWie kann ich Ihnen helfen?'
+      }]);
+      setTimeout(() => setShowSuggestions(true), 280);
+    }, 300);
+  }, []);
+
   async function sendMessage(text) {
     const msg = text || input;
     if (!msg.trim() || loading) return;
+
+    setShowSuggestions(false);
     const userMsg = { role: 'user', content: msg };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -30,312 +51,319 @@ export default function Home() {
     setLoading(false);
   }
 
-  const suggestions = [
-    "Was empfehlt ihr?",
-    "Gibt es vegetarische Gerichte?",
-    "Wann habt ihr geöffnet?",
-    "Ich möchte reservieren"
-  ];
+  function formatText(text) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+  }
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #F7F3EE; font-family: 'Inter', sans-serif; }
-        .chat-wrap {
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400&family=Outfit:wght@300;400;500&display=swap');
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+          --bg: #f7f3ed;
+          --surface: #ffffff;
+          --ink: #18150f;
+          --ink-2: #302c24;
+          --ink-3: #5a5449;
+          --muted: #9e978c;
+          --gold: #b09050;
+          --line: rgba(24,21,15,0.08);
+          --r: 10px;
+        }
+
+        html, body { height: 100%; background: var(--bg); }
+
+        body {
+          font-family: 'Outfit', sans-serif;
+          font-weight: 300;
+          color: var(--ink);
+          -webkit-font-smoothing: antialiased;
+        }
+
+        .shell {
+          height: 100svh;
           max-width: 480px;
           margin: 0 auto;
-          min-height: 100vh;
           display: flex;
           flex-direction: column;
-          background: #FAFAF8;
+          background: var(--bg);
+          overflow: hidden;
         }
+
+        /* Header */
         .header {
-          padding: 28px 24px 20px;
-          background: #1C1712;
-          text-align: center;
-          border-bottom: 1px solid #2e2820;
+          flex-shrink: 0;
+          padding: 18px 22px 16px;
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          position: relative;
         }
-        .header-label {
-          font-family: 'Inter', sans-serif;
-          font-size: 10px;
-          font-weight: 500;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: #C9A84C;
-          margin-bottom: 8px;
+        .header::after {
+          content: '';
+          position: absolute;
+          bottom: 0; left: 22px; right: 22px;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, var(--gold) 40%, var(--gold) 60%, transparent);
+          opacity: 0.3;
         }
+
+        .mark {
+          width: 40px; height: 40px;
+          border: 1px solid rgba(176,144,80,0.5);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0; position: relative;
+        }
+        .mark::before, .mark::after {
+          content: '';
+          position: absolute;
+          width: 5px; height: 5px;
+          border-color: var(--gold); border-style: solid; opacity: 0.6;
+        }
+        .mark::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+        .mark::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+        .mark-inner {
+          font-family: 'Cormorant', serif;
+          font-weight: 400; font-size: 19px;
+          color: var(--gold); letter-spacing: -0.02em;
+        }
+
+        .header-meta { flex: 1; min-width: 0; }
         .header-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 26px;
-          font-weight: 600;
-          color: #F7F3EE;
-          letter-spacing: 0.5px;
+          font-family: 'Cormorant', serif;
+          font-weight: 300; font-size: 17px;
+          color: var(--ink); letter-spacing: 0.08em;
         }
         .header-sub {
-          font-size: 11px;
-          color: #7a6e60;
-          margin-top: 6px;
-          letter-spacing: 1px;
+          font-size: 10px; font-weight: 400;
+          letter-spacing: 0.16em; text-transform: uppercase;
+          color: var(--muted); margin-top: 2px;
         }
-        .status {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          margin-top: 10px;
-          font-size: 10px;
-          color: #7a6e60;
-          letter-spacing: 1px;
+
+        .badge {
+          display: flex; align-items: center; gap: 5px;
+          padding: 4px 10px;
+          border: 1px solid var(--line); border-radius: 999px;
         }
-        .status-dot {
-          width: 6px; height: 6px;
-          background: #4caf73;
-          border-radius: 50%;
-          animation: pulse 2s infinite;
+        .badge-dot {
+          width: 5px; height: 5px; border-radius: 50%;
+          background: #6db57e;
+          animation: pulse 3s ease-in-out infinite;
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .badge-label {
+          font-size: 9.5px; font-weight: 400;
+          letter-spacing: 0.12em; text-transform: uppercase;
+          color: var(--muted);
         }
-        .messages {
-          flex: 1;
-          padding: 24px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          overflow-y: auto;
+
+        /* Chat */
+        .chat {
+          flex: 1; overflow-y: auto;
+          padding: 24px 18px 16px;
+          display: flex; flex-direction: column; gap: 0;
+          scroll-behavior: smooth;
+          scrollbar-width: none;
         }
-        .empty {
-          text-align: center;
-          margin-top: 40px;
-        }
-        .empty-icon {
-          font-size: 32px;
-          margin-bottom: 12px;
-        }
-        .empty-text {
-          font-family: 'Playfair Display', serif;
-          font-size: 18px;
-          color: #2C2416;
-          margin-bottom: 6px;
-        }
-        .empty-sub {
-          font-size: 13px;
-          color: #9a8e7a;
-          line-height: 1.6;
-        }
-        .suggestions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          justify-content: center;
-          margin-top: 20px;
-        }
-        .suggestion {
-          padding: 8px 14px;
-          background: white;
-          border: 1px solid #E8E0D0;
-          border-radius: 20px;
-          font-size: 12px;
-          color: #5a4e3a;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-family: 'Inter', sans-serif;
-        }
-        .suggestion:hover {
-          background: #C9A84C;
-          color: white;
-          border-color: #C9A84C;
-        }
-        .msg-row {
-          display: flex;
-          align-items: flex-end;
-          gap: 8px;
-          animation: fadeUp 0.25s ease;
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .msg-row.user { flex-direction: row-reverse; }
-        .avatar {
-          width: 28px; height: 28px;
-          border-radius: 50%;
-          background: #1C1712;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: 'Playfair Display', serif;
-          font-size: 12px;
-          color: #C9A84C;
-          flex-shrink: 0;
-        }
+        .chat::-webkit-scrollbar { display: none; }
+
+        .row { display: flex; margin-bottom: 14px; }
+        .row.bot  { justify-content: flex-start; }
+        .row.user { justify-content: flex-end; }
+
         .bubble {
-          max-width: 78%;
-          padding: 12px 16px;
-          border-radius: 18px;
-          font-size: 14px;
-          line-height: 1.65;
-          font-family: 'Inter', sans-serif;
+          max-width: 82%; padding: 12px 16px;
+          font-size: 13.5px; line-height: 1.7;
+          font-weight: 300; letter-spacing: 0.01em;
+          animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes rise {
+          from { opacity: 0; transform: translateY(12px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .row.bot .bubble {
+          background: #fff; border: 1px solid var(--line);
+          border-radius: 2px var(--r) var(--r) var(--r);
+          color: var(--ink-2);
+          box-shadow: 0 1px 8px rgba(24,21,15,0.05), 0 4px 24px rgba(24,21,15,0.04);
+        }
+        .row.user .bubble {
+          background: var(--ink-2); color: #f0ece4;
+          border-radius: var(--r) 2px var(--r) var(--r);
           font-weight: 400;
         }
-        .bubble.bot {
-          background: white;
-          color: #2C2416;
-          border-radius: 18px 18px 18px 4px;
-          box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-          border: 1px solid #F0EBE0;
-        }
-        .bubble.user {
-          background: #1C1712;
-          color: #F7F3EE;
-          border-radius: 18px 18px 4px 18px;
-        }
-        .typing {
-          display: flex;
-          align-items: flex-end;
-          gap: 8px;
-        }
+
+        /* Typing */
+        .typing-row { display: flex; margin-bottom: 14px; animation: rise 0.3s ease both; }
         .typing-bubble {
-          background: white;
-          border: 1px solid #F0EBE0;
-          border-radius: 18px 18px 18px 4px;
-          padding: 14px 18px;
-          display: flex;
-          gap: 4px;
-          align-items: center;
-          box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+          background: #fff; border: 1px solid var(--line);
+          border-radius: 2px var(--r) var(--r) var(--r);
+          padding: 14px 18px; display: flex; gap: 5px; align-items: center;
+          box-shadow: 0 1px 8px rgba(24,21,15,0.05);
         }
         .typing-bubble span {
-          width: 6px; height: 6px;
-          background: #C9A84C;
-          border-radius: 50%;
-          animation: bounce 1.2s infinite;
+          width: 4px; height: 4px; background: var(--gold);
+          border-radius: 50%; opacity: 0.25;
+          animation: blink 1.3s ease-in-out infinite;
         }
-        .typing-bubble span:nth-child(2) { animation-delay: 0.15s; }
-        .typing-bubble span:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes bounce {
-          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-          30% { transform: translateY(-5px); opacity: 1; }
+        .typing-bubble span:nth-child(2) { animation-delay: 0.18s; }
+        .typing-bubble span:nth-child(3) { animation-delay: 0.36s; }
+        @keyframes blink {
+          0%,80%,100%{opacity:0.25;transform:scaleY(1)}
+          40%{opacity:1;transform:scaleY(1.4)}
         }
+
+        /* Suggestions */
+        .suggestions {
+          display: flex; flex-direction: column; gap: 6px;
+          margin-bottom: 14px;
+          animation: rise 0.5s 0.08s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .suggestion {
+          background: transparent;
+          border: 1px solid var(--line);
+          border-left: 2px solid rgba(176,144,80,0.4);
+          color: var(--ink-3);
+          font-family: 'Outfit', sans-serif;
+          font-size: 12.5px; font-weight: 400;
+          letter-spacing: 0.02em;
+          padding: 9px 14px; cursor: pointer;
+          text-align: left;
+          border-radius: 0 6px 6px 0;
+          transition: background 0.15s, color 0.15s, border-color 0.15s;
+          width: fit-content; max-width: 92%;
+        }
+        .suggestion:hover {
+          background: var(--ink-2); color: #f0ece4;
+          border-color: var(--ink-2); border-left-color: var(--gold);
+        }
+
+        /* Input */
         .input-area {
-          padding: 14px 16px;
-          background: white;
-          border-top: 1px solid #EEE8DC;
-          display: flex;
-          gap: 10px;
-          align-items: center;
+          flex-shrink: 0; background: var(--bg);
+          padding: 12px 18px 18px; position: relative;
+        }
+        .input-area::before {
+          content: ''; position: absolute;
+          top: -28px; left: 0; right: 0; height: 28px;
+          background: linear-gradient(to bottom, transparent, var(--bg));
+          pointer-events: none;
+        }
+        .input-row {
+          display: flex; align-items: center; gap: 8px;
+          background: #fff; border: 1px solid var(--line);
+          border-radius: var(--r); padding: 6px 6px 6px 16px;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-row:focus-within {
+          border-color: rgba(176,144,80,0.5);
+          box-shadow: 0 0 0 3px rgba(176,144,80,0.08);
         }
         .input-field {
-          flex: 1;
-          padding: 11px 16px;
-          background: #F7F3EE;
-          border: 1px solid #E8E0D0;
-          border-radius: 24px;
-          font-family: 'Inter', sans-serif;
-          font-size: 14px;
-          color: #2C2416;
-          outline: none;
-          transition: border-color 0.2s;
+          flex: 1; background: transparent; border: none; outline: none;
+          font-family: 'Outfit', sans-serif;
+          font-size: 13.5px; font-weight: 300;
+          color: var(--ink); padding: 5px 0;
         }
-        .input-field::placeholder { color: #b0a090; }
-        .input-field:focus { border-color: #C9A84C; }
+        .input-field::placeholder { color: var(--muted); }
+
         .send-btn {
-          width: 42px; height: 42px;
-          background: #1C1712;
-          border: none;
-          border-radius: 50%;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: background 0.2s;
-          flex-shrink: 0;
+          width: 36px; height: 36px; border-radius: 7px;
+          border: 1px solid var(--line); background: transparent;
+          color: var(--muted); cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.2s, border-color 0.2s, color 0.2s;
         }
-        .send-btn:hover { background: #C9A84C; }
-        .send-btn:disabled { opacity: 0.4; }
-        .footer-note {
-          text-align: center;
-          padding: 8px;
-          font-size: 10px;
-          color: #c0b8a8;
-          letter-spacing: 0.5px;
-          background: white;
+        .send-btn:hover:not(:disabled) {
+          background: var(--gold); border-color: var(--gold); color: #fff;
         }
+        .send-btn:disabled { opacity: 0.3; cursor: default; }
+        .send-btn svg { width: 15px; height: 15px; fill: currentColor; }
+
+        .powered {
+          text-align: center; font-size: 9.5px; font-weight: 400;
+          letter-spacing: 0.13em; text-transform: uppercase;
+          color: var(--muted); opacity: 0.55; margin-top: 9px;
+        }
+        .powered span { color: var(--gold); opacity: 1; }
       `}</style>
 
-      <div className="chat-wrap">
-        <div className="header">
-          <div className="header-label">Ristorante & Pizzeria</div>
-          <div className="header-name">La Fontana di Capri</div>
-          <div className="header-sub">Neulußheim</div>
-          <div className="status">
-            <div className="status-dot"></div>
-            Assistent verfügbar
+      <div className="shell">
+        <header className="header">
+          <div className="mark">
+            <div className="mark-inner">LF</div>
           </div>
-        </div>
+          <div className="header-meta">
+            <div className="header-name">La Fontana di Capri</div>
+            <div className="header-sub">Ristorante &amp; Pizzeria · Neulußheim</div>
+          </div>
+          <div className="badge">
+            <div className="badge-dot"></div>
+            <span className="badge-label">Online</span>
+          </div>
+        </header>
 
-        <div className="messages">
-          {messages.length === 0 && (
-            <div className="empty">
-              <div className="empty-icon">🍽️</div>
-              <div className="empty-text">Willkommen</div>
-              <div className="empty-sub">
-                Wie kann ich Ihnen helfen?<br/>
-                Speisekarte, Öffnungszeiten, Reservierungen.
-              </div>
-              <div className="suggestions">
-                {suggestions.map((s, i) => (
-                  <button key={i} className="suggestion" onClick={() => sendMessage(s)}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
+        <div className="chat">
           {messages.map((m, i) => (
-            <div key={i} className={`msg-row ${m.role === 'user' ? 'user' : ''}`}>
-              {m.role === 'assistant' && (
-                <div className="avatar">L</div>
-              )}
-              <div className={`bubble ${m.role === 'assistant' ? 'bot' : 'user'}`}>
-                {m.content}
-              </div>
+            <div key={i} className={`row ${m.role === 'user' ? 'user' : 'bot'}`}>
+              <div
+                className="bubble"
+                dangerouslySetInnerHTML={{ __html: formatText(m.content) }}
+              />
             </div>
           ))}
 
+          {showSuggestions && (
+            <div className="suggestions">
+              {suggestions.map((s, i) => (
+                <button key={i} className="suggestion" onClick={() => {
+                  setShowSuggestions(false);
+                  sendMessage(s);
+                }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
           {loading && (
-            <div className="typing">
-              <div className="avatar">L</div>
+            <div className="typing-row">
               <div className="typing-bubble">
                 <span/><span/><span/>
               </div>
             </div>
           )}
+
           <div ref={bottomRef} />
         </div>
 
         <div className="input-area">
-          <input
-            className="input-field"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && sendMessage()}
-            placeholder="Ihre Frage..."
-          />
-          <button className="send-btn" onClick={() => sendMessage()} disabled={loading}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F7F3EE">
-              <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
-            </svg>
-          </button>
-        </div>
-        <div className="footer-note">
-          Dieser Chat wird von KI unterstützt · RestaurantIQ
+          <div className="input-row">
+            <input
+              className="input-field"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              placeholder="Ihre Frage..."
+              autoComplete="off"
+            />
+            <button
+              className="send-btn"
+              onClick={() => sendMessage()}
+              disabled={loading}
+            >
+              <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+          <div className="powered">Unterstützt durch <span>RestaurantIQ</span></div>
         </div>
       </div>
     </>
   );
 }
-
