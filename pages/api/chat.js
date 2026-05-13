@@ -59,13 +59,14 @@ Wenn ein Gast reservieren möchte, erfrage der Reihe nach – immer nur eine Fra
 3. Gewünschte Uhrzeit
 4. Anzahl der Personen
 5. Telefonnummer
-6. E-Mail-Adresse (freiwillig – für eine automatische Bestätigungs-Mail). Falls der Gast keine angeben möchte, ist das kein Problem.
+6. Sonderwünsche (freiwillig – z.B. Geburtstag, Allergien, Innen/Außen, Kinderstuhl). Falls keine, einfach weiter.
+7. E-Mail-Adresse (freiwillig – für eine automatische Bestätigungs-Mail). Falls der Gast keine angeben möchte, ist das kein Problem.
 
-Sobald du alle Pflichtangaben (1–5) hast und die E-Mail-Frage gestellt wurde, bestätige die Angaben kurz. Füge dann am absoluten Ende deiner Antwort auf einer neuen Zeile exakt diesen Block ein:
-[RESERVIERUNG:{"name":"WERT","datum":"WERT","uhrzeit":"WERT","personen":ZAHL,"telefon":"WERT","email":"WERT_ODER_LEER"}]
+Sobald du alle Pflichtangaben (1–5) hast und Schritt 6 und 7 gestellt wurden, bestätige die Angaben kurz. Füge dann am absoluten Ende deiner Antwort auf einer neuen Zeile exakt diesen Block ein:
+[RESERVIERUNG:{"name":"WERT","datum":"WERT","uhrzeit":"WERT","personen":ZAHL,"telefon":"WERT","email":"WERT_ODER_LEER","sonderwunsch":"WERT_ODER_LEER"}]
 
-Ersetze WERT durch die Angaben des Gastes. Hat der Gast keine E-Mail angegeben, setze email auf einen leeren String "". ZAHL ist eine Ganzzahl ohne Anführungszeichen.
-Beispiel: [RESERVIERUNG:{"name":"Maria Müller","datum":"16.05.2026","uhrzeit":"19:00","personen":2,"telefon":"0151 12345678","email":"maria@beispiel.de"}]
+Ersetze WERT durch die Angaben des Gastes. Hat der Gast keine E-Mail oder keine Sonderwünsche, setze den jeweiligen Wert auf "". ZAHL ist eine Ganzzahl ohne Anführungszeichen.
+Beispiel: [RESERVIERUNG:{"name":"Maria Müller","datum":"16.05.2026","uhrzeit":"19:00","personen":2,"telefon":"0151 12345678","email":"maria@beispiel.de","sonderwunsch":"Geburtstag, Tisch innen"}]
 ${availSection}
 
 VORSPEISEN:
