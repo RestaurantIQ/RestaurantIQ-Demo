@@ -315,7 +315,7 @@ export default function Home() {
         .input-area {
           flex-shrink: 0;
           background: var(--bg);
-          padding: 10px 18px 16px;
+          padding: 10px 18px 12px;
           position: relative;
         }
 
@@ -377,14 +377,51 @@ export default function Home() {
         .send-btn:disabled { opacity: 0.3; cursor: default; }
         .send-btn svg { width: 15px; height: 15px; fill: currentColor; }
 
-        .powered {
-          text-align: center;
-          font-size: 9.5px; font-weight: 400;
-          letter-spacing: 0.13em; text-transform: uppercase;
-          color: var(--muted); opacity: 0.5;
+        .footer-bar {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
           margin-top: 8px;
+          padding-bottom: 2px;
+          flex-wrap: wrap;
         }
-        .powered span { color: var(--gold); opacity: 1; }
+
+        .footer-bar .ki-hint {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 9.5px;
+          font-weight: 400;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--muted);
+          opacity: 0.7;
+        }
+
+        .footer-bar .ki-hint-dot {
+          width: 4px; height: 4px; border-radius: 50%;
+          background: var(--gold); opacity: 0.7; flex-shrink: 0;
+        }
+
+        .footer-bar .sep {
+          font-size: 9px;
+          color: var(--muted);
+          opacity: 0.4;
+        }
+
+        .footer-bar a {
+          font-size: 9.5px;
+          font-weight: 400;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--muted);
+          opacity: 0.55;
+          text-decoration: none;
+          transition: opacity 0.15s;
+        }
+
+        .footer-bar a:hover { opacity: 1; }
       `}</style>
 
       <div className="shell">
@@ -464,7 +501,17 @@ export default function Home() {
               <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
           </div>
-          <div className="powered">Unterstuetzt durch <span>RestaurantIQ</span></div>
+
+          <div className="footer-bar">
+            <span className="ki-hint">
+              <span className="ki-hint-dot" />
+              KI-gestützter Assistent
+            </span>
+            <span className="sep">·</span>
+            <a href="/impressum">Impressum</a>
+            <span className="sep">·</span>
+            <a href="/datenschutz">Datenschutz</a>
+          </div>
         </div>
       </div>
     </>
