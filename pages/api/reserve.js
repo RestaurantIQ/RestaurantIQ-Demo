@@ -65,13 +65,14 @@ export default async function handler(req, res) {
   }
 
   if (process.env.GMAIL_USER && id) {
-    const adminToken  = encodeURIComponent(process.env.ADMIN_PASSWORD);
-    const confirmUrl  = `${BASE_URL}/api/confirm?id=${id}&action=best%C3%A4tigt&token=${adminToken}`;
-    const declineUrl  = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${adminToken}`;
-    const whatsappUrl = waLink(telefon, name, datum, uhrzeit);
-    const emailRow    = email ? `<tr><td>E-Mail</td><td>${email}</td></tr>` : '';
-    const guestNote   = email
-      ? `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">&#10003; Gast erhaelt automatisch eine Bestaetigunsmail.</p>`
+    const adminToken    = encodeURIComponent(process.env.ADMIN_PASSWORD);
+    const confirmUrl    = `${BASE_URL}/api/confirm?id=${id}&action=best%C3%A4tigt&token=${adminToken}`;
+    const declineUrl    = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${adminToken}`;
+    const whatsappUrl   = waLink(telefon, name, datum, uhrzeit);
+    const emailRow      = email ? `<tr><td>E-Mail</td><td>${email}</td></tr>` : '';
+    const sonderwunschRow = sonderwunsch ? `<tr><td>Sonderwunsch</td><td>${sonderwunsch}</td></tr>` : '';
+    const guestNote     = email
+      ? `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">&#10003; Gast erhält automatisch eine Bestätigungsmail.</p>`
       : `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">Kein E-Mail-Kontakt – Gast per WhatsApp benachrichtigen.</p>`;
 
     const html = `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
@@ -100,7 +101,7 @@ td:first-child{color:#9e8f7e;width:110px}
     ${emailRow}
     ${sonderwunschRow}
   </table>
-  <a href="${confirmUrl}" class="btn confirm">&#10003; Bestaetigen</a>
+  <a href="${confirmUrl}" class="btn confirm">&#10003; Bestätigen</a>
   <a href="${declineUrl}" class="btn decline">&#10007; Absagen</a>
   ${guestNote}
   <a href="${whatsappUrl}" class="wa">&#128172; Gast per WhatsApp benachrichtigen</a>
