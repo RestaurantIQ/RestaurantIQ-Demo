@@ -1,3 +1,23 @@
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
+
+async function getAvailability() {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/availability?tische_frei=gt.0&order=datum.asc,uhrzeit.asc`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    const data = await r.json();
+    if (!Array.isArray(data) || data.length === 0) return null;
+    return data
+      .map(s => `  ${s.datum}, ${s.uhrzeit} Uhr: ${s.tische_frei} Tisch${s.tische_frei !== 1 ? 'e' : ''} frei`)
+      .join('\n');
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -5,6 +25,11 @@ export default async function handler(req, res) {
 
   try {
     const { messages } = req.body;
+
+    const availability = await getAvailability();
+    const availSection = availability
+      ? `\nAKTUELLE VERFÜGBARKEIT:\n${availability}\n\nWenn ein Gast reservieren möchte, prüfe anhand dieser Liste ob der gewünschte Termin verfügbar ist. Ist ein Termin nicht in der Liste oder ausgebucht, teile höflich mit dass dieser Zeitraum nicht verfügbar ist und nenne Alternativen aus der Liste. Ist ein passender Slot frei, führe die Reservierung durch.`
+      : `\nVERFÜGBARKEIT: Aktuell sind keine Zeitslots eingetragen. Nimm Reservierungsanfragen auf und weise darauf hin, dass das Restaurant sich zur Bestätigung melden wird.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -39,7 +64,8 @@ Sobald du alle fünf Angaben hast, bestätige sie in einem kurzen Satz. Füge da
 [RESERVIERUNG:{"name":"WERT","datum":"WERT","uhrzeit":"WERT","personen":ZAHL,"telefon":"WERT"}]
 
 Ersetze WERT durch die Angaben des Gastes. ZAHL ist eine Ganzzahl ohne Anführungszeichen.
-Beispiel: [RESERVIERUNG:{"name":"Maria Müller","datum":"16. Mai 2026","uhrzeit":"19:00","personen":2,"telefon":"0151 12345678"}]
+Beispiel: [RESERVIERUNG:{"name":"Maria Müller","datum":"16.05.2026","uhrzeit":"19:00","personen":2,"telefon":"0151 12345678"}]
+${availSection}
 
 VORSPEISEN:
 Antipasto Italiano 17,00 Euro. Weinbergschnecken Kraeuterbutter 6 Stueck 9,00 Euro / 12 Stueck 15,00 Euro. Weinbergschnecken alla Romana 9,00 Euro. Carpaccio vom Rind 14,50 Euro. Vitello Tonnato 14,50 Euro. Duetto 16,50 Euro. Oktopus Salat 19,50 Euro. Caprese 10,50 Euro. Pizzabrot 6,50 Euro. Bruschetta 6,50 Euro. Schafskaese al Forno 8,80 Euro.
