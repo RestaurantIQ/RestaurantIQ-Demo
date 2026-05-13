@@ -8,7 +8,7 @@ const suggestions = [
   "Wann habt ihr geöffnet?"
 ];
 
-const RESERVATION_REGEX = /\[RESERVIERUNG:(\{[^}]+\})\]/;
+const RESERVATION_REGEX = /\[RESERVIERUNG:(\{[\s\S]*?\})\]/;
 
 export default function Home() {
   const [messages, setMessages] = useState([]);
