@@ -26,11 +26,11 @@ function waLink(phone, name, datum, uhrzeit) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { name, datum, uhrzeit, personen, telefon } = req.body;
+  const { name, datum, uhrzeit, personen, telefon, email } = req.body;
 
   const dbRes = await db('reservations', {
     method: 'POST',
-    body: JSON.stringify({ name, datum, uhrzeit, personen, telefon, status: 'neu' }),
+    body: JSON.stringify({ name, datum, uhrzeit, personen, telefon, email: email || null, status: 'neu' }),
   });
 
   if (!dbRes.ok) {
@@ -41,7 +41,6 @@ export default async function handler(req, res) {
   const [saved] = await dbRes.json();
   const id = saved?.id;
 
-  // Tisch-Counter reduzieren
   const availRes = await db(
     `availability?datum=eq.${encodeURIComponent(datum)}&uhrzeit=eq.${encodeURIComponent(uhrzeit)}&select=id,tische_frei`
   );
@@ -53,31 +52,31 @@ export default async function handler(req, res) {
     });
   }
 
-  // E-Mail mit Ein-Klick-Links
   if (process.env.RESEND_API_KEY && id) {
     const token      = encodeURIComponent(process.env.ADMIN_PASSWORD);
     const confirmUrl = `${BASE_URL}/api/confirm?id=${id}&action=bestätigt&token=${token}`;
     const declineUrl = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${token}`;
     const whatsappUrl = waLink(telefon, name, datum, uhrzeit);
+    const emailRow = email ? `<tr><td>E-Mail</td><td>${email}</td></tr>` : '';
+    const guestNote = email
+      ? `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">✓ Gast erhält automatisch eine Bestätigungs-Mail.</p>`
+      : `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">Kein E-Mail-Kontakt – Gast per WhatsApp benachrichtigen.</p>`;
 
     const html = `
-<!DOCTYPE html>
-<html lang="de">
-<head><meta charset="utf-8"><style>
-  body { font-family: sans-serif; background: #f5f0ea; margin: 0; padding: 24px; }
-  .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 480px; margin: 0 auto; }
-  h2 { font-size: 18px; color: #1a1612; margin: 0 0 4px; }
-  .sub { font-size: 13px; color: #9e8f7e; margin-bottom: 24px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-  td { padding: 8px 0; font-size: 14px; color: #3a3530; border-bottom: 1px solid #f0ebe3; }
-  td:first-child { color: #9e8f7e; width: 110px; }
-  .btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; }
-  .confirm { background: #3a9e5f; color: #fff; margin-right: 8px; }
-  .decline { background: #fff; color: #c0392b; border: 1px solid #c0392b; }
-  .wa { display: block; margin-top: 16px; font-size: 13px; color: #25D366; text-decoration: none; }
-  .footer { margin-top: 24px; font-size: 11px; color: #c0b8ae; text-align: center; }
-</style></head>
-<body>
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
+body{font-family:sans-serif;background:#f5f0ea;margin:0;padding:24px}
+.card{background:#fff;border-radius:12px;padding:32px;max-width:480px;margin:0 auto}
+h2{font-size:18px;color:#1a1612;margin:0 0 4px}
+.sub{font-size:13px;color:#9e8f7e;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;margin-bottom:24px}
+td{padding:8px 0;font-size:14px;color:#3a3530;border-bottom:1px solid #f0ebe3}
+td:first-child{color:#9e8f7e;width:110px}
+.btn{display:inline-block;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none}
+.confirm{background:#3a9e5f;color:#fff;margin-right:8px}
+.decline{background:#fff;color:#c0392b;border:1px solid #c0392b}
+.wa{display:block;margin-top:16px;font-size:13px;color:#25D366;text-decoration:none}
+.footer{margin-top:24px;font-size:11px;color:#c0b8ae;text-align:center}
+</style></head><body>
 <div class="card">
   <h2>Neue Reservierungsanfrage</h2>
   <div class="sub">La Fontana di Capri · RestaurantIQ</div>
@@ -87,14 +86,15 @@ export default async function handler(req, res) {
     <tr><td>Uhrzeit</td><td>${uhrzeit} Uhr</td></tr>
     <tr><td>Personen</td><td>${personen}</td></tr>
     <tr><td>Telefon</td><td>${telefon}</td></tr>
+    ${emailRow}
   </table>
   <a href="${confirmUrl}" class="btn confirm">✓ Bestätigen</a>
   <a href="${declineUrl}" class="btn decline">✗ Absagen</a>
+  ${guestNote}
   <a href="${whatsappUrl}" class="wa">💬 Gast per WhatsApp benachrichtigen</a>
   <div class="footer">Powered by RestaurantIQ</div>
 </div>
-</body>
-</html>`;
+</body></html>`;
 
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
