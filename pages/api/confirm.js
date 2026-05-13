@@ -14,6 +14,74 @@ function db(path, options = {}) {
   });
 }
 
+async function sendGuestEmail(reservation, action) {
+  if (!process.env.RESEND_API_KEY || !reservation.email) return;
+
+  const confirmed = action === 'bestätigt';
+  const subject = confirmed
+    ? `Reservierung bestätigt – La Fontana di Capri`
+    : `Reservierung – La Fontana di Capri`;
+
+  const html = confirmed ? `
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
+body{font-family:sans-serif;background:#f5f0ea;margin:0;padding:24px}
+.card{background:#fff;border-radius:12px;padding:32px;max-width:480px;margin:0 auto}
+h2{font-size:20px;color:#1a1612;margin:0 0 4px}
+.sub{font-size:13px;color:#9e8f7e;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;margin-bottom:24px}
+td{padding:8px 0;font-size:14px;color:#3a3530;border-bottom:1px solid #f0ebe3}
+td:first-child{color:#9e8f7e;width:110px}
+.badge{display:inline-block;background:#edfbf2;color:#3a9e5f;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:20px}
+.footer{margin-top:24px;font-size:11px;color:#c0b8ae;text-align:center}
+</style></head><body>
+<div class="card">
+  <div class="badge">✓ Reservierung bestätigt</div>
+  <h2>Wir freuen uns auf Sie!</h2>
+  <div class="sub">La Fontana di Capri · Neulußheim</div>
+  <table>
+    <tr><td>Name</td><td>${reservation.name}</td></tr>
+    <tr><td>Datum</td><td>${reservation.datum}</td></tr>
+    <tr><td>Uhrzeit</td><td>${reservation.uhrzeit} Uhr</td></tr>
+    <tr><td>Personen</td><td>${reservation.personen}</td></tr>
+    <tr><td>Adresse</td><td>Hockenheimer Str. 1, 68809 Neulußheim</td></tr>
+  </table>
+  <p style="font-size:13px;color:#5a5245">Bei Rückfragen erreichen Sie uns unter <strong>06205 37008</strong>.</p>
+  <div class="footer">Powered by RestaurantIQ</div>
+</div>
+</body></html>` : `
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
+body{font-family:sans-serif;background:#f5f0ea;margin:0;padding:24px}
+.card{background:#fff;border-radius:12px;padding:32px;max-width:480px;margin:0 auto}
+h2{font-size:20px;color:#1a1612;margin:0 0 4px}
+.sub{font-size:13px;color:#9e8f7e;margin-bottom:24px}
+.badge{display:inline-block;background:#fdf0ee;color:#c0392b;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:20px}
+.footer{margin-top:24px;font-size:11px;color:#c0b8ae;text-align:center}
+</style></head><body>
+<div class="card">
+  <div class="badge">Reservierung nicht möglich</div>
+  <h2>Leider kein Tisch verfügbar</h2>
+  <div class="sub">La Fontana di Capri · Neulußheim</div>
+  <p style="font-size:14px;color:#5a5245;margin-bottom:16px">Für Ihren gewünschten Termin am <strong>${reservation.datum} um ${reservation.uhrzeit} Uhr</strong> steht leider kein Tisch zur Verfügung.</p>
+  <p style="font-size:13px;color:#5a5245">Bitte rufen Sie uns an, wir finden gerne einen alternativen Termin: <strong>06205 37008</strong></p>
+  <div class="footer">Powered by RestaurantIQ</div>
+</div>
+</body></html>`;
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'La Fontana di Capri <onboarding@resend.dev>',
+      to: reservation.email,
+      subject,
+      html,
+    }),
+  }).catch(e => console.error('Guest email error:', e));
+}
+
 export default async function handler(req, res) {
   const { id, action, token } = req.query;
 
@@ -25,17 +93,27 @@ export default async function handler(req, res) {
     return res.status(400).send('Ungültige Aktion.');
   }
 
-  const r = await db(`reservations?id=eq.${id}`, {
+  const patchRes = await db(`reservations?id=eq.${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ status: action }),
   });
 
-  if (!r.ok) {
+  if (!patchRes.ok) {
     return res.status(500).send('Datenbankfehler.');
   }
 
-  const label = action === 'bestätigt' ? '✓ Bestätigt' : '✗ Abgesagt';
-  const color = action === 'bestätigt' ? '#3a9e5f' : '#c0392b';
+  const getRes = await db(`reservations?id=eq.${id}&select=name,datum,uhrzeit,personen,email`);
+  const [reservation] = await getRes.json();
+
+  if (reservation) {
+    await sendGuestEmail(reservation, action);
+  }
+
+  const confirmed = action === 'bestätigt';
+  const color = confirmed ? '#3a9e5f' : '#c0392b';
+  const guestNote = reservation?.email
+    ? `<div class="note">Eine E-Mail wurde an den Gast gesendet.</div>`
+    : `<div class="note">Kein E-Mail-Kontakt hinterlegt – bitte Gast direkt kontaktieren.</div>`;
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.status(200).send(`
@@ -46,19 +124,19 @@ export default async function handler(req, res) {
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>RestaurantIQ</title>
       <style>
-        body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f5f0ea; }
-        .card { background: #fff; border-radius: 14px; padding: 40px 36px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); max-width: 320px; }
-        .icon { font-size: 40px; margin-bottom: 12px; }
-        .label { font-size: 20px; font-weight: 600; color: ${color}; margin-bottom: 8px; }
-        .sub { font-size: 14px; color: #9e8f7e; margin-bottom: 20px; }
-        a { font-size: 13px; color: #b09050; text-decoration: none; }
+        body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f5f0ea}
+        .card{background:#fff;border-radius:14px;padding:40px 36px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:320px}
+        .icon{font-size:36px;margin-bottom:12px}
+        .label{font-size:20px;font-weight:600;color:${color};margin-bottom:8px}
+        .note{font-size:13px;color:#9e8f7e;margin-bottom:20px;background:#f5f0ea;padding:10px 14px;border-radius:8px}
+        a{font-size:13px;color:#b09050;text-decoration:none}
       </style>
     </head>
     <body>
       <div class="card">
-        <div class="icon">${action === 'bestätigt' ? '✓' : '✗'}</div>
-        <div class="label">${label}</div>
-        <div class="sub">Die Reservierung wurde aktualisiert.</div>
+        <div class="icon">${confirmed ? '✓' : '✗'}</div>
+        <div class="label">${confirmed ? 'Bestätigt' : 'Abgesagt'}</div>
+        ${guestNote}
         <a href="/admin">Zur Admin-Konsole →</a>
       </div>
     </body>
