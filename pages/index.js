@@ -8,6 +8,8 @@ const suggestions = [
   "Wann habt ihr geöffnet?"
 ];
 
+const RESERVATION_REGEX = /\[RESERVIERUNG:(\{[^}]+\})\]/;
+
 export default function Home() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -46,8 +48,38 @@ export default function Home() {
       body: JSON.stringify({ messages: newMessages })
     });
     const data = await res.json();
-    const reply = data.reply || 'Ein Fehler ist aufgetreten.';
-    setMessages([...newMessages, { role: 'assistant', content: reply }]);
+    const rawReply = data.reply || 'Ein Fehler ist aufgetreten.';
+
+    const match = rawReply.match(RESERVATION_REGEX);
+    const reply = rawReply.replace(RESERVATION_REGEX, '').trim();
+
+    let finalMessages = [...newMessages, { role: 'assistant', content: reply }];
+
+    if (match) {
+      try {
+        const reservationData = JSON.parse(match[1]);
+        const reserveRes = await fetch('/api/reserve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reservationData),
+        });
+        if (reserveRes.ok) {
+          finalMessages = [...finalMessages, {
+            role: 'assistant',
+            content: 'Ihre Reservierung ist eingegangen. Das Restaurant wird sich bei Rückfragen unter Ihrer Telefonnummer melden. Vielen Dank.'
+          }];
+        } else {
+          finalMessages = [...finalMessages, {
+            role: 'assistant',
+            content: 'Die Reservierung konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: 06205 37008.'
+          }];
+        }
+      } catch (e) {
+        console.error('Reservation error:', e);
+      }
+    }
+
+    setMessages(finalMessages);
     setLoading(false);
   }
 
