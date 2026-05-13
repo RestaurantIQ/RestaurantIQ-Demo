@@ -25,7 +25,7 @@ export default function Home() {
     setTimeout(() => {
       setMessages([{
         role: 'assistant',
-        content: 'Willkommen bei **La Fontana di Capri**.\n\nWie kann ich Ihnen helfen?'
+        content: 'Benvenuto bei **La Fontana di Capri**.\n\nWie kann ich Ihnen helfen?'
       }]);
       setTimeout(() => setShowSuggestions(true), 280);
     }, 300);
@@ -92,19 +92,20 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400&family=Outfit:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap');
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-          --bg:      #f7f3ed;
-          --surface: #ffffff;
-          --ink:     #18150f;
-          --ink-2:   #302c24;
-          --ink-3:   #5a5449;
+          --bg:      #f5f0e8;
+          --surface: #fdfaf5;
+          --ink:     #1a1510;
+          --ink-2:   #2e2820;
+          --ink-3:   #5c5448;
           --muted:   #9e978c;
-          --gold:    #b09050;
-          --line:    rgba(24,21,15,0.08);
+          --gold:    #a8864a;
+          --gold-lt: #c9a96e;
+          --line:    rgba(26,21,16,0.09);
           --r:       10px;
         }
 
@@ -115,10 +116,21 @@ export default function Home() {
           font-weight: 300;
           color: var(--ink);
           -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* subtle linen texture */
+        body::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23f5f0e8'/%3E%3Crect x='0' y='0' width='1' height='1' fill='%23ede8df' opacity='0.4'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23ede8df' opacity='0.4'/%3E%3C/svg%3E");
+          pointer-events: none;
+          z-index: 0;
         }
 
         .shell {
+          position: relative;
+          z-index: 1;
           height: 100svh;
           max-width: 480px;
           margin: 0 auto;
@@ -128,66 +140,97 @@ export default function Home() {
           overflow: hidden;
         }
 
+        @media (min-width: 520px) {
+          .shell {
+            height: 100svh;
+            box-shadow: 0 0 0 1px rgba(168,134,74,0.15), 0 8px 60px rgba(26,21,16,0.12);
+          }
+        }
+
+        /* ── HEADER ── */
         .header {
           flex-shrink: 0;
-          padding: 18px 22px 16px;
+          padding: 20px 22px 18px;
           display: flex;
           align-items: center;
-          gap: 13px;
+          gap: 14px;
+          background: var(--bg);
           position: relative;
           z-index: 10;
         }
 
-        .header::after {
-          content: '';
+        .header-divider {
           position: absolute;
-          bottom: 0; left: 22px; right: 22px;
+          bottom: 0; left: 0; right: 0;
           height: 1px;
-          background: linear-gradient(90deg, transparent, var(--gold) 40%, var(--gold) 60%, transparent);
-          opacity: 0.3;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(168,134,74,0.2) 20%,
+            rgba(168,134,74,0.5) 50%,
+            rgba(168,134,74,0.2) 80%,
+            transparent 100%);
         }
 
         .mark {
-          width: 40px; height: 40px;
-          border: 1px solid rgba(176,144,80,0.5);
+          width: 44px; height: 44px;
+          border: 1px solid rgba(168,134,74,0.45);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0; position: relative;
+          background: rgba(168,134,74,0.04);
         }
 
-        .mark::before, .mark::after {
+        .mark::before {
           content: '';
           position: absolute;
-          width: 5px; height: 5px;
-          border-color: var(--gold); border-style: solid; opacity: 0.6;
+          inset: 3px;
+          border: 1px solid rgba(168,134,74,0.15);
         }
-        .mark::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-        .mark::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+        .mark::after {
+          content: '';
+          position: absolute;
+          width: 6px; height: 6px;
+          bottom: -1px; right: -1px;
+          border-bottom: 1px solid var(--gold);
+          border-right: 1px solid var(--gold);
+        }
+
+        .mark-corner-tl {
+          position: absolute;
+          width: 6px; height: 6px;
+          top: -1px; left: -1px;
+          border-top: 1px solid var(--gold);
+          border-left: 1px solid var(--gold);
+        }
 
         .mark-inner {
           font-family: 'Cormorant', serif;
-          font-weight: 400; font-size: 19px;
-          color: var(--gold); letter-spacing: -0.02em; line-height: 1;
+          font-weight: 400; font-size: 18px;
+          color: var(--gold); letter-spacing: 0.02em; line-height: 1;
+          font-style: italic;
         }
 
         .header-meta { flex: 1; min-width: 0; }
 
         .header-name {
           font-family: 'Cormorant', serif;
-          font-weight: 300; font-size: 17px;
-          color: var(--ink); letter-spacing: 0.08em;
+          font-weight: 400; font-size: 19px;
+          color: var(--ink); letter-spacing: 0.06em;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
         .header-sub {
-          font-size: 10px; font-weight: 400;
-          letter-spacing: 0.16em; text-transform: uppercase;
-          color: var(--muted); margin-top: 2px;
+          font-size: 9.5px; font-weight: 400;
+          letter-spacing: 0.18em; text-transform: uppercase;
+          color: var(--muted); margin-top: 3px;
         }
 
         .badge {
           display: flex; align-items: center; gap: 5px;
-          padding: 4px 10px;
-          border: 1px solid var(--line); border-radius: 999px; flex-shrink: 0;
+          padding: 5px 11px;
+          border: 1px solid rgba(168,134,74,0.25);
+          border-radius: 999px; flex-shrink: 0;
+          background: rgba(168,134,74,0.05);
         }
 
         .badge-dot {
@@ -196,26 +239,26 @@ export default function Home() {
           animation: pulse 3s ease-in-out infinite;
         }
 
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
         .badge-label {
           font-size: 9.5px; font-weight: 400;
-          letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+          letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
         }
 
+        /* ── CHAT ── */
         .chat {
           flex: 1;
           overflow-y: auto;
-          padding: 20px 18px 8px;
+          padding: 22px 18px 8px;
           display: flex;
           flex-direction: column;
-          gap: 0;
           scroll-behavior: smooth;
           scrollbar-width: none;
         }
         .chat::-webkit-scrollbar { display: none; }
 
-        .row { display: flex; margin-bottom: 12px; }
+        .row { display: flex; margin-bottom: 10px; }
         .row.bot  { justify-content: flex-start; }
         .row.user { justify-content: flex-end; }
 
@@ -223,35 +266,37 @@ export default function Home() {
           max-width: 82%;
           padding: 12px 16px;
           font-size: 13.5px;
-          line-height: 1.7;
+          line-height: 1.75;
           font-weight: 300;
           letter-spacing: 0.01em;
           animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         @keyframes rise {
-          from { opacity: 0; transform: translateY(10px) scale(0.98); }
+          from { opacity: 0; transform: translateY(8px) scale(0.98); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .row.bot .bubble {
           background: var(--surface);
           border: 1px solid var(--line);
+          border-top: 1px solid rgba(168,134,74,0.12);
           border-radius: 2px var(--r) var(--r) var(--r);
           color: var(--ink-2);
-          box-shadow: 0 1px 8px rgba(24,21,15,0.05), 0 4px 20px rgba(24,21,15,0.04);
+          box-shadow: 0 2px 12px rgba(26,21,16,0.06), 0 1px 3px rgba(26,21,16,0.04);
         }
 
         .row.user .bubble {
           background: var(--ink-2);
-          color: #f0ece4;
+          color: #f0ebe0;
           border-radius: var(--r) 2px var(--r) var(--r);
           font-weight: 400;
+          letter-spacing: 0.015em;
         }
 
         .typing-row {
           display: flex;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
           animation: rise 0.3s ease both;
         }
 
@@ -261,35 +306,36 @@ export default function Home() {
           border-radius: 2px var(--r) var(--r) var(--r);
           padding: 14px 18px;
           display: flex; gap: 5px; align-items: center;
-          box-shadow: 0 1px 8px rgba(24,21,15,0.05);
+          box-shadow: 0 2px 12px rgba(26,21,16,0.06);
         }
 
         .typing-bubble span {
           width: 4px; height: 4px;
           background: var(--gold);
-          border-radius: 50%; opacity: 0.25;
+          border-radius: 50%; opacity: 0.3;
           animation: blink 1.3s ease-in-out infinite;
         }
         .typing-bubble span:nth-child(2) { animation-delay: 0.18s; }
         .typing-bubble span:nth-child(3) { animation-delay: 0.36s; }
 
         @keyframes blink {
-          0%,80%,100% { opacity: 0.25; transform: scaleY(1); }
-          40%          { opacity: 1;    transform: scaleY(1.4); }
+          0%,80%,100% { opacity: 0.3; transform: scaleY(1); }
+          40%          { opacity: 1;  transform: scaleY(1.35); }
         }
 
+        /* ── SUGGESTIONS ── */
         .suggestions {
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          margin-bottom: 12px;
+          gap: 5px;
+          margin-bottom: 10px;
           animation: rise 0.5s 0.08s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .suggestion {
           background: transparent;
-          border: 1px solid var(--line);
-          border-left: 2px solid rgba(176,144,80,0.45);
+          border: 1px solid rgba(168,134,74,0.2);
+          border-left: 2px solid rgba(168,134,74,0.5);
           border-radius: 0 6px 6px 0;
           color: var(--ink-3);
           font-family: 'Outfit', sans-serif;
@@ -301,17 +347,18 @@ export default function Home() {
           text-align: left;
           width: fit-content;
           max-width: 88%;
-          transition: background 0.15s, color 0.15s, border-color 0.15s;
+          transition: all 0.15s;
           outline: none;
         }
 
         .suggestion:hover {
           background: var(--ink-2);
-          color: #f0ece4;
+          color: #f0ebe0;
           border-color: var(--ink-2);
-          border-left-color: var(--gold);
+          border-left-color: var(--gold-lt);
         }
 
+        /* ── INPUT ── */
         .input-area {
           flex-shrink: 0;
           background: var(--bg);
@@ -322,7 +369,7 @@ export default function Home() {
         .input-area::before {
           content: '';
           position: absolute;
-          top: -24px; left: 0; right: 0; height: 24px;
+          top: -28px; left: 0; right: 0; height: 28px;
           background: linear-gradient(to bottom, transparent, var(--bg));
           pointer-events: none;
         }
@@ -332,15 +379,16 @@ export default function Home() {
           align-items: center;
           gap: 8px;
           background: var(--surface);
-          border: 1px solid var(--line);
+          border: 1px solid rgba(168,134,74,0.2);
           border-radius: var(--r);
           padding: 6px 6px 6px 16px;
           transition: border-color 0.2s, box-shadow 0.2s;
+          box-shadow: 0 1px 4px rgba(26,21,16,0.05);
         }
 
         .input-row:focus-within {
-          border-color: rgba(176,144,80,0.5);
-          box-shadow: 0 0 0 3px rgba(176,144,80,0.08);
+          border-color: rgba(168,134,74,0.5);
+          box-shadow: 0 0 0 3px rgba(168,134,74,0.08), 0 1px 4px rgba(26,21,16,0.05);
         }
 
         .input-field {
@@ -353,18 +401,18 @@ export default function Home() {
           letter-spacing: 0.01em;
         }
 
-        .input-field::placeholder { color: var(--muted); }
+        .input-field::placeholder { color: var(--muted); font-style: italic; }
 
         .send-btn {
           width: 36px; height: 36px;
           border-radius: 7px;
-          border: 1px solid var(--line);
+          border: 1px solid rgba(168,134,74,0.25);
           background: transparent;
           color: var(--muted);
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          transition: background 0.18s, border-color 0.18s, color 0.18s;
+          transition: all 0.18s;
           outline: none;
         }
 
@@ -375,68 +423,65 @@ export default function Home() {
         }
 
         .send-btn:disabled { opacity: 0.3; cursor: default; }
-        .send-btn svg { width: 15px; height: 15px; fill: currentColor; }
+        .send-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
+        /* ── FOOTER ── */
         .footer-bar {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 7px;
           margin-top: 8px;
-          padding-bottom: 2px;
-          flex-wrap: wrap;
         }
 
-        .footer-bar .ki-hint {
+        .ki-hint {
           display: flex;
           align-items: center;
           gap: 4px;
-          font-size: 9.5px;
-          font-weight: 400;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--muted);
-          opacity: 0.7;
-        }
-
-        .footer-bar .ki-hint-dot {
-          width: 4px; height: 4px; border-radius: 50%;
-          background: var(--gold); opacity: 0.7; flex-shrink: 0;
-        }
-
-        .footer-bar .sep {
           font-size: 9px;
-          color: var(--muted);
-          opacity: 0.4;
-        }
-
-        .footer-bar a {
-          font-size: 9.5px;
           font-weight: 400;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           color: var(--muted);
-          opacity: 0.55;
+          opacity: 0.6;
+        }
+
+        .ki-hint-dot {
+          width: 4px; height: 4px; border-radius: 50%;
+          background: var(--gold); opacity: 0.7;
+        }
+
+        .footer-sep { font-size: 9px; color: var(--muted); opacity: 0.35; }
+
+        .footer-link {
+          font-size: 9px;
+          font-weight: 400;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--muted);
+          opacity: 0.5;
           text-decoration: none;
           transition: opacity 0.15s;
         }
 
-        .footer-bar a:hover { opacity: 1; }
+        .footer-link:hover { opacity: 0.9; }
       `}</style>
 
       <div className="shell">
         <header className="header">
           <div className="mark">
+            <div className="mark-corner-tl" />
             <div className="mark-inner">LF</div>
           </div>
           <div className="header-meta">
             <div className="header-name">La Fontana di Capri</div>
-            <div className="header-sub">Ristorante &amp; Pizzeria · Neulussheim</div>
+            <div className="header-sub">Ristorante &amp; Pizzeria · Neulußheim</div>
           </div>
           <div className="badge">
             <div className="badge-dot"></div>
             <span className="badge-label">Online</span>
           </div>
+          <div className="header-divider" />
         </header>
 
         <div className="chat">
@@ -489,7 +534,7 @@ export default function Home() {
                   sendMessage();
                 }
               }}
-              placeholder="Ihre Frage..."
+              placeholder="Ihre Frage…"
               autoComplete="off"
             />
             <button
@@ -507,10 +552,10 @@ export default function Home() {
               <span className="ki-hint-dot" />
               KI-gestützter Assistent
             </span>
-            <span className="sep">·</span>
-            <a href="/impressum">Impressum</a>
-            <span className="sep">·</span>
-            <a href="/datenschutz">Datenschutz</a>
+            <span className="footer-sep">·</span>
+            <a href="/impressum" className="footer-link">Impressum</a>
+            <span className="footer-sep">·</span>
+            <a href="/datenschutz" className="footer-link">Datenschutz</a>
           </div>
         </div>
       </div>
