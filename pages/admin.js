@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 
 const STATUS_COLOR = { neu: '#d4860a', bestätigt: '#3a9e5f', abgesagt: '#c0392b', 'no-show': '#7f8c8d' };
 const STATUS_BG    = { neu: '#fff8ed', bestätigt: '#edfbf2', abgesagt: '#fdf0ee', 'no-show': '#f5f5f5' };
+const DAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const DEFAULT_TEMPLATE = { times: ['12:00', '18:00'], cells: {} };
 
 function parseDatum(datum) {
   if (!datum) return null;
@@ -9,11 +11,9 @@ function parseDatum(datum) {
   if (p.length !== 3) return null;
   return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
 }
-
 function fmtDate(d) {
   return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
 }
-
 function todayStr() { return fmtDate(new Date()); }
 function tomorrowStr() { const d = new Date(); d.setDate(d.getDate()+1); return fmtDate(d); }
 function weekRange() {
@@ -28,7 +28,6 @@ function Calendar({ reservations, onSelectDay }) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth());
   const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-  const DAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 
   const countMap = useMemo(() => {
     const map = {};
@@ -58,7 +57,7 @@ function Calendar({ reservations, onSelectDay }) {
         <button onClick={next} style={{background:'none',border:'1px solid #e4ddd4',borderRadius:6,padding:'4px 12px',cursor:'pointer',fontSize:14}}>→</button>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:6}}>
-        {DAYS.map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#9e8f7e',fontWeight:500,padding:'4px 0'}}>{d}</div>)}
+        {['Mo','Di','Mi','Do','Fr','Sa','So'].map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#9e8f7e',fontWeight:500,padding:'4px 0'}}>{d}</div>)}
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
         {cells.map((d,i) => {
@@ -101,13 +100,12 @@ export default function Admin() {
   const [dateFilter, setDateFilter]     = useState('alle');
   const [calDay, setCalDay]             = useState(null);
 
-  const [slots, setSlots]         = useState([]);
-  const [newDatum, setNewDatum]   = useState('');
-  const [newTime, setNewTime]     = useState('');
-  const [newCount, setNewCount]   = useState('');
-  const [recurring, setRecurring] = useState(false);
-  const [repeatWeeks, setRepeatWeeks] = useState('4');
-  const [saving, setSaving]       = useState(false);
+  const [slots, setSlots]               = useState([]);
+  const [template, setTemplate]         = useState(DEFAULT_TEMPLATE);
+  const [weeksAhead, setWeeksAhead]     = useState(4);
+  const [generating, setGenerating]     = useState(false);
+  const [genResult, setGenResult]       = useState(null);
+  const [newTimeInput, setNewTimeInput] = useState('');
 
   useEffect(() => {
     const saved = localStorage.getItem('riq_pw');
@@ -115,8 +113,19 @@ export default function Admin() {
   }, []);
 
   useEffect(() => {
+    try {
+      const t = localStorage.getItem('riq_template');
+      if (t) setTemplate(JSON.parse(t));
+    } catch(e) {}
+  }, []);
+
+  useEffect(() => {
     if (authed && password) { loadReservations(password); loadSlots(); }
   }, [authed, password]);
+
+  useEffect(() => {
+    localStorage.setItem('riq_template', JSON.stringify(template));
+  }, [template]);
 
   function login() {
     fetch(`/api/reservations?password=${encodeURIComponent(authInput)}`)
@@ -150,31 +159,66 @@ export default function Admin() {
     setReservations(prev => prev.map(r => r.id===id ? {...r, status} : r));
   }
 
-  async function saveSlot() {
-    if (!newDatum||!newTime||!newCount) return;
-    setSaving(true);
-    const weeks = recurring ? (parseInt(repeatWeeks)||1) : 1;
-    const base  = new Date(newDatum+'T00:00:00');
-    for (let i=0; i<weeks; i++) {
-      const d = new Date(base); d.setDate(d.getDate()+i*7);
-      const datum = fmtDate(d);
-      await fetch('/api/availability', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({datum, uhrzeit:newTime, tische_frei:parseInt(newCount), password}),
-      });
-    }
-    await loadSlots();
-    setNewDatum(''); setNewTime(''); setNewCount(''); setRecurring(false); setRepeatWeeks('4');
-    setSaving(false);
-  }
-
   async function deleteSlot(id) {
     await fetch('/api/availability', { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id,password}) });
     setSlots(prev => prev.filter(s => s.id!==id));
   }
 
+  function toggleCell(day, time) {
+    const key = `${day}-${time}`;
+    setTemplate(prev => {
+      const cells = {...prev.cells};
+      if (cells[key]!==undefined) { delete cells[key]; } else { cells[key] = 4; }
+      return {...prev, cells};
+    });
+  }
+
+  function setCellCount(day, time, val) {
+    const key = `${day}-${time}`;
+    setTemplate(prev => ({ ...prev, cells: {...prev.cells, [key]: parseInt(val)||0} }));
+  }
+
+  function addTime() {
+    if (!newTimeInput || template.times.includes(newTimeInput)) return;
+    setTemplate(prev => ({ ...prev, times: [...prev.times, newTimeInput].sort() }));
+    setNewTimeInput('');
+  }
+
+  function removeTime(time) {
+    setTemplate(prev => {
+      const cells = {...prev.cells};
+      DAYS.forEach(d => delete cells[`${d}-${time}`]);
+      return { times: prev.times.filter(t => t!==time), cells };
+    });
+  }
+
+  async function generateSlots() {
+    setGenerating(true); setGenResult(null);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dow = today.getDay();
+    const mon = new Date(today); mon.setDate(today.getDate()+(dow===0?-6:1-dow));
+    let count = 0;
+    for (let w=0; w<weeksAhead; w++) {
+      for (let d=0; d<7; d++) {
+        const date = new Date(mon); date.setDate(mon.getDate()+w*7+d);
+        if (date<today) continue;
+        for (const time of template.times) {
+          const key = `${DAYS[d]}-${time}`;
+          if (template.cells[key]!==undefined) {
+            await fetch('/api/availability', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({datum:fmtDate(date), uhrzeit:time, tische_frei:template.cells[key], password}),
+            });
+            count++;
+          }
+        }
+      }
+    }
+    await loadSlots(); setGenerating(false); setGenResult(count);
+  }
+
   const td = todayStr(); const tm = tomorrowStr(); const wr = weekRange();
-  const todayRes    = reservations.filter(r => r.datum===td);
+  const todayRes     = reservations.filter(r => r.datum===td);
   const pendingCount = reservations.filter(r => r.status==='neu').length;
   const neuCount     = pendingCount;
 
@@ -198,6 +242,10 @@ export default function Admin() {
     if (dateFilter==='tag'&&calDay) return r.datum===calDay;
     return true;
   });
+
+  const today0 = new Date(); today0.setHours(0,0,0,0);
+  const futureSlots = slots.filter(s => { const d=parseDatum(s.datum); return d&&d>=today0; });
+  const pastSlots   = slots.filter(s => { const d=parseDatum(s.datum); return d&&d<today0; });
 
   function ResCard({r}) {
     return (
@@ -250,9 +298,9 @@ export default function Admin() {
 
       <div style={{background:'#fff',borderBottom:'1px solid #ece6dd',padding:'0 24px',display:'flex',overflowX:'auto'}}>
         {[
-          {key:'overview',  label:'Übersicht'},
+          {key:'overview',     label:'Übersicht'},
           {key:'reservations', label:`Reservierungen${neuCount>0?` (${neuCount})`:''}`},
-          {key:'calendar',  label:'Kalender'},
+          {key:'calendar',     label:'Kalender'},
           {key:'availability', label:'Verfügbarkeit'},
         ].map(t=>(
           <button key={t.key} onClick={()=>setTab(t.key)} style={{
@@ -269,9 +317,9 @@ export default function Admin() {
         {tab==='overview' && <>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:20}}>
             {[
-              {label:'Heute',   value:todayRes.length,  sub:'Reservierungen',          color:'#b09050'},
-              {label:'Offen',   value:pendingCount,      sub:'Warten auf Bestätigung', color:'#d4860a'},
-              {label:'Gesamt',  value:reservations.length, sub:'Alle Buchungen',       color:'#3a9e5f'},
+              {label:'Heute',  value:todayRes.length,    sub:'Reservierungen',         color:'#b09050'},
+              {label:'Offen',  value:pendingCount,        sub:'Warten auf Bestätigung', color:'#d4860a'},
+              {label:'Gesamt', value:reservations.length, sub:'Alle Buchungen',         color:'#3a9e5f'},
             ].map(s=>(
               <div key={s.label} style={{background:'#fff',borderRadius:10,padding:'16px 20px',boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
                 <div style={{fontSize:28,fontWeight:700,color:s.color,marginBottom:2}}>{s.value}</div>
@@ -280,7 +328,6 @@ export default function Admin() {
               </div>
             ))}
           </div>
-
           {nextRes && (
             <div style={{background:'#fff',borderRadius:10,padding:'16px 20px',marginBottom:20,boxShadow:'0 1px 6px rgba(0,0,0,0.05)',borderLeft:'3px solid #b09050'}}>
               <div style={{fontSize:11,color:'#9e8f7e',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.1em'}}>Nächste Reservierung</div>
@@ -289,7 +336,6 @@ export default function Admin() {
               {nextRes.sonderwunsch && <div style={{fontSize:12,color:'#b09050',marginTop:6}}>✦ {nextRes.sonderwunsch}</div>}
             </div>
           )}
-
           <div style={{fontSize:14,fontWeight:600,color:'#1a1612',marginBottom:12}}>Heute — {td}</div>
           {todayRes.length===0
             ? <p style={{color:'#9e8f7e',fontSize:14}}>Keine Reservierungen heute.</p>
@@ -330,57 +376,130 @@ export default function Admin() {
         )}
 
         {tab==='availability' && <>
-          <div style={{background:'#fff',borderRadius:10,padding:'20px 24px',marginBottom:20,boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
-            <div style={{fontSize:14,fontWeight:600,color:'#1a1612',marginBottom:16}}>Zeitslot hinzufügen</div>
-            <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'flex-end'}}>
-              <div>
-                <div style={{fontSize:11,color:'#9e8f7e',marginBottom:4}}>Datum</div>
-                <input type="date" value={newDatum} onChange={e=>setNewDatum(e.target.value)}
-                  style={{padding:'8px 12px',border:'1px solid #e4ddd4',borderRadius:8,fontSize:13,outline:'none',fontFamily:'inherit'}}/>
-              </div>
-              <div>
-                <div style={{fontSize:11,color:'#9e8f7e',marginBottom:4}}>Uhrzeit</div>
-                <input type="time" value={newTime} onChange={e=>setNewTime(e.target.value)}
-                  style={{padding:'8px 12px',border:'1px solid #e4ddd4',borderRadius:8,fontSize:13,outline:'none',fontFamily:'inherit'}}/>
-              </div>
-              <div>
-                <div style={{fontSize:11,color:'#9e8f7e',marginBottom:4}}>Freie Tische</div>
-                <input type="number" min="0" max="99" value={newCount} onChange={e=>setNewCount(e.target.value)} placeholder="z.B. 4"
-                  style={{padding:'8px 12px',border:'1px solid #e4ddd4',borderRadius:8,fontSize:13,width:80,outline:'none',fontFamily:'inherit'}}/>
-              </div>
-              <button onClick={saveSlot} disabled={saving||!newDatum||!newTime||!newCount}
-                style={{padding:'8px 22px',background:'#b09050',color:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:500,cursor:'pointer',opacity:(!newDatum||!newTime||!newCount)?0.5:1,fontFamily:'inherit'}}>
-                {saving?'Speichern…':'Speichern'}
-              </button>
+
+          {/* Wochenplan */}
+          <div style={{background:'#fff',borderRadius:10,padding:'20px 24px',marginBottom:16,boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+              <div style={{fontSize:14,fontWeight:600,color:'#1a1612'}}>Wochenplan</div>
+              <button onClick={()=>setTemplate(DEFAULT_TEMPLATE)} style={{fontSize:11,color:'#9e8f7e',background:'none',border:'none',cursor:'pointer',padding:0,fontFamily:'inherit'}}>Zurücksetzen</button>
             </div>
-            <div style={{marginTop:12,display:'flex',alignItems:'center',gap:8}}>
-              <label style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#5a5245',cursor:'pointer'}}>
-                <input type="checkbox" checked={recurring} onChange={e=>setRecurring(e.target.checked)} style={{cursor:'pointer'}}/>
-                Wöchentlich wiederholen für
-              </label>
-              {recurring && <>
-                <input type="number" min="1" max="52" value={repeatWeeks} onChange={e=>setRepeatWeeks(e.target.value)}
-                  style={{width:55,padding:'4px 8px',border:'1px solid #e4ddd4',borderRadius:6,fontSize:13,outline:'none',fontFamily:'inherit'}}/>
-                <span style={{fontSize:13,color:'#5a5245'}}>Wochen</span>
-              </>}
+            <div style={{fontSize:12,color:'#9e8f7e',marginBottom:16}}>Zelle anklicken zum Öffnen · Zahl direkt bearbeiten · Wird automatisch gespeichert</div>
+
+            <div style={{overflowX:'auto'}}>
+              <div style={{minWidth:500}}>
+                <div style={{display:'grid',gridTemplateColumns:'60px repeat(7, 1fr)',gap:4,marginBottom:4}}>
+                  <div/>
+                  {DAYS.map(d=><div key={d} style={{textAlign:'center',fontSize:12,fontWeight:500,color:'#9e8f7e',padding:'4px 0'}}>{d}</div>)}
+                </div>
+
+                {template.times.map(time => (
+                  <div key={time} style={{display:'grid',gridTemplateColumns:'60px repeat(7, 1fr)',gap:4,marginBottom:4}}>
+                    <div style={{display:'flex',alignItems:'center',gap:4}}>
+                      <span style={{fontSize:13,fontWeight:500,color:'#5a5245'}}>{time}</span>
+                      <button onClick={()=>removeTime(time)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#c0b8ae',padding:'0 2px',fontFamily:'inherit',lineHeight:1}}>✕</button>
+                    </div>
+                    {DAYS.map(day => {
+                      const key = `${day}-${time}`;
+                      const count = template.cells[key];
+                      const isOpen = count !== undefined;
+                      return (
+                        <div key={day}
+                          onClick={() => !isOpen && toggleCell(day, time)}
+                          style={{
+                            position:'relative', borderRadius:8, padding:'8px 4px',
+                            textAlign:'center', cursor:isOpen?'default':'pointer',
+                            background:isOpen?'#edfbf2':'#f8f7f5',
+                            border:`1px solid ${isOpen?'#3a9e5f':'#e4ddd4'}`,
+                            minHeight:52, display:'flex', alignItems:'center', justifyContent:'center',
+                          }}>
+                          {isOpen ? (
+                            <>
+                              <button onClick={e=>{e.stopPropagation();toggleCell(day,time);}}
+                                style={{position:'absolute',top:2,right:3,background:'none',border:'none',cursor:'pointer',fontSize:10,color:'#9e8f7e',padding:'1px 3px',lineHeight:1,fontFamily:'inherit'}}>✕</button>
+                              <div>
+                                <input type="number" value={count} min={0} max={99}
+                                  onClick={e=>e.stopPropagation()}
+                                  onChange={e=>setCellCount(day,time,e.target.value)}
+                                  style={{width:32,textAlign:'center',border:'none',background:'transparent',fontSize:16,fontWeight:700,color:'#3a9e5f',outline:'none',fontFamily:'inherit'}}/>
+                                <div style={{fontSize:9,color:'#9e8f7e',marginTop:1,lineHeight:1}}>Tische</div>
+                              </div>
+                            </>
+                          ) : (
+                            <span style={{color:'#d0c8be',fontSize:20,lineHeight:1}}>+</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+
+                <div style={{display:'flex',alignItems:'center',gap:8,marginTop:10}}>
+                  <input type="time" value={newTimeInput} onChange={e=>setNewTimeInput(e.target.value)}
+                    style={{padding:'6px 10px',border:'1px solid #e4ddd4',borderRadius:8,fontSize:13,outline:'none',fontFamily:'inherit'}}/>
+                  <button onClick={addTime} disabled={!newTimeInput}
+                    style={{padding:'6px 16px',background:'#f5f0ea',border:'1px solid #e4ddd4',borderRadius:8,fontSize:13,cursor:'pointer',color:'#5a5245',fontFamily:'inherit',opacity:!newTimeInput?0.5:1}}>
+                    + Uhrzeit hinzufügen
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div style={{fontSize:14,fontWeight:600,color:'#1a1612',marginBottom:12}}>Aktuelle Zeitslots</div>
-          {slots.length===0 ? <p style={{color:'#9e8f7e',fontSize:14}}>Noch keine Zeitslots eingetragen.</p>
-            : slots.map(s=>(
-              <div key={s.id} style={{background:'#fff',borderRadius:10,padding:'13px 20px',marginBottom:8,boxShadow:'0 1px 6px rgba(0,0,0,0.05)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
-                  <span style={{fontSize:14,fontWeight:500,color:'#1a1612'}}>{s.datum}</span>
-                  <span style={{fontSize:13,color:'#9e8f7e'}}>·</span>
-                  <span style={{fontSize:14,color:'#5a5245'}}>{s.uhrzeit} Uhr</span>
-                  <span style={{fontSize:12,padding:'2px 10px',borderRadius:12,background:s.tische_frei>0?'#edfbf2':'#fdf0ee',color:s.tische_frei>0?'#3a9e5f':'#c0392b'}}>
-                    {s.tische_frei} {s.tische_frei===1?'Tisch frei':'Tische frei'}
-                  </span>
-                </div>
-                <button onClick={()=>deleteSlot(s.id)} style={{fontSize:12,color:'#9e8f7e',background:'none',border:'1px solid #e4ddd4',borderRadius:6,padding:'4px 12px',cursor:'pointer',fontFamily:'inherit'}}>Löschen</button>
+          {/* Generieren */}
+          <div style={{background:'#fff',borderRadius:10,padding:'20px 24px',marginBottom:16,boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
+            <div style={{fontSize:14,fontWeight:600,color:'#1a1612',marginBottom:12}}>Zeitslots generieren</div>
+            <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+              <span style={{fontSize:13,color:'#5a5245'}}>Für die nächsten</span>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <button onClick={()=>setWeeksAhead(w=>Math.max(1,w-1))}
+                  style={{width:28,height:28,borderRadius:6,border:'1px solid #e4ddd4',background:'#f8f7f5',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit'}}>−</button>
+                <span style={{fontSize:18,fontWeight:600,color:'#1a1612',minWidth:28,textAlign:'center'}}>{weeksAhead}</span>
+                <button onClick={()=>setWeeksAhead(w=>Math.min(52,w+1))}
+                  style={{width:28,height:28,borderRadius:6,border:'1px solid #e4ddd4',background:'#f8f7f5',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit'}}>+</button>
               </div>
-            ))}
+              <span style={{fontSize:13,color:'#5a5245'}}>Wochen generieren</span>
+              <button onClick={generateSlots} disabled={generating||Object.keys(template.cells).length===0}
+                style={{marginLeft:'auto',padding:'9px 28px',background:'#b09050',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:500,cursor:'pointer',fontFamily:'inherit',
+                  opacity:generating||Object.keys(template.cells).length===0?0.6:1}}>
+                {generating?'Läuft…':'Generieren'}
+              </button>
+            </div>
+            {genResult!==null && (
+              <div style={{marginTop:12,fontSize:13,color:'#3a9e5f',background:'#edfbf2',padding:'8px 14px',borderRadius:8}}>
+                ✓ {genResult} Zeitslots erstellt / aktualisiert.
+              </div>
+            )}
+            {Object.keys(template.cells).length===0 && (
+              <div style={{marginTop:10,fontSize:12,color:'#9e8f7e'}}>Zuerst Wochenplan ausfüllen.</div>
+            )}
+          </div>
+
+          {/* Slot-Liste */}
+          <div style={{background:'#fff',borderRadius:10,padding:'20px 24px',boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <div style={{fontSize:14,fontWeight:600,color:'#1a1612'}}>
+                Kommende Slots
+                <span style={{fontSize:12,fontWeight:400,color:'#9e8f7e',marginLeft:8}}>{futureSlots.length} Einträge</span>
+              </div>
+              {pastSlots.length>0 && <span style={{fontSize:12,color:'#c0b8ae'}}>{pastSlots.length} vergangene ausgeblendet</span>}
+            </div>
+            {futureSlots.length===0
+              ? <p style={{color:'#9e8f7e',fontSize:14,margin:0}}>Noch keine zukünftigen Zeitslots. Wochenplan ausfüllen und generieren.</p>
+              : futureSlots.map(s=>(
+                <div key={s.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f0ebe4'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                    <span style={{fontSize:13,fontWeight:500,color:'#1a1612',minWidth:90}}>{s.datum}</span>
+                    <span style={{fontSize:13,color:'#5a5245'}}>{s.uhrzeit} Uhr</span>
+                    <span style={{fontSize:12,padding:'2px 10px',borderRadius:12,background:s.tische_frei>0?'#edfbf2':'#fdf0ee',color:s.tische_frei>0?'#3a9e5f':'#c0392b'}}>
+                      {s.tische_frei} {s.tische_frei===1?'Tisch':'Tische'} frei
+                    </span>
+                  </div>
+                  <button onClick={()=>deleteSlot(s.id)} style={{fontSize:11,color:'#9e8f7e',background:'none',border:'1px solid #e4ddd4',borderRadius:6,padding:'3px 10px',cursor:'pointer',fontFamily:'inherit'}}>Löschen</button>
+                </div>
+              ))
+            }
+          </div>
+
         </>}
 
       </div>
