@@ -38,11 +38,11 @@ function waLink(phone, name, datum, uhrzeit) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { name, datum, uhrzeit, personen, telefon, email } = req.body;
+  const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch } = req.body;
 
   const dbRes = await db('reservations', {
     method: 'POST',
-    body: JSON.stringify({ name, datum, uhrzeit, personen, telefon, email: email || null, status: 'neu' }),
+    body: JSON.stringify({ name, datum, uhrzeit, personen, telefon, email: email || null, sonderwunsch: sonderwunsch || null, status: 'neu' }),
   });
 
   if (!dbRes.ok) {
@@ -98,6 +98,7 @@ td:first-child{color:#9e8f7e;width:110px}
     <tr><td>Personen</td><td>${personen}</td></tr>
     <tr><td>Telefon</td><td>${telefon}</td></tr>
     ${emailRow}
+    ${sonderwunschRow}
   </table>
   <a href="${confirmUrl}" class="btn confirm">&#10003; Bestaetigen</a>
   <a href="${declineUrl}" class="btn decline">&#10007; Absagen</a>
