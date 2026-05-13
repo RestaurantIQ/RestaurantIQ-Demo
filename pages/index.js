@@ -66,12 +66,12 @@ export default function Home() {
         if (reserveRes.ok) {
           finalMessages = [...finalMessages, {
             role: 'assistant',
-            content: 'Ihre Reservierung ist eingegangen. Das Restaurant wird sich bei Rückfragen unter Ihrer Telefonnummer melden. Vielen Dank.'
+            content: 'Ihre Anfrage ist bei uns eingegangen. Das Restaurant prüft die Verfügbarkeit und meldet sich in Kürze bei Ihnen – Sie erhalten eine Bestätigung per Telefon oder WhatsApp.'
           }];
         } else {
           finalMessages = [...finalMessages, {
             role: 'assistant',
-            content: 'Die Reservierung konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: 06205 37008.'
+            content: 'Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: 06205 37008.'
           }];
         }
       } catch (e) {
@@ -209,7 +209,6 @@ export default function Home() {
           padding: 20px 18px 8px;
           display: flex;
           flex-direction: column;
-          justify-content: flex-start;
           gap: 0;
           scroll-behavior: smooth;
           scrollbar-width: none;
