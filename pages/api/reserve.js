@@ -1,3 +1,5 @@
+import nodemailer from 'nodemailer';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 const BASE_URL     = process.env.NEXT_PUBLIC_BASE_URL || 'https://restaurant-iq-demo.vercel.app';
@@ -11,6 +13,16 @@ function db(path, options = {}) {
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
       ...(options.headers || {}),
+    },
+  });
+}
+
+function getMailer() {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
   });
 }
@@ -52,18 +64,17 @@ export default async function handler(req, res) {
     });
   }
 
-  if (process.env.RESEND_API_KEY && id) {
-    const token      = encodeURIComponent(process.env.ADMIN_PASSWORD);
-    const confirmUrl = `${BASE_URL}/api/confirm?id=${id}&action=bestätigt&token=${token}`;
-    const declineUrl = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${token}`;
+  if (process.env.GMAIL_USER && id) {
+    const adminToken  = encodeURIComponent(process.env.ADMIN_PASSWORD);
+    const confirmUrl  = `${BASE_URL}/api/confirm?id=${id}&action=best%C3%A4tigt&token=${adminToken}`;
+    const declineUrl  = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${adminToken}`;
     const whatsappUrl = waLink(telefon, name, datum, uhrzeit);
-    const emailRow = email ? `<tr><td>E-Mail</td><td>${email}</td></tr>` : '';
-    const guestNote = email
-      ? `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">✓ Gast erhält automatisch eine Bestätigungs-Mail.</p>`
+    const emailRow    = email ? `<tr><td>E-Mail</td><td>${email}</td></tr>` : '';
+    const guestNote   = email
+      ? `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">&#10003; Gast erhaelt automatisch eine Bestaetigunsmail.</p>`
       : `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">Kein E-Mail-Kontakt – Gast per WhatsApp benachrichtigen.</p>`;
 
-    const html = `
-<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
+    const html = `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
 body{font-family:sans-serif;background:#f5f0ea;margin:0;padding:24px}
 .card{background:#fff;border-radius:12px;padding:32px;max-width:480px;margin:0 auto}
 h2{font-size:18px;color:#1a1612;margin:0 0 4px}
@@ -79,7 +90,7 @@ td:first-child{color:#9e8f7e;width:110px}
 </style></head><body>
 <div class="card">
   <h2>Neue Reservierungsanfrage</h2>
-  <div class="sub">La Fontana di Capri · RestaurantIQ</div>
+  <div class="sub">La Fontana di Capri &middot; RestaurantIQ</div>
   <table>
     <tr><td>Name</td><td>${name}</td></tr>
     <tr><td>Datum</td><td>${datum}</td></tr>
@@ -88,26 +99,18 @@ td:first-child{color:#9e8f7e;width:110px}
     <tr><td>Telefon</td><td>${telefon}</td></tr>
     ${emailRow}
   </table>
-  <a href="${confirmUrl}" class="btn confirm">✓ Bestätigen</a>
-  <a href="${declineUrl}" class="btn decline">✗ Absagen</a>
+  <a href="${confirmUrl}" class="btn confirm">&#10003; Bestaetigen</a>
+  <a href="${declineUrl}" class="btn decline">&#10007; Absagen</a>
   ${guestNote}
-  <a href="${whatsappUrl}" class="wa">💬 Gast per WhatsApp benachrichtigen</a>
+  <a href="${whatsappUrl}" class="wa">&#128172; Gast per WhatsApp benachrichtigen</a>
   <div class="footer">Powered by RestaurantIQ</div>
-</div>
-</body></html>`;
+</div></body></html>`;
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'RestaurantIQ <onboarding@resend.dev>',
-        to: 'team.restaurantiq@gmail.com',
-        subject: `Neue Anfrage: ${name} – ${datum} um ${uhrzeit} (${personen} Pers.)`,
-        html,
-      }),
+    await getMailer().sendMail({
+      from: `"RestaurantIQ" <${process.env.GMAIL_USER}>`,
+      to: process.env.GMAIL_USER,
+      subject: `Neue Anfrage: ${name} - ${datum} um ${uhrzeit} (${personen} Pers.)`,
+      html,
     }).catch(e => console.error('Email error:', e));
   }
 
