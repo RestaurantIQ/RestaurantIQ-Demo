@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 
-const STATUS_COLOR = { neu: '#d4860a', bestätigt: '#3a9e5f', abgesagt: '#c0392b', 'no-show': '#7f8c8d' };
-const STATUS_BG    = { neu: '#fff8ed', bestätigt: '#edfbf2', abgesagt: '#fdf0ee', 'no-show': '#f5f5f5' };
+const STATUS_COLOR = { neu: '#d4860a', bestätigt: '#3a9e5f', abgesagt: '#c0392b', 'no-show': '#6e6e73' };
+const STATUS_BG    = { neu: '#fff8ed', bestätigt: '#edfbf2', abgesagt: '#fdf0ee', 'no-show': '#f5f5f7' };
 const DAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 const DEFAULT_TEMPLATE = { times: ['12:00', '18:00'], cells: {} };
 
@@ -31,14 +31,10 @@ function fmtDayLong(dateStr) {
   return `${weekdays[d.getDay()]}, ${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function DayModal({ dateStr, slots, reservations, onDeleteSlot, onDeleteAll, onViewReservations, onClose }) {
+function DayModal({ dateStr, slots, reservations, onDeleteSlot, onViewReservations, onClose }) {
   const daySlots = slots.filter(s => s.datum === dateStr);
   const dayRes   = reservations.filter(r => r.datum === dateStr);
   const [deleting, setDeleting] = useState(false);
-
-  async function handleDeleteSlot(id) {
-    await onDeleteSlot(id);
-  }
 
   async function handleDeleteAll() {
     setDeleting(true);
@@ -48,48 +44,44 @@ function DayModal({ dateStr, slots, reservations, onDeleteSlot, onDeleteAll, onV
 
   return (
     <div onClick={onClose} style={{
-      position:'fixed', inset:0, background:'rgba(26,21,16,0.45)', zIndex:1000,
+      position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', zIndex:1000,
       display:'flex', alignItems:'center', justifyContent:'center', padding:16,
     }}>
       <div onClick={e=>e.stopPropagation()} style={{
-        background:'#fff', borderRadius:14, width:'100%', maxWidth:400,
-        boxShadow:'0 8px 48px rgba(26,21,16,0.18)', overflow:'hidden',
+        background:'#fff', borderRadius:16, width:'100%', maxWidth:400,
+        boxShadow:'0 20px 60px rgba(0,0,0,0.15)', overflow:'hidden',
       }}>
-        {/* Header */}
-        <div style={{padding:'20px 24px 16px', borderBottom:'1px solid #f0ebe4'}}>
+        <div style={{padding:'20px 24px 16px', borderBottom:'1px solid #e0e0e5'}}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
             <div>
-              <div style={{fontSize:11, color:'#9e8f7e', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4}}>Tagesübersicht</div>
-              <div style={{fontSize:16, fontWeight:600, color:'#1a1612'}}>{fmtDayLong(dateStr)}</div>
+              <div style={{fontSize:11, color:'#6e6e73', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:4, fontWeight:500}}>Tagesübersicht</div>
+              <div style={{fontSize:16, fontWeight:600, color:'#1d1d1f'}}>{fmtDayLong(dateStr)}</div>
             </div>
-            <button onClick={onClose} style={{background:'none', border:'none', cursor:'pointer', fontSize:18, color:'#9e8f7e', padding:'0 0 0 8px', lineHeight:1}}>✕</button>
+            <button onClick={onClose} style={{background:'none', border:'none', cursor:'pointer', fontSize:18, color:'#6e6e73', padding:'0 0 0 8px', lineHeight:1}}>✕</button>
           </div>
         </div>
 
-        {/* Verfügbarkeit */}
-        <div style={{padding:'16px 24px', borderBottom:'1px solid #f0ebe4'}}>
-          <div style={{fontSize:11, fontWeight:500, color:'#9e8f7e', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:10}}>Verfügbarkeit</div>
-
+        <div style={{padding:'16px 24px', borderBottom:'1px solid #e0e0e5'}}>
+          <div style={{fontSize:11, fontWeight:500, color:'#6e6e73', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:10}}>Verfügbarkeit</div>
           {daySlots.length === 0 ? (
-            <div style={{fontSize:13, color:'#c0b8ae', fontStyle:'italic'}}>Keine Zeitslots — Tag ist gesperrt</div>
+            <div style={{fontSize:13, color:'#6e6e73', fontStyle:'italic'}}>Keine Zeitslots — Tag ist gesperrt</div>
           ) : (
             <>
               {daySlots.map(s => (
-                <div key={s.id} style={{display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #f8f5f0'}}>
+                <div key={s.id} style={{display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #f5f5f7'}}>
                   <div style={{display:'flex', alignItems:'center', gap:10}}>
-                    <span style={{fontSize:14, fontWeight:500, color:'#1a1612', minWidth:52}}>{s.uhrzeit} Uhr</span>
+                    <span style={{fontSize:14, fontWeight:500, color:'#1d1d1f', minWidth:52}}>{s.uhrzeit} Uhr</span>
                     <span style={{fontSize:12, padding:'2px 9px', borderRadius:10, background:s.tische_frei>0?'#edfbf2':'#fdf0ee', color:s.tische_frei>0?'#3a9e5f':'#c0392b'}}>
                       {s.tische_frei} {s.tische_frei===1?'Tisch':'Tische'} frei
                     </span>
                   </div>
-                  <button onClick={()=>handleDeleteSlot(s.id)} style={{
+                  <button onClick={()=>onDeleteSlot(s.id)} style={{
                     fontSize:11, color:'#c0392b', background:'none',
                     border:'1px solid #f0d0cc', borderRadius:6, padding:'4px 10px',
                     cursor:'pointer', fontFamily:'inherit',
                   }}>Sperren</button>
                 </div>
               ))}
-
               <button onClick={handleDeleteAll} disabled={deleting} style={{
                 marginTop:12, width:'100%', padding:'9px 0',
                 background:'#fdf0ee', border:'1px solid #f0d0cc',
@@ -97,28 +89,27 @@ function DayModal({ dateStr, slots, reservations, onDeleteSlot, onDeleteAll, onV
                 cursor:'pointer', fontFamily:'inherit', fontWeight:500,
                 opacity: deleting ? 0.6 : 1,
               }}>
-                {deleting ? 'Wird gesperrt…' : '🚫 Ganzen Tag sperren'}
+                {deleting ? 'Wird gesperrt…' : 'Ganzen Tag sperren'}
               </button>
             </>
           )}
         </div>
 
-        {/* Reservierungen */}
         <div style={{padding:'16px 24px'}}>
-          <div style={{fontSize:11, fontWeight:500, color:'#9e8f7e', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:10}}>Reservierungen</div>
+          <div style={{fontSize:11, fontWeight:500, color:'#6e6e73', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:10}}>Reservierungen</div>
           {dayRes.length === 0 ? (
-            <div style={{fontSize:13, color:'#c0b8ae', fontStyle:'italic'}}>Keine Reservierungen an diesem Tag</div>
+            <div style={{fontSize:13, color:'#6e6e73', fontStyle:'italic'}}>Keine Reservierungen an diesem Tag</div>
           ) : (
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-between'}}>
-              <span style={{fontSize:14, color:'#1a1612'}}>
+              <span style={{fontSize:14, color:'#1d1d1f'}}>
                 {dayRes.length} {dayRes.length===1?'Reservierung':'Reservierungen'}
-                {' '}· {dayRes.filter(r=>r.status==='neu').length} offen
+                {' · '}{dayRes.filter(r=>r.status==='neu').length} offen
               </span>
               <button onClick={()=>{ onViewReservations(dateStr); onClose(); }} style={{
-                fontSize:12, color:'#b09050', background:'none',
-                border:'1px solid #e8d9a8', borderRadius:6, padding:'5px 12px',
+                fontSize:12, color:'#1d1d1f', background:'none',
+                border:'1px solid #e0e0e5', borderRadius:6, padding:'5px 12px',
                 cursor:'pointer', fontFamily:'inherit',
-              }}>Anzeigen →</button>
+              }}>Anzeigen</button>
             </div>
           )}
         </div>
@@ -159,14 +150,14 @@ function Calendar({ reservations, slots, onSelectDay }) {
   const td = todayStr();
 
   return (
-    <div style={{background:'#fff',borderRadius:10,padding:20,boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
+    <div style={{background:'#fff',borderRadius:12,padding:20,border:'1px solid #e0e0e5'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-        <button onClick={prev} style={{background:'none',border:'1px solid #e4ddd4',borderRadius:6,padding:'4px 12px',cursor:'pointer',fontSize:14}}>←</button>
-        <span style={{fontSize:15,fontWeight:600,color:'#1a1612'}}>{MONTHS[month]} {year}</span>
-        <button onClick={next} style={{background:'none',border:'1px solid #e4ddd4',borderRadius:6,padding:'4px 12px',cursor:'pointer',fontSize:14}}>→</button>
+        <button onClick={prev} style={{background:'none',border:'1px solid #e0e0e5',borderRadius:8,padding:'6px 14px',cursor:'pointer',fontSize:14,color:'#1d1d1f'}}>←</button>
+        <span style={{fontSize:15,fontWeight:600,color:'#1d1d1f'}}>{MONTHS[month]} {year}</span>
+        <button onClick={next} style={{background:'none',border:'1px solid #e0e0e5',borderRadius:8,padding:'6px 14px',cursor:'pointer',fontSize:14,color:'#1d1d1f'}}>→</button>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:6}}>
-        {['Mo','Di','Mi','Do','Fr','Sa','So'].map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#9e8f7e',fontWeight:500,padding:'4px 0'}}>{d}</div>)}
+        {['Mo','Di','Mi','Do','Fr','Sa','So'].map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#6e6e73',fontWeight:500,padding:'4px 0'}}>{d}</div>)}
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
         {cells.map((d,i) => {
@@ -179,40 +170,42 @@ function Calendar({ reservations, slots, onSelectDay }) {
             <div key={i} onClick={() => onSelectDay(label)}
               style={{
                 padding:'6px 2px', borderRadius:8, textAlign:'center', cursor:'pointer',
-                background: isToday ? '#fdf6e8' : 'transparent',
-                border: isToday ? '1px solid #e8d9a8' : '1px solid transparent',
+                background: isToday ? '#f5f5f7' : 'transparent',
+                border: isToday ? '1px solid #e0e0e5' : '1px solid transparent',
                 transition:'background 0.12s',
               }}
-              onMouseEnter={e=>{ if(!isToday) e.currentTarget.style.background='#faf8f5'; }}
+              onMouseEnter={e=>{ if(!isToday) e.currentTarget.style.background='#f5f5f7'; }}
               onMouseLeave={e=>{ if(!isToday) e.currentTarget.style.background='transparent'; }}
             >
-              <div style={{fontSize:13,color:info?'#1a1612':hasSlot?'#5a5245':'#c0b8ae',fontWeight:info?500:400}}>{d}</div>
+              <div style={{fontSize:13,color:info?'#1d1d1f':hasSlot?'#3d3d3f':'#c7c7cc',fontWeight:info?500:400}}>{d}</div>
               <div style={{display:'flex',justifyContent:'center',gap:2,marginTop:2,minHeight:7}}>
-                {info?.neu>0     && <div style={{width:5,height:5,borderRadius:'50%',background:'#d4860a'}}/>}
+                {info?.neu>0       && <div style={{width:5,height:5,borderRadius:'50%',background:'#d4860a'}}/>}
                 {info?.bestätigt>0 && <div style={{width:5,height:5,borderRadius:'50%',background:'#3a9e5f'}}/>}
-                {hasSlot && !info && <div style={{width:5,height:5,borderRadius:'50%',background:'#e4ddd4'}}/>}
+                {hasSlot && !info  && <div style={{width:5,height:5,borderRadius:'50%',background:'#e0e0e5'}}/>}
               </div>
             </div>
           );
         })}
       </div>
-      <div style={{display:'flex',gap:16,marginTop:12,fontSize:11,color:'#9e8f7e',flexWrap:'wrap'}}>
-        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#d4860a',marginRight:4}}/>Neu</span>
-        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#3a9e5f',marginRight:4}}/>Bestätigt</span>
-        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#e4ddd4',marginRight:4}}/>Verfügbar</span>
-        <span style={{marginLeft:'auto',fontSize:11,color:'#c0b8ae'}}>Auf Tag klicken zum Verwalten</span>
+      <div style={{display:'flex',gap:16,marginTop:12,fontSize:11,color:'#6e6e73',flexWrap:'wrap'}}>
+        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#d4860a',marginRight:4,verticalAlign:'middle'}}/>Neu</span>
+        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#3a9e5f',marginRight:4,verticalAlign:'middle'}}/>Bestätigt</span>
+        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#e0e0e5',marginRight:4,verticalAlign:'middle'}}/>Verfügbar</span>
+        <span style={{marginLeft:'auto',fontSize:11,color:'#6e6e73'}}>Auf Tag klicken zum Verwalten</span>
       </div>
     </div>
   );
 }
 
 export default function Admin() {
-  const [authInput, setAuthInput] = useState('');
-  const [authError, setAuthError] = useState('');
-  const [password, setPassword]   = useState('');
-  const [authed, setAuthed]       = useState(false);
-  const [tab, setTab]             = useState('overview');
+  const [session, setSession]         = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [loginUser, setLoginUser]     = useState('');
+  const [loginPass, setLoginPass]     = useState('');
+  const [loginError, setLoginError]   = useState('');
+  const [loggingIn, setLoggingIn]     = useState(false);
 
+  const [tab, setTab]                   = useState('overview');
   const [reservations, setReservations] = useState([]);
   const [loadingRes, setLoadingRes]     = useState(false);
   const [statusFilter, setStatusFilter] = useState('alle');
@@ -228,38 +221,46 @@ export default function Admin() {
   const [newTimeInput, setNewTimeInput] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('riq_pw');
-    if (saved) { setPassword(saved); setAuthed(true); }
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setSession(data); setAuthChecked(true); })
+      .catch(() => setAuthChecked(true));
   }, []);
 
   useEffect(() => {
-    try {
-      const t = localStorage.getItem('riq_template');
-      if (t) setTemplate(JSON.parse(t));
-    } catch(e) {}
-  }, []);
+    if (session) { loadReservations(); loadSlots(); }
+  }, [session]);
 
   useEffect(() => {
-    if (authed && password) { loadReservations(password); loadSlots(); }
-  }, [authed, password]);
+    try { const t = localStorage.getItem('riq_template'); if (t) setTemplate(JSON.parse(t)); } catch(e) {}
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('riq_template', JSON.stringify(template));
   }, [template]);
 
-  function login() {
-    fetch(`/api/reservations?password=${encodeURIComponent(authInput)}`)
-      .then(r => {
-        if (r.ok) { localStorage.setItem('riq_pw', authInput); setPassword(authInput); setAuthed(true); }
-        else setAuthError('Falsches Passwort.');
-      }).catch(() => setAuthError('Verbindungsfehler.'));
+  async function login() {
+    setLoggingIn(true); setLoginError('');
+    try {
+      const r = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUser, password: loginPass }),
+      });
+      if (r.ok) { const data = await r.json(); setSession(data); }
+      else { const err = await r.json(); setLoginError(err.error || 'Ungültige Zugangsdaten.'); }
+    } catch { setLoginError('Verbindungsfehler.'); }
+    setLoggingIn(false);
   }
 
-  function logout() { localStorage.removeItem('riq_pw'); setAuthed(false); setPassword(''); }
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setSession(null); setReservations([]); setSlots([]);
+  }
 
-  async function loadReservations(pw) {
+  async function loadReservations() {
     setLoadingRes(true);
-    const r = await fetch(`/api/reservations?password=${encodeURIComponent(pw||password)}`);
+    const r = await fetch('/api/reservations');
     const data = await r.json();
     setReservations(Array.isArray(data) ? data : []);
     setLoadingRes(false);
@@ -273,14 +274,17 @@ export default function Admin() {
 
   async function updateStatus(id, status) {
     await fetch('/api/reservations', {
-      method:'PATCH', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({id, status, password}),
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
     });
     setReservations(prev => prev.map(r => r.id===id ? {...r, status} : r));
   }
 
   async function deleteSlot(id) {
-    await fetch('/api/availability', { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id,password}) });
+    await fetch('/api/availability', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
     setSlots(prev => prev.filter(s => s.id!==id));
   }
 
@@ -327,7 +331,7 @@ export default function Admin() {
           if (template.cells[key]!==undefined) {
             await fetch('/api/availability', {
               method:'POST', headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({datum:fmtDate(date), uhrzeit:time, tische_frei:template.cells[key], password}),
+              body: JSON.stringify({datum:fmtDate(date), uhrzeit:time, tische_frei:template.cells[key]}),
             });
             count++;
           }
@@ -340,17 +344,12 @@ export default function Admin() {
   const td = todayStr(); const tm = tomorrowStr(); const wr = weekRange();
   const todayRes     = reservations.filter(r => r.datum===td);
   const pendingCount = reservations.filter(r => r.status==='neu').length;
-  const neuCount     = pendingCount;
 
   const nextRes = useMemo(() => {
     const now = new Date(); now.setHours(0,0,0,0);
     return [...reservations]
       .filter(r => r.status!=='abgesagt' && r.status!=='no-show')
-      .sort((a,b) => {
-        const da=parseDatum(a.datum), db=parseDatum(b.datum);
-        if (!da||!db) return 0;
-        return da-db || a.uhrzeit.localeCompare(b.uhrzeit);
-      })
+      .sort((a,b) => { const da=parseDatum(a.datum), db=parseDatum(b.datum); if (!da||!db) return 0; return da-db || a.uhrzeit.localeCompare(b.uhrzeit); })
       .find(r => { const d=parseDatum(r.datum); return d&&d>=now; });
   }, [reservations]);
 
@@ -369,76 +368,105 @@ export default function Admin() {
 
   function ResCard({r}) {
     return (
-      <div style={{background:'#fff',borderRadius:10,padding:'16px 20px',marginBottom:10,boxShadow:'0 1px 6px rgba(0,0,0,0.05)',borderLeft:`3px solid ${STATUS_COLOR[r.status]||'#ccc'}`}}>
+      <div style={{background:'#fff',borderRadius:10,padding:'16px 20px',marginBottom:8,border:'1px solid #e0e0e5',borderLeft:`3px solid ${STATUS_COLOR[r.status]||'#e0e0e5'}`}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:10}}>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:15,fontWeight:600,color:'#1a1612',marginBottom:3}}>{r.name}</div>
-            <div style={{fontSize:13,color:'#5a5245'}}>{r.datum} · {r.uhrzeit} Uhr · {r.personen} {r.personen===1?'Person':'Personen'}</div>
-            <div style={{fontSize:13,color:'#9e8f7e',marginTop:2}}>{r.telefon}{r.email?` · ${r.email}`:''}</div>
-            {r.sonderwunsch && <div style={{fontSize:12,color:'#b09050',marginTop:5,background:'#fdf6e8',padding:'3px 8px',borderRadius:6,display:'inline-block'}}>✦ {r.sonderwunsch}</div>}
+            <div style={{fontSize:15,fontWeight:600,color:'#1d1d1f',marginBottom:3}}>{r.name}</div>
+            <div style={{fontSize:13,color:'#3d3d3f'}}>{r.datum} · {r.uhrzeit} Uhr · {r.personen} {r.personen===1?'Person':'Personen'}</div>
+            <div style={{fontSize:13,color:'#6e6e73',marginTop:2}}>{r.telefon}{r.email?` · ${r.email}`:''}</div>
+            {r.sonderwunsch && <div style={{fontSize:12,color:'#3d3d3f',marginTop:5,background:'#f5f5f7',padding:'3px 8px',borderRadius:6,display:'inline-block'}}>{r.sonderwunsch}</div>}
           </div>
           <div style={{display:'flex',gap:5,alignItems:'center',flexWrap:'wrap',flexShrink:0}}>
-            <span style={{fontSize:11,padding:'3px 10px',borderRadius:12,background:STATUS_BG[r.status]||'#f5f5f5',color:STATUS_COLOR[r.status]||'#999',fontWeight:500}}>{r.status}</span>
+            <span style={{fontSize:11,padding:'3px 10px',borderRadius:12,background:STATUS_BG[r.status]||'#f5f5f7',color:STATUS_COLOR[r.status]||'#6e6e73',fontWeight:500}}>{r.status}</span>
             {r.status!=='bestätigt' && <button onClick={()=>updateStatus(r.id,'bestätigt')} style={{fontSize:12,padding:'4px 10px',border:'1px solid #3a9e5f',borderRadius:6,background:'#fff',color:'#3a9e5f',cursor:'pointer',fontFamily:'inherit'}}>✓</button>}
             {r.status!=='abgesagt'  && <button onClick={()=>updateStatus(r.id,'abgesagt')}  style={{fontSize:12,padding:'4px 10px',border:'1px solid #c0392b',borderRadius:6,background:'#fff',color:'#c0392b',cursor:'pointer',fontFamily:'inherit'}}>✗</button>}
-            {r.status!=='no-show'   && <button onClick={()=>updateStatus(r.id,'no-show')} title="No-Show" style={{fontSize:12,padding:'4px 10px',border:'1px solid #9e8f7e',borderRadius:6,background:'#fff',color:'#9e8f7e',cursor:'pointer',fontFamily:'inherit'}}>–</button>}
+            {r.status!=='no-show'   && <button onClick={()=>updateStatus(r.id,'no-show')} style={{fontSize:12,padding:'4px 10px',border:'1px solid #e0e0e5',borderRadius:6,background:'#fff',color:'#6e6e73',cursor:'pointer',fontFamily:'inherit'}}>–</button>}
           </div>
         </div>
       </div>
     );
   }
 
-  if (!authed) return (
-    <div style={{minHeight:'100vh',background:'#f5f0ea',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Outfit',sans-serif"}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');`}</style>
-      <div style={{background:'#fff',borderRadius:14,padding:'40px 36px',width:340,boxShadow:'0 4px 32px rgba(0,0,0,0.08)'}}>
-        <div style={{fontSize:22,fontWeight:600,color:'#1a1612',marginBottom:4}}>RestaurantIQ</div>
-        <div style={{fontSize:13,color:'#9e8f7e',marginBottom:28}}>Admin · La Fontana di Capri</div>
-        <input type="password" placeholder="Passwort" value={authInput}
-          onChange={e=>setAuthInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}
-          style={{width:'100%',padding:'10px 14px',border:'1px solid #e4ddd4',borderRadius:8,fontSize:14,outline:'none',boxSizing:'border-box',marginBottom:10,fontFamily:'inherit'}}/>
-        {authError && <div style={{color:'#c0392b',fontSize:13,marginBottom:10}}>{authError}</div>}
-        <button onClick={login} style={{width:'100%',padding:11,background:'#b09050',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>Einloggen</button>
+  const FONT = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}input:focus{outline:none;border-color:#1d1d1f !important}@keyframes spin{to{transform:rotate(360deg)}}`;
+
+  // LOADING
+  if (!authChecked) return (
+    <div style={{minHeight:'100vh',background:'#f5f5f7',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Inter',-apple-system,sans-serif"}}>
+      <style>{FONT}</style>
+      <div style={{width:24,height:24,border:'2px solid #e0e0e5',borderTop:'2px solid #1d1d1f',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>
+    </div>
+  );
+
+  // LOGIN
+  if (!session) return (
+    <div style={{minHeight:'100vh',background:'#f5f5f7',display:'flex',alignItems:'center',justifyContent:'center',padding:16,fontFamily:"'Inter',-apple-system,sans-serif"}}>
+      <style>{FONT}</style>
+      <div style={{background:'#fff',borderRadius:20,padding:'40px 36px',width:'100%',maxWidth:360,boxShadow:'0 4px 40px rgba(0,0,0,0.08)',border:'1px solid #e0e0e5'}}>
+        <div style={{marginBottom:32}}>
+          <div style={{fontSize:18,fontWeight:700,color:'#1d1d1f',letterSpacing:'-0.02em',marginBottom:4}}>RestaurantIQ</div>
+          <div style={{fontSize:13,color:'#6e6e73',fontWeight:300}}>Admin-Bereich</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:500,color:'#6e6e73',letterSpacing:'0.05em',textTransform:'uppercase',marginBottom:6}}>Benutzername</div>
+            <input type="text" autoComplete="username" value={loginUser}
+              onChange={e=>setLoginUser(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}
+              style={{width:'100%',padding:'11px 14px',border:'1px solid #e0e0e5',borderRadius:8,fontSize:14,fontWeight:300,fontFamily:'inherit',color:'#1d1d1f',transition:'border-color 0.15s'}}/>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:500,color:'#6e6e73',letterSpacing:'0.05em',textTransform:'uppercase',marginBottom:6}}>Passwort</div>
+            <input type="password" autoComplete="current-password" value={loginPass}
+              onChange={e=>setLoginPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}
+              style={{width:'100%',padding:'11px 14px',border:'1px solid #e0e0e5',borderRadius:8,fontSize:14,fontWeight:300,fontFamily:'inherit',color:'#1d1d1f',transition:'border-color 0.15s'}}/>
+          </div>
+          {loginError && <div style={{fontSize:13,color:'#c0392b',padding:'8px 12px',background:'#fdf0ee',borderRadius:8}}>{loginError}</div>}
+          <button onClick={login} disabled={loggingIn||!loginUser||!loginPass} style={{
+            width:'100%',padding:'12px',marginTop:4,background:'#1d1d1f',color:'#fff',
+            border:'none',borderRadius:10,fontSize:14,fontWeight:500,cursor:'pointer',fontFamily:'inherit',
+            opacity:loggingIn||!loginUser||!loginPass?0.4:1,transition:'opacity 0.15s',
+          }}>{loggingIn ? 'Einloggen…' : 'Einloggen'}</button>
+        </div>
+        <div style={{marginTop:24,textAlign:'center',fontSize:11,color:'#6e6e73'}}>Powered by RestaurantIQ</div>
       </div>
     </div>
   );
 
+  // DASHBOARD
   return (
-    <div style={{minHeight:'100vh',background:'#f5f0ea',fontFamily:"'Outfit',sans-serif"}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');*{box-sizing:border-box}`}</style>
+    <div style={{minHeight:'100vh',background:'#f5f5f7',fontFamily:"'Inter',-apple-system,sans-serif"}}>
+      <style>{FONT}</style>
 
       {dayModal && (
-        <DayModal
-          dateStr={dayModal}
-          slots={slots}
-          reservations={reservations}
+        <DayModal dateStr={dayModal} slots={slots} reservations={reservations}
           onDeleteSlot={deleteSlot}
-          onDeleteAll={async () => {}}
           onViewReservations={day => { setCalDay(day); setDateFilter('tag'); setTab('reservations'); }}
-          onClose={() => setDayModal(null)}
-        />
+          onClose={() => setDayModal(null)}/>
       )}
 
-      <div style={{background:'#fff',borderBottom:'1px solid #ece6dd',padding:'0 24px',display:'flex',alignItems:'center',justifyContent:'space-between',height:56}}>
-        <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <span style={{fontSize:15,fontWeight:600,color:'#1a1612'}}>RestaurantIQ</span>
-          <span style={{fontSize:12,color:'#b09050',background:'#fdf6e8',padding:'2px 10px',borderRadius:20,border:'1px solid #e8d9a8'}}>La Fontana di Capri</span>
-          {pendingCount>0 && <span style={{fontSize:11,background:'#c0392b',color:'#fff',borderRadius:20,padding:'2px 8px',fontWeight:600}}>{pendingCount} offen</span>}
+      {/* NAV */}
+      <div style={{background:'#1d1d1f',padding:'0 24px',display:'flex',alignItems:'center',justifyContent:'space-between',height:56,gap:12}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,minWidth:0}}>
+          <span style={{fontSize:15,fontWeight:600,color:'#fff',letterSpacing:'-0.01em',flexShrink:0}}>RestaurantIQ</span>
+          <span style={{fontSize:12,color:'rgba(255,255,255,0.6)',background:'rgba(255,255,255,0.1)',padding:'3px 10px',borderRadius:999,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:200}}>
+            {session.restaurantName}
+          </span>
+          {pendingCount>0 && <span style={{fontSize:11,background:'#c0392b',color:'#fff',borderRadius:999,padding:'2px 8px',fontWeight:600,flexShrink:0}}>{pendingCount} offen</span>}
         </div>
-        <button onClick={logout} style={{fontSize:12,color:'#9e8f7e',background:'none',border:'1px solid #e4ddd4',borderRadius:6,padding:'5px 12px',cursor:'pointer',fontFamily:'inherit'}}>Ausloggen</button>
+        <button onClick={logout} style={{fontSize:12,color:'rgba(255,255,255,0.65)',background:'transparent',border:'1px solid rgba(255,255,255,0.15)',borderRadius:6,padding:'5px 12px',cursor:'pointer',fontFamily:'inherit',flexShrink:0}}>Ausloggen</button>
       </div>
 
-      <div style={{background:'#fff',borderBottom:'1px solid #ece6dd',padding:'0 24px',display:'flex',overflowX:'auto'}}>
+      {/* TABS */}
+      <div style={{background:'#fff',borderBottom:'1px solid #e0e0e5',padding:'0 24px',display:'flex',overflowX:'auto'}}>
         {[
           {key:'overview',     label:'Übersicht'},
-          {key:'reservations', label:`Reservierungen${neuCount>0?` (${neuCount})`:''}`},
+          {key:'reservations', label:`Reservierungen${pendingCount>0?` (${pendingCount})`:''}`},
           {key:'calendar',     label:'Kalender'},
           {key:'availability', label:'Verfügbarkeit'},
         ].map(t=>(
           <button key={t.key} onClick={()=>setTab(t.key)} style={{
             padding:'14px 18px',fontSize:13,border:'none',background:'none',cursor:'pointer',whiteSpace:'nowrap',
-            color:tab===t.key?'#b09050':'#9e8f7e',
-            borderBottom:tab===t.key?'2px solid #b09050':'2px solid transparent',
+            color:tab===t.key?'#1d1d1f':'#6e6e73',
+            borderBottom:tab===t.key?'2px solid #1d1d1f':'2px solid transparent',
             fontWeight:tab===t.key?500:400,fontFamily:'inherit',
           }}>{t.label}</button>
         ))}
@@ -446,42 +474,42 @@ export default function Admin() {
 
       <div style={{maxWidth:860,margin:'0 auto',padding:'24px 16px'}}>
 
+        {/* OVERVIEW */}
         {tab==='overview' && <>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:20}}>
             {[
-              {label:'Heute',  value:todayRes.length,    sub:'Reservierungen',         color:'#b09050'},
-              {label:'Offen',  value:pendingCount,        sub:'Warten auf Bestätigung', color:'#d4860a'},
-              {label:'Gesamt', value:reservations.length, sub:'Alle Buchungen',         color:'#3a9e5f'},
+              {label:'Heute',  value:todayRes.length,    sub:'Reservierungen'},
+              {label:'Offen',  value:pendingCount,        sub:'Warten auf Bestätigung'},
+              {label:'Gesamt', value:reservations.length, sub:'Alle Buchungen'},
             ].map(s=>(
-              <div key={s.label} style={{background:'#fff',borderRadius:10,padding:'16px 20px',boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
-                <div style={{fontSize:28,fontWeight:700,color:s.color,marginBottom:2}}>{s.value}</div>
-                <div style={{fontSize:13,fontWeight:500,color:'#1a1612'}}>{s.label}</div>
-                <div style={{fontSize:11,color:'#9e8f7e'}}>{s.sub}</div>
+              <div key={s.label} style={{background:'#fff',borderRadius:12,padding:'20px',border:'1px solid #e0e0e5'}}>
+                <div style={{fontSize:30,fontWeight:700,color:'#1d1d1f',marginBottom:4,letterSpacing:'-0.02em'}}>{s.value}</div>
+                <div style={{fontSize:13,fontWeight:500,color:'#1d1d1f',marginBottom:2}}>{s.label}</div>
+                <div style={{fontSize:11,color:'#6e6e73'}}>{s.sub}</div>
               </div>
             ))}
           </div>
           {nextRes && (
-            <div style={{background:'#fff',borderRadius:10,padding:'16px 20px',marginBottom:20,boxShadow:'0 1px 6px rgba(0,0,0,0.05)',borderLeft:'3px solid #b09050'}}>
-              <div style={{fontSize:11,color:'#9e8f7e',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.1em'}}>Nächste Reservierung</div>
-              <div style={{fontSize:15,fontWeight:600,color:'#1a1612'}}>{nextRes.name}</div>
-              <div style={{fontSize:13,color:'#5a5245',marginTop:2}}>{nextRes.datum} · {nextRes.uhrzeit} Uhr · {nextRes.personen} Personen</div>
-              {nextRes.sonderwunsch && <div style={{fontSize:12,color:'#b09050',marginTop:6}}>✦ {nextRes.sonderwunsch}</div>}
+            <div style={{background:'#fff',borderRadius:12,padding:'16px 20px',marginBottom:20,border:'1px solid #e0e0e5',borderLeft:'3px solid #1d1d1f'}}>
+              <div style={{fontSize:11,color:'#6e6e73',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:500}}>Nächste Reservierung</div>
+              <div style={{fontSize:15,fontWeight:600,color:'#1d1d1f'}}>{nextRes.name}</div>
+              <div style={{fontSize:13,color:'#3d3d3f',marginTop:2}}>{nextRes.datum} · {nextRes.uhrzeit} Uhr · {nextRes.personen} Personen</div>
+              {nextRes.sonderwunsch && <div style={{fontSize:12,color:'#6e6e73',marginTop:6}}>{nextRes.sonderwunsch}</div>}
             </div>
           )}
-          <div style={{fontSize:14,fontWeight:600,color:'#1a1612',marginBottom:12}}>Heute — {td}</div>
-          {todayRes.length===0
-            ? <p style={{color:'#9e8f7e',fontSize:14}}>Keine Reservierungen heute.</p>
-            : todayRes.map(r=><ResCard key={r.id} r={r}/>)}
+          <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f',marginBottom:12}}>Heute — {td}</div>
+          {todayRes.length===0 ? <p style={{color:'#6e6e73',fontSize:14}}>Keine Reservierungen heute.</p> : todayRes.map(r=><ResCard key={r.id} r={r}/>)}
         </>}
 
+        {/* RESERVATIONS */}
         {tab==='reservations' && <>
           <div style={{display:'flex',gap:8,marginBottom:10,flexWrap:'wrap'}}>
             {[{key:'alle',label:'Alle'},{key:'heute',label:'Heute'},{key:'morgen',label:'Morgen'},{key:'woche',label:'Diese Woche'}].map(f=>(
               <button key={f.key} onClick={()=>setDateFilter(f.key)} style={{
                 padding:'6px 14px',fontSize:12,borderRadius:20,cursor:'pointer',fontFamily:'inherit',
-                border:'1px solid '+(dateFilter===f.key?'#b09050':'#e4ddd4'),
-                background:dateFilter===f.key?'#b09050':'#fff',
-                color:dateFilter===f.key?'#fff':'#5a5245',
+                border:'1px solid '+(dateFilter===f.key?'#1d1d1f':'#e0e0e5'),
+                background:dateFilter===f.key?'#1d1d1f':'#fff',
+                color:dateFilter===f.key?'#fff':'#3d3d3f',
               }}>{f.label}</button>
             ))}
           </div>
@@ -489,68 +517,60 @@ export default function Admin() {
             {['alle','neu','bestätigt','abgesagt','no-show'].map(f=>(
               <button key={f} onClick={()=>setStatusFilter(f)} style={{
                 padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',fontFamily:'inherit',
-                border:'1px solid '+(statusFilter===f?'#5a5245':'#e4ddd4'),
-                background:statusFilter===f?'#5a5245':'#fff',
-                color:statusFilter===f?'#fff':'#5a5245',
+                border:'1px solid '+(statusFilter===f?'#1d1d1f':'#e0e0e5'),
+                background:statusFilter===f?'#1d1d1f':'#fff',
+                color:statusFilter===f?'#fff':'#3d3d3f',
               }}>{f.charAt(0).toUpperCase()+f.slice(1)}</button>
             ))}
-            <button onClick={()=>loadReservations(password)} style={{marginLeft:'auto',padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',border:'1px solid #e4ddd4',background:'#fff',color:'#5a5245',fontFamily:'inherit'}}>↻</button>
+            <button onClick={loadReservations} style={{marginLeft:'auto',padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',border:'1px solid #e0e0e5',background:'#fff',color:'#3d3d3f',fontFamily:'inherit'}}>↻ Aktualisieren</button>
           </div>
-          {loadingRes ? <p style={{color:'#9e8f7e',fontSize:14}}>Lädt...</p>
-            : filtered.length===0 ? <p style={{color:'#9e8f7e',fontSize:14}}>Keine Einträge.</p>
+          {loadingRes ? <p style={{color:'#6e6e73',fontSize:14}}>Lädt...</p>
+            : filtered.length===0 ? <p style={{color:'#6e6e73',fontSize:14}}>Keine Einträge.</p>
             : filtered.map(r=><ResCard key={r.id} r={r}/>)}
         </>}
 
-        {tab==='calendar' && (
-          <Calendar
-            reservations={reservations}
-            slots={slots}
-            onSelectDay={day => setDayModal(day)}
-          />
-        )}
+        {/* CALENDAR */}
+        {tab==='calendar' && <Calendar reservations={reservations} slots={slots} onSelectDay={day=>setDayModal(day)}/>}
 
+        {/* AVAILABILITY */}
         {tab==='availability' && <>
-          <div style={{background:'#fff',borderRadius:10,padding:'20px 24px',marginBottom:16,boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
+          <div style={{background:'#fff',borderRadius:12,padding:'20px 24px',marginBottom:16,border:'1px solid #e0e0e5'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
-              <div style={{fontSize:14,fontWeight:600,color:'#1a1612'}}>Wochenplan</div>
-              <button onClick={()=>setTemplate(DEFAULT_TEMPLATE)} style={{fontSize:11,color:'#9e8f7e',background:'none',border:'none',cursor:'pointer',padding:0,fontFamily:'inherit'}}>Zurücksetzen</button>
+              <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f'}}>Wochenplan</div>
+              <button onClick={()=>setTemplate(DEFAULT_TEMPLATE)} style={{fontSize:11,color:'#6e6e73',background:'none',border:'none',cursor:'pointer',padding:0,fontFamily:'inherit'}}>Zurücksetzen</button>
             </div>
-            <div style={{fontSize:12,color:'#9e8f7e',marginBottom:16}}>Zelle anklicken zum Öffnen · Zahl direkt bearbeiten · Wird automatisch gespeichert</div>
+            <div style={{fontSize:12,color:'#6e6e73',marginBottom:16}}>Zelle anklicken zum Öffnen · Zahl direkt bearbeiten · Wird automatisch gespeichert</div>
             <div style={{overflowX:'auto'}}>
               <div style={{minWidth:500}}>
                 <div style={{display:'grid',gridTemplateColumns:'60px repeat(7, 1fr)',gap:4,marginBottom:4}}>
                   <div/>
-                  {DAYS.map(d=><div key={d} style={{textAlign:'center',fontSize:12,fontWeight:500,color:'#9e8f7e',padding:'4px 0'}}>{d}</div>)}
+                  {DAYS.map(d=><div key={d} style={{textAlign:'center',fontSize:12,fontWeight:500,color:'#6e6e73',padding:'4px 0'}}>{d}</div>)}
                 </div>
                 {template.times.map(time => (
                   <div key={time} style={{display:'grid',gridTemplateColumns:'60px repeat(7, 1fr)',gap:4,marginBottom:4}}>
                     <div style={{display:'flex',alignItems:'center',gap:4}}>
-                      <span style={{fontSize:13,fontWeight:500,color:'#5a5245'}}>{time}</span>
-                      <button onClick={()=>removeTime(time)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#c0b8ae',padding:'0 2px',fontFamily:'inherit',lineHeight:1}}>✕</button>
+                      <span style={{fontSize:13,fontWeight:500,color:'#3d3d3f'}}>{time}</span>
+                      <button onClick={()=>removeTime(time)} style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#6e6e73',padding:'0 2px',fontFamily:'inherit',lineHeight:1}}>✕</button>
                     </div>
                     {DAYS.map(day => {
-                      const key = `${day}-${time}`;
-                      const count = template.cells[key];
-                      const isOpen = count !== undefined;
+                      const key = `${day}-${time}`; const count = template.cells[key]; const isOpen = count !== undefined;
                       return (
                         <div key={day} onClick={() => !isOpen && toggleCell(day, time)}
                           style={{position:'relative',borderRadius:8,padding:'8px 4px',textAlign:'center',cursor:isOpen?'default':'pointer',
-                            background:isOpen?'#edfbf2':'#f8f7f5',border:`1px solid ${isOpen?'#3a9e5f':'#e4ddd4'}`,
+                            background:isOpen?'#edfbf2':'#f5f5f7',border:`1px solid ${isOpen?'#3a9e5f':'#e0e0e5'}`,
                             minHeight:52,display:'flex',alignItems:'center',justifyContent:'center'}}>
                           {isOpen ? (
                             <>
                               <button onClick={e=>{e.stopPropagation();toggleCell(day,time);}}
-                                style={{position:'absolute',top:2,right:3,background:'none',border:'none',cursor:'pointer',fontSize:10,color:'#9e8f7e',padding:'1px 3px',lineHeight:1,fontFamily:'inherit'}}>✕</button>
+                                style={{position:'absolute',top:2,right:3,background:'none',border:'none',cursor:'pointer',fontSize:10,color:'#6e6e73',padding:'1px 3px',lineHeight:1,fontFamily:'inherit'}}>✕</button>
                               <div>
                                 <input type="number" value={count} min={0} max={99}
                                   onClick={e=>e.stopPropagation()} onChange={e=>setCellCount(day,time,e.target.value)}
                                   style={{width:32,textAlign:'center',border:'none',background:'transparent',fontSize:16,fontWeight:700,color:'#3a9e5f',outline:'none',fontFamily:'inherit'}}/>
-                                <div style={{fontSize:9,color:'#9e8f7e',marginTop:1,lineHeight:1}}>Tische</div>
+                                <div style={{fontSize:9,color:'#6e6e73',marginTop:1,lineHeight:1}}>Tische</div>
                               </div>
                             </>
-                          ) : (
-                            <span style={{color:'#d0c8be',fontSize:20,lineHeight:1}}>+</span>
-                          )}
+                          ) : <span style={{color:'#c7c7cc',fontSize:20,lineHeight:1}}>+</span>}
                         </div>
                       );
                     })}
@@ -558,53 +578,53 @@ export default function Admin() {
                 ))}
                 <div style={{display:'flex',alignItems:'center',gap:8,marginTop:10}}>
                   <input type="time" value={newTimeInput} onChange={e=>setNewTimeInput(e.target.value)}
-                    style={{padding:'6px 10px',border:'1px solid #e4ddd4',borderRadius:8,fontSize:13,outline:'none',fontFamily:'inherit'}}/>
+                    style={{padding:'6px 10px',border:'1px solid #e0e0e5',borderRadius:8,fontSize:13,outline:'none',fontFamily:'inherit'}}/>
                   <button onClick={addTime} disabled={!newTimeInput}
-                    style={{padding:'6px 16px',background:'#f5f0ea',border:'1px solid #e4ddd4',borderRadius:8,fontSize:13,cursor:'pointer',color:'#5a5245',fontFamily:'inherit',opacity:!newTimeInput?0.5:1}}>
-                    + Uhrzeit hinzufügen
+                    style={{padding:'6px 16px',background:'#f5f5f7',border:'1px solid #e0e0e5',borderRadius:8,fontSize:13,cursor:'pointer',color:'#3d3d3f',fontFamily:'inherit',opacity:!newTimeInput?0.5:1}}>
+                    Uhrzeit hinzufügen
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style={{background:'#fff',borderRadius:10,padding:'20px 24px',marginBottom:16,boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
-            <div style={{fontSize:14,fontWeight:600,color:'#1a1612',marginBottom:12}}>Zeitslots generieren</div>
+          <div style={{background:'#fff',borderRadius:12,padding:'20px 24px',marginBottom:16,border:'1px solid #e0e0e5'}}>
+            <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f',marginBottom:12}}>Zeitslots generieren</div>
             <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
-              <span style={{fontSize:13,color:'#5a5245'}}>Für die nächsten</span>
+              <span style={{fontSize:13,color:'#3d3d3f'}}>Für die nächsten</span>
               <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <button onClick={()=>setWeeksAhead(w=>Math.max(1,w-1))} style={{width:28,height:28,borderRadius:6,border:'1px solid #e4ddd4',background:'#f8f7f5',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit'}}>−</button>
-                <span style={{fontSize:18,fontWeight:600,color:'#1a1612',minWidth:28,textAlign:'center'}}>{weeksAhead}</span>
-                <button onClick={()=>setWeeksAhead(w=>Math.min(52,w+1))} style={{width:28,height:28,borderRadius:6,border:'1px solid #e4ddd4',background:'#f8f7f5',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit'}}>+</button>
+                <button onClick={()=>setWeeksAhead(w=>Math.max(1,w-1))} style={{width:28,height:28,borderRadius:6,border:'1px solid #e0e0e5',background:'#f5f5f7',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#1d1d1f'}}>−</button>
+                <span style={{fontSize:18,fontWeight:600,color:'#1d1d1f',minWidth:28,textAlign:'center'}}>{weeksAhead}</span>
+                <button onClick={()=>setWeeksAhead(w=>Math.min(52,w+1))} style={{width:28,height:28,borderRadius:6,border:'1px solid #e0e0e5',background:'#f5f5f7',cursor:'pointer',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#1d1d1f'}}>+</button>
               </div>
-              <span style={{fontSize:13,color:'#5a5245'}}>Wochen generieren</span>
+              <span style={{fontSize:13,color:'#3d3d3f'}}>Wochen generieren</span>
               <button onClick={generateSlots} disabled={generating||Object.keys(template.cells).length===0}
-                style={{marginLeft:'auto',padding:'9px 28px',background:'#b09050',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:500,cursor:'pointer',fontFamily:'inherit',
-                  opacity:generating||Object.keys(template.cells).length===0?0.6:1}}>
+                style={{marginLeft:'auto',padding:'9px 28px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,fontSize:14,fontWeight:500,cursor:'pointer',fontFamily:'inherit',
+                  opacity:generating||Object.keys(template.cells).length===0?0.4:1}}>
                 {generating?'Läuft…':'Generieren'}
               </button>
             </div>
-            {genResult!==null && <div style={{marginTop:12,fontSize:13,color:'#3a9e5f',background:'#edfbf2',padding:'8px 14px',borderRadius:8}}>✓ {genResult} Zeitslots erstellt / aktualisiert.</div>}
-            {Object.keys(template.cells).length===0 && <div style={{marginTop:10,fontSize:12,color:'#9e8f7e'}}>Zuerst Wochenplan ausfüllen.</div>}
+            {genResult!==null && <div style={{marginTop:12,fontSize:13,color:'#3a9e5f',background:'#edfbf2',padding:'8px 14px',borderRadius:8}}>{genResult} Zeitslots erstellt.</div>}
+            {Object.keys(template.cells).length===0 && <div style={{marginTop:10,fontSize:12,color:'#6e6e73'}}>Zuerst Wochenplan ausfüllen.</div>}
           </div>
 
-          <div style={{background:'#fff',borderRadius:10,padding:'20px 24px',boxShadow:'0 1px 6px rgba(0,0,0,0.05)'}}>
+          <div style={{background:'#fff',borderRadius:12,padding:'20px 24px',border:'1px solid #e0e0e5'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-              <div style={{fontSize:14,fontWeight:600,color:'#1a1612'}}>Kommende Slots <span style={{fontSize:12,fontWeight:400,color:'#9e8f7e',marginLeft:8}}>{futureSlots.length} Einträge</span></div>
-              {pastSlots.length>0 && <span style={{fontSize:12,color:'#c0b8ae'}}>{pastSlots.length} vergangene ausgeblendet</span>}
+              <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f'}}>Kommende Slots <span style={{fontSize:12,fontWeight:400,color:'#6e6e73',marginLeft:8}}>{futureSlots.length} Einträge</span></div>
+              {pastSlots.length>0 && <span style={{fontSize:12,color:'#6e6e73'}}>{pastSlots.length} vergangene ausgeblendet</span>}
             </div>
             {futureSlots.length===0
-              ? <p style={{color:'#9e8f7e',fontSize:14,margin:0}}>Noch keine zukünftigen Zeitslots.</p>
+              ? <p style={{color:'#6e6e73',fontSize:14,margin:0}}>Noch keine zukünftigen Zeitslots.</p>
               : futureSlots.map(s=>(
-                <div key={s.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f0ebe4'}}>
+                <div key={s.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #f5f5f7'}}>
                   <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                    <span style={{fontSize:13,fontWeight:500,color:'#1a1612',minWidth:90}}>{s.datum}</span>
-                    <span style={{fontSize:13,color:'#5a5245'}}>{s.uhrzeit} Uhr</span>
+                    <span style={{fontSize:13,fontWeight:500,color:'#1d1d1f',minWidth:90}}>{s.datum}</span>
+                    <span style={{fontSize:13,color:'#3d3d3f'}}>{s.uhrzeit} Uhr</span>
                     <span style={{fontSize:12,padding:'2px 10px',borderRadius:12,background:s.tische_frei>0?'#edfbf2':'#fdf0ee',color:s.tische_frei>0?'#3a9e5f':'#c0392b'}}>
                       {s.tische_frei} {s.tische_frei===1?'Tisch':'Tische'} frei
                     </span>
                   </div>
-                  <button onClick={()=>deleteSlot(s.id)} style={{fontSize:11,color:'#9e8f7e',background:'none',border:'1px solid #e4ddd4',borderRadius:6,padding:'3px 10px',cursor:'pointer',fontFamily:'inherit'}}>Löschen</button>
+                  <button onClick={()=>deleteSlot(s.id)} style={{fontSize:11,color:'#6e6e73',background:'none',border:'1px solid #e0e0e5',borderRadius:6,padding:'3px 10px',cursor:'pointer',fontFamily:'inherit'}}>Löschen</button>
                 </div>
               ))
             }
