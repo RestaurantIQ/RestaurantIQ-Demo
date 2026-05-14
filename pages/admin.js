@@ -401,10 +401,11 @@ export default function Admin() {
   if (!session) return (
     <div style={{minHeight:'100vh',background:'#f5f5f7',display:'flex',alignItems:'center',justifyContent:'center',padding:16,fontFamily:"'Inter',-apple-system,sans-serif"}}>
       <style>{FONT}</style>
-      <div style={{background:'#fff',borderRadius:20,padding:'40px 36px',width:'100%',maxWidth:360,boxShadow:'0 4px 40px rgba(0,0,0,0.08)',border:'1px solid #e0e0e5'}}>
-        <div style={{marginBottom:32}}>
-          <img src="/logo.png" alt="RestaurantIQ" style={{height:28,width:'auto',display:'block',marginBottom:8}}/>
-          <div style={{fontSize:13,color:'#6e6e73',fontWeight:300}}>Admin-Bereich</div>
+      <div style={{background:'#fff',borderRadius:20,padding:'44px 40px',width:'100%',maxWidth:380,boxShadow:'0 8px 48px rgba(0,0,0,0.10)',border:'1px solid #e0e0e5'}}>
+        <div style={{marginBottom:36,textAlign:'center'}}>
+          <img src="/logo.png" alt="RestaurantIQ" style={{height:44,width:'auto',display:'block',margin:'0 auto 14px'}}/>
+          <div style={{fontSize:20,fontWeight:700,color:'#1d1d1f',letterSpacing:'-0.02em',marginBottom:8}}>RestaurantIQ</div>
+          <div style={{display:'inline-block',fontSize:11,fontWeight:500,color:'#6e6e73',background:'#f5f5f7',padding:'4px 12px',borderRadius:999,letterSpacing:'0.06em',textTransform:'uppercase'}}>Admin-Bereich</div>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
           <div>
@@ -426,8 +427,9 @@ export default function Admin() {
             opacity:loggingIn||!loginUser||!loginPass?0.4:1,transition:'opacity 0.15s',
           }}>{loggingIn ? 'Einloggen…' : 'Einloggen'}</button>
         </div>
-        <div style={{marginTop:24,textAlign:'center'}}>
-          <img src="/logo.png" alt="RestaurantIQ" style={{height:18,width:'auto',opacity:0.3}}/>
+        <div style={{marginTop:28,paddingTop:24,borderTop:'1px solid #f0f0f5',textAlign:'center'}}>
+          <img src="/logo.png" alt="RestaurantIQ" style={{height:20,width:'auto',opacity:0.25}}/>
+          <div style={{fontSize:10,color:'#c7c7cc',marginTop:6,letterSpacing:'0.04em'}}>Restaurant Management System</div>
         </div>
       </div>
     </div>
