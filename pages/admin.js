@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 
 const STATUS_COLOR = { neu: '#d4860a', bestätigt: '#3a9e5f', abgesagt: '#c0392b', 'no-show': '#6e6e73' };
 const STATUS_BG    = { neu: '#fff8ed', bestätigt: '#edfbf2', abgesagt: '#fdf0ee', 'no-show': '#f5f5f7' };
@@ -162,27 +162,66 @@ function Calendar({ reservations, slots, onSelectDay }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
         {cells.map((d,i) => {
           if (!d) return <div key={i}/>;
-          const label   = dayLabel(d);
-          const info    = countMap[label];
-          const hasSlot = slotMap[label] > 0;
-          const isToday = label === td;
+          const label    = dayLabel(d);
+          const info     = countMap[label];
+          const hasSlot  = slotMap[label] > 0;
+          const isToday  = label === td;
+          const total    = (info?.neu || 0) + (info?.bestätigt || 0);
+          const hasNew   = info?.neu > 0;
+          const hasConf  = info?.bestätigt > 0;
+
+          let bg = 'transparent';
+          let border = '1px solid transparent';
+          let dayColor = '#c7c7cc';
+          let badge = null;
+
+          if (isToday && !info) {
+            bg = '#f5f5f7';
+            border = '1px solid #e0e0e5';
+            dayColor = '#1d1d1f';
+          }
+
+          if (info) {
+            if (hasNew) {
+              bg = '#fff8ed';
+              border = '1px solid #f0d080';
+              dayColor = '#1d1d1f';
+              badge = { color: '#d4860a', bg: '#fef3d0', label: total };
+            } else {
+              bg = '#edfbf2';
+              border = '1px solid #a8e6c0';
+              dayColor = '#1d1d1f';
+              badge = { color: '#3a9e5f', bg: '#c8f0d8', label: total };
+            }
+            if (isToday) border = `2px solid ${hasNew ? '#d4860a' : '#3a9e5f'}`;
+          }
+
           return (
             <div key={i} onClick={() => onSelectDay(label)}
               style={{
-                padding:'6px 2px', borderRadius:8, textAlign:'center', cursor:'pointer',
-                background: isToday ? '#f5f5f7' : 'transparent',
-                border: isToday ? '1px solid #e0e0e5' : '1px solid transparent',
-                transition:'background 0.12s',
+                borderRadius: 8, textAlign: 'center', cursor: 'pointer',
+                background: bg, border: border,
+                transition: 'opacity 0.12s',
+                minHeight: 52, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 4,
+                padding: '6px 2px',
               }}
-              onMouseEnter={e=>{ if(!isToday) e.currentTarget.style.background='#f5f5f7'; }}
-              onMouseLeave={e=>{ if(!isToday) e.currentTarget.style.background='transparent'; }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
             >
-              <div style={{fontSize:13,color:info?'#1d1d1f':hasSlot?'#3d3d3f':'#c7c7cc',fontWeight:info?500:400}}>{d}</div>
-              <div style={{display:'flex',justifyContent:'center',gap:2,marginTop:2,minHeight:7}}>
-                {info?.neu>0       && <div style={{width:5,height:5,borderRadius:'50%',background:'#d4860a'}}/>}
-                {info?.bestätigt>0 && <div style={{width:5,height:5,borderRadius:'50%',background:'#3a9e5f'}}/>}
-                {hasSlot && !info  && <div style={{width:5,height:5,borderRadius:'50%',background:'#e0e0e5'}}/>}
-              </div>
+              <div style={{fontSize:13, color: dayColor, fontWeight: info || isToday ? 600 : 400, lineHeight:1}}>{d}</div>
+              {badge && (
+                <div style={{
+                  fontSize: 11, fontWeight: 700, color: badge.color,
+                  background: badge.bg, borderRadius: 999,
+                  padding: '1px 7px', lineHeight: 1.6, minWidth: 20,
+                }}>
+                  {badge.label}
+                </div>
+              )}
+              {hasSlot && !info && (
+                <div style={{width:4, height:4, borderRadius:'50%', background:'#d0d0d5'}}/>
+              )}
             </div>
           );
         })}
@@ -709,3 +748,4 @@ export default function Admin() {
     </div>
   );
 }
+
