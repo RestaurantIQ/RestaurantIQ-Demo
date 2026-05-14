@@ -213,6 +213,11 @@ export default function Admin() {
   const [calDay, setCalDay]             = useState(null);
   const [dayModal, setDayModal]         = useState(null);
 
+  const [newResModal, setNewResModal]   = useState(false);
+  const [newResForm, setNewResForm]     = useState({ name:'', datum:'', uhrzeit:'', personen:'2', telefon:'', email:'', sonderwunsch:'' });
+  const [newResLoading, setNewResLoading] = useState(false);
+  const [newResError, setNewResError]   = useState('');
+
   const [slots, setSlots]               = useState([]);
   const [template, setTemplate]         = useState(DEFAULT_TEMPLATE);
   const [weeksAhead, setWeeksAhead]     = useState(4);
@@ -286,6 +291,27 @@ export default function Admin() {
       body: JSON.stringify({ id }),
     });
     setSlots(prev => prev.filter(s => s.id!==id));
+  }
+
+  async function createReservation() {
+    setNewResLoading(true); setNewResError('');
+    const { name, datum, uhrzeit, personen, telefon } = newResForm;
+    if (!name || !datum || !uhrzeit || !personen || !telefon) {
+      setNewResError('Bitte alle Pflichtfelder ausfüllen.'); setNewResLoading(false); return;
+    }
+    const r = await fetch('/api/reservations', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newResForm, personen: parseInt(newResForm.personen), status: 'bestätigt' }),
+    });
+    if (r.ok) {
+      const data = await r.json();
+      setReservations(prev => [data, ...prev]);
+      setNewResModal(false);
+      setNewResForm({ name:'', datum:'', uhrzeit:'', personen:'2', telefon:'', email:'', sonderwunsch:'' });
+    } else {
+      setNewResError('Fehler beim Speichern.');
+    }
+    setNewResLoading(false);
   }
 
   function toggleCell(day, time) {
@@ -447,6 +473,44 @@ export default function Admin() {
           onClose={() => setDayModal(null)}/>
       )}
 
+      {newResModal && (
+        <div onClick={()=>setNewResModal(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.4)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:16,width:'100%',maxWidth:440,boxShadow:'0 20px 60px rgba(0,0,0,0.15)',overflow:'hidden'}}>
+            <div style={{padding:'20px 24px 16px',borderBottom:'1px solid #e0e0e5',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{fontSize:11,color:'#6e6e73',letterSpacing:'0.1em',textTransform:'uppercase',fontWeight:500,marginBottom:2}}>Manuell anlegen</div>
+                <div style={{fontSize:16,fontWeight:600,color:'#1d1d1f'}}>Neue Reservierung</div>
+              </div>
+              <button onClick={()=>setNewResModal(false)} style={{background:'none',border:'none',cursor:'pointer',fontSize:18,color:'#6e6e73'}}>✕</button>
+            </div>
+            <div style={{padding:'20px 24px',display:'flex',flexDirection:'column',gap:12}}>
+              {[
+                {key:'name',      label:'Name *',        type:'text',   placeholder:'Max Mustermann'},
+                {key:'datum',     label:'Datum *',       type:'text',   placeholder:'31.12.2026'},
+                {key:'uhrzeit',   label:'Uhrzeit *',     type:'time',   placeholder:'19:00'},
+                {key:'personen',  label:'Personen *',    type:'number', placeholder:'2'},
+                {key:'telefon',   label:'Telefon *',     type:'text',   placeholder:'+49 123 456789'},
+                {key:'email',     label:'E-Mail',        type:'email',  placeholder:'gast@beispiel.de'},
+                {key:'sonderwunsch', label:'Hinweis',   type:'text',   placeholder:'Fensterplatz, Allergie...'},
+              ].map(({key, label, type, placeholder}) => (
+                <div key={key}>
+                  <div style={{fontSize:11,fontWeight:500,color:'#6e6e73',letterSpacing:'0.05em',textTransform:'uppercase',marginBottom:5}}>{label}</div>
+                  <input type={type} placeholder={placeholder} value={newResForm[key]}
+                    onChange={e => setNewResForm(f => ({...f, [key]: e.target.value}))}
+                    style={{width:'100%',padding:'9px 12px',border:'1px solid #e0e0e5',borderRadius:8,fontSize:14,fontFamily:'inherit',color:'#1d1d1f',outline:'none'}}/>
+                </div>
+              ))}
+              {newResError && <div style={{fontSize:13,color:'#c0392b',background:'#fdf0ee',padding:'8px 12px',borderRadius:8}}>{newResError}</div>}
+              <button onClick={createReservation} disabled={newResLoading} style={{
+                marginTop:4,padding:'12px',background:'#1d1d1f',color:'#fff',border:'none',
+                borderRadius:10,fontSize:14,fontWeight:500,cursor:'pointer',fontFamily:'inherit',
+                opacity:newResLoading?0.5:1,
+              }}>{newResLoading ? 'Wird gespeichert…' : 'Reservierung speichern'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* NAV */}
       <div style={{background:'#1d1d1f',padding:'0 24px',display:'flex',alignItems:'center',justifyContent:'space-between',height:56,gap:12}}>
         <div style={{display:'flex',alignItems:'center',gap:12,minWidth:0}}>
@@ -501,12 +565,18 @@ export default function Admin() {
               {nextRes.sonderwunsch && <div style={{fontSize:12,color:'#6e6e73',marginTop:6}}>{nextRes.sonderwunsch}</div>}
             </div>
           )}
-          <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f',marginBottom:12}}>Heute — {td}</div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+            <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f'}}>Heute — {td}</div>
+            <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit'}}>+ Neue Reservierung</button>
+          </div>
           {todayRes.length===0 ? <p style={{color:'#6e6e73',fontSize:14}}>Keine Reservierungen heute.</p> : todayRes.map(r=><ResCard key={r.id} r={r}/>)}
         </>}
 
         {/* RESERVATIONS */}
         {tab==='reservations' && <>
+          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+            <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit'}}>+ Neue Reservierung</button>
+          </div>
           <div style={{display:'flex',gap:8,marginBottom:10,flexWrap:'wrap'}}>
             {[{key:'alle',label:'Alle'},{key:'heute',label:'Heute'},{key:'morgen',label:'Morgen'},{key:'woche',label:'Diese Woche'}].map(f=>(
               <button key={f.key} onClick={()=>setDateFilter(f.key)} style={{
