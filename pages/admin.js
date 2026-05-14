@@ -403,7 +403,7 @@ export default function Admin() {
       <style>{FONT}</style>
       <div style={{background:'#fff',borderRadius:20,padding:'40px 36px',width:'100%',maxWidth:360,boxShadow:'0 4px 40px rgba(0,0,0,0.08)',border:'1px solid #e0e0e5'}}>
         <div style={{marginBottom:32}}>
-          <div style={{fontSize:18,fontWeight:700,color:'#1d1d1f',letterSpacing:'-0.02em',marginBottom:4}}>RestaurantIQ</div>
+          <img src="/logo.png" alt="RestaurantIQ" style={{height:28,width:'auto',display:'block',marginBottom:8}}/>
           <div style={{fontSize:13,color:'#6e6e73',fontWeight:300}}>Admin-Bereich</div>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
@@ -426,7 +426,9 @@ export default function Admin() {
             opacity:loggingIn||!loginUser||!loginPass?0.4:1,transition:'opacity 0.15s',
           }}>{loggingIn ? 'Einloggen…' : 'Einloggen'}</button>
         </div>
-        <div style={{marginTop:24,textAlign:'center',fontSize:11,color:'#6e6e73'}}>Powered by RestaurantIQ</div>
+        <div style={{marginTop:24,textAlign:'center'}}>
+          <img src="/logo.png" alt="RestaurantIQ" style={{height:18,width:'auto',opacity:0.3}}/>
+        </div>
       </div>
     </div>
   );
@@ -446,7 +448,7 @@ export default function Admin() {
       {/* NAV */}
       <div style={{background:'#1d1d1f',padding:'0 24px',display:'flex',alignItems:'center',justifyContent:'space-between',height:56,gap:12}}>
         <div style={{display:'flex',alignItems:'center',gap:12,minWidth:0}}>
-          <span style={{fontSize:15,fontWeight:600,color:'#fff',letterSpacing:'-0.01em',flexShrink:0}}>RestaurantIQ</span>
+          <img src="/logo.png" alt="RestaurantIQ" style={{height:22,width:'auto',filter:'brightness(0) invert(1)',flexShrink:0}}/>
           <span style={{fontSize:12,color:'rgba(255,255,255,0.6)',background:'rgba(255,255,255,0.1)',padding:'3px 10px',borderRadius:999,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:200}}>
             {session.restaurantName}
           </span>
