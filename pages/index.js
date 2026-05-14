@@ -10,6 +10,48 @@ const suggestions = [
 
 const RESERVATION_REGEX = /\[RESERVIERUNG:(\{[\s\S]*?\})\]/;
 
+function TicketCard({ reservation }) {
+  const { name, datum, uhrzeit, personen, sonderwunsch } = reservation;
+  return (
+    <div className="ticket-card">
+      <div className="ticket-header">
+        <div className="ticket-restaurant">La Fontana di Capri</div>
+        <div className="ticket-title">Reservierungsanfrage</div>
+      </div>
+      <div className="ticket-divider" />
+      <div className="ticket-rows">
+        <div className="ticket-row">
+          <span className="ticket-label">Name</span>
+          <span className="ticket-value">{name}</span>
+        </div>
+        <div className="ticket-row">
+          <span className="ticket-label">Datum</span>
+          <span className="ticket-value">{datum}</span>
+        </div>
+        <div className="ticket-row">
+          <span className="ticket-label">Uhrzeit</span>
+          <span className="ticket-value">{uhrzeit} Uhr</span>
+        </div>
+        <div className="ticket-row">
+          <span className="ticket-label">Personen</span>
+          <span className="ticket-value">{personen}</span>
+        </div>
+        {sonderwunsch && (
+          <div className="ticket-row">
+            <span className="ticket-label">Hinweis</span>
+            <span className="ticket-value">{sonderwunsch}</span>
+          </div>
+        )}
+      </div>
+      <div className="ticket-divider" />
+      <div className="ticket-status">
+        <span className="ticket-status-dot" />
+        <span className="ticket-status-text">Anfrage eingegangen</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -66,12 +108,14 @@ export default function Home() {
         if (reserveRes.ok) {
           finalMessages = [...finalMessages, {
             role: 'assistant',
-            content: 'Ihre Anfrage ist bei uns eingegangen. Das Restaurant prüft die Verfügbarkeit und meldet sich in Kürze bei Ihnen – Sie erhalten eine Bestätigung per Telefon oder WhatsApp.'
+            type: 'ticket',
+            reservation: reservationData,
+            content: '',
           }];
         } else {
           finalMessages = [...finalMessages, {
             role: 'assistant',
-            content: 'Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: 06205 37008.'
+            content: 'Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: 06205 37008.',
           }];
         }
       } catch (e) {
@@ -118,7 +162,6 @@ export default function Home() {
           -webkit-font-smoothing: antialiased;
         }
 
-        /* subtle linen texture */
         body::before {
           content: '';
           position: fixed;
@@ -147,7 +190,6 @@ export default function Home() {
           }
         }
 
-        /* ── HEADER ── */
         .header {
           flex-shrink: 0;
           padding: 20px 22px 18px;
@@ -246,7 +288,6 @@ export default function Home() {
           letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
         }
 
-        /* ── CHAT ── */
         .chat {
           flex: 1;
           overflow-y: auto;
@@ -294,6 +335,107 @@ export default function Home() {
           letter-spacing: 0.015em;
         }
 
+        /* ── TICKET ── */
+        .ticket-row-wrap {
+          display: flex;
+          justify-content: flex-start;
+          margin-bottom: 10px;
+          animation: rise 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .ticket-card {
+          max-width: 82%;
+          background: #fff;
+          border: 1px solid rgba(168,134,74,0.3);
+          border-left: 3px solid var(--gold);
+          border-radius: 2px var(--r) var(--r) var(--r);
+          overflow: hidden;
+          box-shadow: 0 2px 16px rgba(26,21,16,0.07), 0 1px 4px rgba(26,21,16,0.04);
+        }
+
+        .ticket-header {
+          padding: 11px 16px 9px;
+          background: rgba(168,134,74,0.04);
+        }
+
+        .ticket-restaurant {
+          font-size: 9px;
+          font-weight: 500;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin-bottom: 3px;
+        }
+
+        .ticket-title {
+          font-family: 'Cormorant', serif;
+          font-size: 16px;
+          font-weight: 400;
+          color: var(--ink);
+          letter-spacing: 0.03em;
+        }
+
+        .ticket-divider {
+          height: 1px;
+          background: rgba(168,134,74,0.15);
+        }
+
+        .ticket-rows {
+          padding: 8px 16px;
+        }
+
+        .ticket-row {
+          display: flex;
+          align-items: baseline;
+          gap: 12px;
+          padding: 5px 0;
+          border-bottom: 1px solid rgba(26,21,16,0.05);
+        }
+
+        .ticket-row:last-child { border-bottom: none; }
+
+        .ticket-label {
+          font-size: 10px;
+          font-weight: 400;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--muted);
+          width: 60px;
+          flex-shrink: 0;
+        }
+
+        .ticket-value {
+          font-size: 13px;
+          font-weight: 400;
+          color: var(--ink-2);
+          letter-spacing: 0.01em;
+        }
+
+        .ticket-status {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 9px 16px;
+          background: rgba(168,134,74,0.03);
+        }
+
+        .ticket-status-dot {
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          background: #6db57e;
+          flex-shrink: 0;
+          animation: pulse 2.5s ease-in-out infinite;
+        }
+
+        .ticket-status-text {
+          font-size: 10px;
+          font-weight: 400;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--muted);
+        }
+
+        /* ── TYPING ── */
         .typing-row {
           display: flex;
           margin-bottom: 10px;
@@ -485,14 +627,23 @@ export default function Home() {
         </header>
 
         <div className="chat">
-          {messages.map((m, i) => (
-            <div key={i} className={`row ${m.role === 'user' ? 'user' : 'bot'}`}>
-              <div
-                className="bubble"
-                dangerouslySetInnerHTML={{ __html: formatText(m.content) }}
-              />
-            </div>
-          ))}
+          {messages.map((m, i) => {
+            if (m.type === 'ticket') {
+              return (
+                <div key={i} className="ticket-row-wrap">
+                  <TicketCard reservation={m.reservation} />
+                </div>
+              );
+            }
+            return (
+              <div key={i} className={`row ${m.role === 'user' ? 'user' : 'bot'}`}>
+                <div
+                  className="bubble"
+                  dangerouslySetInnerHTML={{ __html: formatText(m.content) }}
+                />
+              </div>
+            );
+          })}
 
           {showSuggestions && (
             <div className="suggestions">
