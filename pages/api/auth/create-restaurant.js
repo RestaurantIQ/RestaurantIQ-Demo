@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'name, username und password sind erforderlich' });
   }
 
-  const password_hash = hashPassword(password);
+  const password_hash = await hashPassword(password);
 
   const r = await fetch(`${SUPABASE_URL}/rest/v1/restaurants`, {
     method: 'POST',
