@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-const DEMO_REGEX = /\[DEMO:(\{[\s\S]*?\})\]/;
-
 function TicketCard({ reservation, restaurantName }) {
   const { name, datum, uhrzeit, personen, sonderwunsch } = reservation;
   return (
@@ -62,34 +60,31 @@ export default function Demo() {
     setInput('');
     setLoading(true);
 
-    const res = await fetch('/api/demo-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: newMessages, restaurant: restaurantName })
-    });
-    const data = await res.json();
-    const rawReply = data.reply || 'Ein Fehler ist aufgetreten.';
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages, mode: 'demo', restaurant: restaurantName }),
+      });
+      const data = await res.json();
+      const reply = data.reply || 'Ein Fehler ist aufgetreten.';
 
-    const match = rawReply.match(DEMO_REGEX);
-    const reply = rawReply.replace(DEMO_REGEX, '').trim();
+      let finalMessages = [...newMessages, { role: 'assistant', content: reply }];
 
-    let finalMessages = [...newMessages, { role: 'assistant', content: reply }];
-
-    if (match) {
-      try {
-        const reservationData = JSON.parse(match[1]);
+      if (data.reservation) {
         finalMessages = [...finalMessages, {
           role: 'assistant',
           type: 'ticket',
-          reservation: reservationData,
+          reservation: data.reservation,
           content: '',
         }];
-      } catch (e) {
-        console.error('Demo ticket parse error:', e);
       }
+
+      setMessages(finalMessages);
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Verbindungsfehler. Bitte versuchen Sie es erneut.' }]);
     }
 
-    setMessages(finalMessages);
     setLoading(false);
   }
 
@@ -130,7 +125,6 @@ export default function Demo() {
           .shell { box-shadow: 0 0 0 1px var(--line), 0 8px 40px rgba(0,0,0,0.08); }
         }
 
-        /* HEADER */
         .header {
           flex-shrink: 0;
           padding: 16px 20px;
@@ -177,7 +171,6 @@ export default function Demo() {
           letter-spacing: 0.04em;
         }
 
-        /* DEMO BANNER */
         .demo-banner {
           background: #f5f5f7;
           border-bottom: 1px solid var(--line);
@@ -189,7 +182,6 @@ export default function Demo() {
           letter-spacing: 0.02em;
         }
 
-        /* CHAT */
         .chat {
           flex: 1;
           overflow-y: auto;
@@ -234,7 +226,6 @@ export default function Demo() {
           font-weight: 400;
         }
 
-        /* TICKET */
         .ticket-row-wrap {
           display: flex;
           justify-content: flex-start;
@@ -274,7 +265,6 @@ export default function Demo() {
         }
 
         .ticket-divider { height: 1px; background: var(--line); }
-
         .ticket-rows { padding: 8px 14px; }
 
         .ticket-row {
@@ -324,7 +314,6 @@ export default function Demo() {
           letter-spacing: 0.04em;
         }
 
-        /* TYPING */
         .typing-row { display: flex; margin-bottom: 8px; animation: rise 0.3s ease both; }
         .typing-bubble {
           background: var(--surface);
@@ -343,7 +332,6 @@ export default function Demo() {
         .typing-bubble span:nth-child(3) { animation-delay: 0.36s; }
         @keyframes blink { 0%,80%,100%{opacity:0.3} 40%{opacity:1} }
 
-        /* INPUT */
         .input-area {
           flex-shrink: 0;
           padding: 10px 16px 14px;
