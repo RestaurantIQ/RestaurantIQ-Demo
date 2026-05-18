@@ -8,8 +8,6 @@ const suggestions = [
   "Wann habt ihr geöffnet?"
 ];
 
-const RESERVATION_REGEX = /\[RESERVIERUNG:(\{[\s\S]*?\})\]/;
-
 function TicketCard({ reservation }) {
   const { name, datum, uhrzeit, personen, sonderwunsch } = reservation;
   return (
@@ -84,32 +82,28 @@ export default function Home() {
     setInput('');
     setLoading(true);
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: newMessages })
-    });
-    const data = await res.json();
-    const rawReply = data.reply || 'Ein Fehler ist aufgetreten.';
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages, mode: 'live' }),
+      });
+      const data = await res.json();
+      const reply = data.reply || 'Ein Fehler ist aufgetreten.';
 
-    const match = rawReply.match(RESERVATION_REGEX);
-    const reply = rawReply.replace(RESERVATION_REGEX, '').trim();
+      let finalMessages = [...newMessages, { role: 'assistant', content: reply }];
 
-    let finalMessages = [...newMessages, { role: 'assistant', content: reply }];
-
-    if (match) {
-      try {
-        const reservationData = JSON.parse(match[1]);
+      if (data.reservation) {
         const reserveRes = await fetch('/api/reserve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(reservationData),
+          body: JSON.stringify(data.reservation),
         });
         if (reserveRes.ok) {
           finalMessages = [...finalMessages, {
             role: 'assistant',
             type: 'ticket',
-            reservation: reservationData,
+            reservation: data.reservation,
             content: '',
           }];
         } else {
@@ -118,12 +112,13 @@ export default function Home() {
             content: 'Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: 06205 37008.',
           }];
         }
-      } catch (e) {
-        console.error('Reservation error:', e);
       }
+
+      setMessages(finalMessages);
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Verbindungsfehler. Bitte versuchen Sie es erneut.' }]);
     }
 
-    setMessages(finalMessages);
     setLoading(false);
   }
 
@@ -335,7 +330,6 @@ export default function Home() {
           letter-spacing: 0.015em;
         }
 
-        /* ── TICKET ── */
         .ticket-row-wrap {
           display: flex;
           justify-content: flex-start;
@@ -380,9 +374,7 @@ export default function Home() {
           background: rgba(168,134,74,0.15);
         }
 
-        .ticket-rows {
-          padding: 8px 16px;
-        }
+        .ticket-rows { padding: 8px 16px; }
 
         .ticket-row {
           display: flex;
@@ -435,7 +427,6 @@ export default function Home() {
           color: var(--muted);
         }
 
-        /* ── TYPING ── */
         .typing-row {
           display: flex;
           margin-bottom: 10px;
@@ -465,7 +456,6 @@ export default function Home() {
           40%          { opacity: 1;  transform: scaleY(1.35); }
         }
 
-        /* ── SUGGESTIONS ── */
         .suggestions {
           display: flex;
           flex-direction: column;
@@ -500,7 +490,6 @@ export default function Home() {
           border-left-color: var(--gold-lt);
         }
 
-        /* ── INPUT ── */
         .input-area {
           flex-shrink: 0;
           background: var(--bg);
@@ -567,7 +556,6 @@ export default function Home() {
         .send-btn:disabled { opacity: 0.3; cursor: default; }
         .send-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
-        /* ── FOOTER ── */
         .footer-bar {
           display: flex;
           align-items: center;
