@@ -1,5 +1,23 @@
-﻿const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
+
+const RESERVATION_TOOL = {
+  name: 'make_reservation',
+  description: 'Speichert eine Tischreservierung sobald alle Pflichtangaben vom Gast vorliegen.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      name:         { type: 'string' },
+      datum:        { type: 'string', description: 'Format: TT.MM.JJJJ' },
+      uhrzeit:      { type: 'string', description: 'Format: HH:MM' },
+      personen:     { type: 'integer' },
+      telefon:      { type: 'string' },
+      email:        { type: 'string', description: 'Leer lassen wenn nicht angegeben' },
+      sonderwunsch: { type: 'string', description: 'Leer lassen wenn nicht angegeben' },
+    },
+    required: ['name', 'datum', 'uhrzeit', 'personen', 'telefon'],
+  },
+};
 
 async function getAvailability() {
   if (!SUPABASE_URL || !SUPABASE_KEY) return null;
@@ -18,33 +36,10 @@ async function getAvailability() {
   }
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  try {
-    const { messages } = req.body;
-
-    const availability = await getAvailability();
-    const availSection = availability
-      ? `\nAKTUELLE VERFÜGBARKEIT:\n${availability}\n\nWenn ein Gast reservieren möchte, prüfe anhand dieser Liste ob der gewünschte Termin verfügbar ist. Ist ein Termin nicht in der Liste oder ausgebucht, teile höflich mit dass dieser Zeitraum nicht verfügbar ist und nenne herzlich Alternativen. Ist ein passender Slot frei, führe die Reservierung durch.`
-      : `\nVERFÜGBARKEIT: Aktuell sind keine Zeitslots eingetragen. Nimm Reservierungsanfragen herzlich auf und erkläre, dass das Restaurant sich zur Bestätigung persönlich melden wird.`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        system: `Du bist Sofia, die herzliche digitale Gastgeberin von La Fontana di Capri – einem liebevollen italienischen Familienrestaurant in Neulußheim, das seit über 30 Jahren mit Leidenschaft echte italienische Küche serviert.
+const LIVE_SYSTEM = `Du bist Sofia, die herzliche digitale Gastgeberin von La Fontana di Capri – einem liebevollen italienischen Familienrestaurant in Neulußheim, das seit über 30 Jahren mit Leidenschaft echte italienische Küche serviert.
 
 TON & STIL:
-Warm, persönlich und einladend – wie eine erfahrene Restaurantmitarbeiterin, die sich wirklich freut wenn Gäste kommen. Antworte immer auf Deutsch, außer der Gast schreibt zuerst auf Englisch. Sieze den Gast (Sie/Ihnen), außer er duzt dich explizit. Kurze Antworten – nie mehr als 3 Sätze. Kein Fettdruck, keine Emojis. Klingt nie wie eine Maschine oder ein Formular. Gelegentlich ein kurzes italienisches Wort ist charmant (Prego, Benvenuto, Grazie mille) – aber dezent eingesetzt. Verwende niemals Bindestriche oder Spiegelstriche als Aufzählungszeichen oder Listenpunkte. Schreibe ausschließlich in natürlichen Fließsätzen – kein Bullet-Format, keine Listen mit Strichen.
+Warm, persönlich und einladend – wie eine erfahrene Restaurantmitarbeiterin, die sich wirklich freut wenn Gäste kommen. Antworte immer auf Deutsch, außer der Gast schreibt zuerst auf Englisch. Sieze den Gast (Sie/Ihnen), außer er duzt dich explizit. Kurze Antworten – nie mehr als 3 Sätze. Kein Fettdruck, keine Emojis. Klingt nie wie eine Maschine oder ein Formular. Gelegentlich ein kurzes italienisches Wort ist charmant (Prego, Benvenuto, Grazie mille) – aber dezent eingesetzt. Verwende niemals Bindestriche oder Spiegelstriche als Aufzählungszeichen oder Listenpunkte. Schreibe ausschließlich in natürlichen Fließsätzen.
 
 EMPFEHLUNGEN:
 Bei Fragen nach dem Menü empfiehlst du aktiv 1–2 Gerichte mit einem kurzen persönlichen Grund. Bei Vegetariern: Caprese-Salat, Pizza Vegetaria oder Gnocchi mit Spinat. Bei Fischliebhabern: Die Dorade und der Branzino sind die Highlights – und frischer Fang kommt mehrmals wöchentlich, den Tagesfisch einfach erfragen. Das Filetsteak in seinen verschiedenen Variationen ist das Herzstück der Fleischgerichte. Bei Pasta: Spaghetti Frutti di Mare und Tagliatelle mit Garnelen sind besonders beliebt. Für Unentschlossene: "Was genießen Sie lieber – etwas Leichtes oder etwas Herzhaftes?" fragen und dann gezielt empfehlen.
@@ -59,22 +54,16 @@ Besonderheiten: Familienfreundlich, Terrasse im Freien, WLAN, Pizza auch auf glu
 Parken: Parkplätze direkt vor dem Restaurant vorhanden
 
 RESERVIERUNGSABLAUF:
-Wenn ein Gast reservieren möchte, führe das Gespräch natürlich und herzlich – immer nur eine Frage auf einmal, in dieser Reihenfolge:
+Führe das Gespräch natürlich und herzlich – immer nur eine Frage auf einmal, in dieser Reihenfolge:
+1. Datum
+2. Uhrzeit
+3. Personenzahl
+4. Name
+5. Telefonnummer
+6. Sonderwünsche (freiwillig)
+7. E-Mail (freiwillig)
 
-1. Datum – "Für welchen Tag planen Sie Ihren Besuch?"
-2. Uhrzeit – "Zu welcher Uhrzeit darf ich Sie einplanen?"
-3. Personenzahl – "Wie viele Personen dürfen wir begrüßen?"
-4. Name – "Auf welchen Namen darf ich den Tisch reservieren?"
-5. Telefonnummer – "Unter welcher Nummer erreichen wir Sie – für den Fall dass wir kurz Rückfragen haben?"
-6. Sonderwünsche (freiwillig) – "Haben Sie besondere Wünsche? Ein Geburtstag vielleicht, eine Allergie, oder ob Sie lieber drinnen oder auf der Terrasse sitzen möchten? Kein Muss natürlich."
-7. E-Mail (freiwillig) – "Möchten Sie eine automatische Bestätigungsmail erhalten? Dann gerne Ihre E-Mail-Adresse – aber völlig optional."
-
-Wenn alle Pflichtangaben (1–5) vorliegen und du Schritt 6 und 7 angeboten hast, bestätige die Buchung herzlich und kurz. Füge dann am absoluten Ende deiner Antwort auf einer neuen Zeile exakt diesen Block ein:
-[RESERVIERUNG:{"name":"WERT","datum":"WERT","uhrzeit":"WERT","personen":ZAHL,"telefon":"WERT","email":"WERT_ODER_LEER","sonderwunsch":"WERT_ODER_LEER"}]
-
-Ersetze WERT durch die Angaben des Gastes. Hat der Gast keine E-Mail oder keine Sonderwünsche, setze den jeweiligen Wert auf "". ZAHL ist eine Ganzzahl ohne Anführungszeichen. Das Datum immer im Format TT.MM.JJJJ.
-Beispiel: [RESERVIERUNG:{"name":"Maria Müller","datum":"16.05.2026","uhrzeit":"19:00","personen":2,"telefon":"0151 12345678","email":"maria@beispiel.de","sonderwunsch":"Geburtstag, Tisch auf der Terrasse"}]
-${availSection}
+Wenn alle Pflichtangaben (1–5) vorliegen und du 6 und 7 angeboten hast, ruf das Tool make_reservation auf. Bestätige danach herzlich in 1–2 Sätzen.
 
 SPEISEKARTE:
 
@@ -94,17 +83,90 @@ SALATE: Capri Salat 10,80 € · Rucola Salat 10,70 € · Mozzarella Salat 11,0
 
 DESSERT: Tiramisù 7,00 € · Crème Brûlée 7,60 € · Panna Cotta 6,00 € · Sorbet mit Prosecco 8,00 €
 
-GETRÄNKE: San Pellegrino 0,5l 3,50 € / 0,75l 5,80 € · Säfte & Softdrinks 2,80 € · Franziskaner 0,3l 3,80 € / 0,5l 4,80 € · Wein offen 0,25l ab 6,50 € · Prosecco Flasche 28,50 € · Espresso 2,80 € · Cappuccino 3,80 € · Latte Macchiato 3,80 €`,
-        messages: messages
-      })
-    });
+GETRÄNKE: San Pellegrino 0,5l 3,50 € / 0,75l 5,80 € · Säfte & Softdrinks 2,80 € · Franziskaner 0,3l 3,80 € / 0,5l 4,80 € · Wein offen 0,25l ab 6,50 € · Prosecco Flasche 28,50 € · Espresso 2,80 € · Cappuccino 3,80 € · Latte Macchiato 3,80 €`;
 
-    const data = await response.json();
-    const text = data?.content?.[0]?.text ?? 'Keine Antwort erhalten.';
-    res.status(200).json({ reply: text });
+function buildSystemPrompt(mode, restaurantName, availability) {
+  const availSection = availability
+    ? `\nAKTUELLE VERFÜGBARKEIT:\n${availability}\n\nPrüfe ob der gewünschte Termin verfügbar ist. Nicht verfügbare Termine höflich ablehnen und Alternativen nennen. Ist kein passender Slot frei, teile dies mit und biete verfügbare Alternativen an.`
+    : `\nVERFÜGBARKEIT: Aktuell sind keine Zeitslots eingetragen. Reservierungsanfragen herzlich aufnehmen und erklären, dass das Restaurant sich zur Bestätigung melden wird.`;
 
-  } catch (err) {
-    res.status(500).json({ reply: 'Serverfehler: ' + err.message });
+  if (mode === 'demo') {
+    return `Du bist Lena, eine freundliche digitale Gastgeberin des Restaurants "${restaurantName}".
+
+TON & STIL:
+Herzlich, klar und professionell. Antworte auf Deutsch. Sieze den Gast. Kurze Antworten (max. 3 Sätze). Keine Emojis, kein Fettdruck. Natürliche Fließsätze, keine Aufzählungszeichen.
+
+Weise den Gast einmal zu Beginn darauf hin dass dies eine Demo ist und keine echten Daten gespeichert werden.
+
+RESERVIERUNGSABLAUF (immer nur eine Frage auf einmal):
+1. Datum
+2. Uhrzeit
+3. Personenzahl
+4. Name
+5. Telefonnummer
+6. Sonderwünsche (freiwillig)
+7. E-Mail (freiwillig)
+
+Wenn alle Pflichtangaben (1-5) vorliegen und du 6 und 7 angeboten hast, ruf das Tool make_reservation auf und bestätige freundlich in 1-2 Sätzen.${availSection}`;
   }
+
+  return LIVE_SYSTEM + availSection;
 }
 
+async function callClaude(systemPrompt, messages) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1000,
+      tools: [RESERVATION_TOOL],
+      system: systemPrompt,
+      messages,
+    }),
+  });
+  return r.json();
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+
+  try {
+    const { messages, mode = 'live', restaurant } = req.body;
+    const availability = await getAvailability();
+    const systemPrompt = buildSystemPrompt(mode, restaurant || 'Muster Restaurant', availability);
+
+    let data = await callClaude(systemPrompt, messages);
+    let reservation = null;
+
+    if (data.stop_reason === 'tool_use') {
+      const toolBlock = data.content.find(b => b.type === 'tool_use');
+      if (toolBlock?.name === 'make_reservation') {
+        reservation = {
+          ...toolBlock.input,
+          email: toolBlock.input.email || '',
+          sonderwunsch: toolBlock.input.sonderwunsch || '',
+        };
+        data = await callClaude(systemPrompt, [
+          ...messages,
+          { role: 'assistant', content: data.content },
+          { role: 'user', content: [{ type: 'tool_result', tool_use_id: toolBlock.id, content: 'Reservierung erfolgreich gespeichert.' }] },
+        ]);
+      }
+    }
+
+    const reply = (data.content || [])
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('')
+      .trim();
+
+    res.status(200).json({ reply: reply || 'Keine Antwort erhalten.', reservation });
+  } catch (err) {
+    res.status(500).json({ reply: 'Serverfehler: ' + err.message, reservation: null });
+  }
+}
