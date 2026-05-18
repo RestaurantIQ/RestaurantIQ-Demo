@@ -118,7 +118,7 @@ export default function Admin() {
       body: JSON.stringify({ ...newResForm, personen: parseInt(newResForm.personen), status: 'bestätigt' }),
     });
     if (r.ok) {
-      setReservations(prev => [await r.json(), ...prev]);
+      const saved = await r.json(); setReservations(prev => [saved, ...prev]);
       setNewResModal(false); setNewResForm(EMPTY_FORM);
     } else {
       setNewResError('Fehler beim Speichern.');
