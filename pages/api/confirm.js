@@ -36,10 +36,13 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-async function sendGuestEmail(reservation, action) {
+async function sendGuestEmail(reservation, restaurant, action) {
   if (!process.env.GMAIL_USER || !reservation.email) return;
 
   const confirmed = action === 'bestätigt';
+  const rName    = restaurant?.name || 'Ihr Restaurant';
+  const rAddress = restaurant?.address || '';
+  const rPhone   = restaurant?.phone || '';
 
   const html = confirmed ? `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
 body{font-family:sans-serif;background:#f5f0ea;margin:0;padding:24px}
@@ -55,15 +58,15 @@ td:first-child{color:#9e8f7e;width:110px}
 <div class="card">
   <div class="badge">&#10003; Reservierung bestaetigt</div>
   <h2>Wir freuen uns auf Sie!</h2>
-  <div class="sub">La Fontana di Capri &middot; Neulussheim</div>
+  <div class="sub">${esc(rName)}</div>
   <table>
     <tr><td>Name</td><td>${esc(reservation.name)}</td></tr>
     <tr><td>Datum</td><td>${esc(reservation.datum)}</td></tr>
     <tr><td>Uhrzeit</td><td>${esc(reservation.uhrzeit)} Uhr</td></tr>
     <tr><td>Personen</td><td>${esc(reservation.personen)}</td></tr>
-    <tr><td>Adresse</td><td>Hockenheimer Str. 1, 68809 Neulussheim</td></tr>
+    ${rAddress ? `<tr><td>Adresse</td><td>${esc(rAddress)}</td></tr>` : ''}
   </table>
-  <p style="font-size:13px;color:#5a5245">Bei Rueckfragen erreichen Sie uns unter <strong>06205 37008</strong>.</p>
+  ${rPhone ? `<p style="font-size:13px;color:#5a5245">Bei Rueckfragen erreichen Sie uns unter <strong>${esc(rPhone)}</strong>.</p>` : ''}
   <div class="footer">Powered by RestaurantIQ</div>
 </div></body></html>`
   : `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
@@ -77,18 +80,18 @@ h2{font-size:20px;color:#1a1612;margin:0 0 4px}
 <div class="card">
   <div class="badge">Reservierung nicht moeglich</div>
   <h2>Leider kein Tisch verfuegbar</h2>
-  <div class="sub">La Fontana di Capri &middot; Neulussheim</div>
+  <div class="sub">${esc(rName)}</div>
   <p style="font-size:14px;color:#5a5245;margin-bottom:16px">Fuer Ihren gewuenschten Termin am <strong>${esc(reservation.datum)} um ${esc(reservation.uhrzeit)} Uhr</strong> steht leider kein Tisch zur Verfuegung.</p>
-  <p style="font-size:13px;color:#5a5245">Bitte rufen Sie uns an, wir finden gerne einen alternativen Termin: <strong>06205 37008</strong></p>
+  ${rPhone ? `<p style="font-size:13px;color:#5a5245">Bitte rufen Sie uns an, wir finden gerne einen alternativen Termin: <strong>${esc(rPhone)}</strong></p>` : ''}
   <div class="footer">Powered by RestaurantIQ</div>
 </div></body></html>`;
 
   const subject = confirmed
-    ? `Ihre Reservierung ist bestaetigt - La Fontana di Capri`
-    : `Ihre Reservierungsanfrage - La Fontana di Capri`;
+    ? `Ihre Reservierung ist bestaetigt - ${rName}`
+    : `Ihre Reservierungsanfrage - ${rName}`;
 
   await getMailer().sendMail({
-    from: `"La Fontana di Capri" <${process.env.GMAIL_USER}>`,
+    from: `"${rName}" <${process.env.GMAIL_USER}>`,
     to: reservation.email,
     subject,
     html,
@@ -119,10 +122,17 @@ export default async function handler(req, res) {
     return res.status(500).send('Datenbankfehler.');
   }
 
-  const getRes = await db(`reservations?id=eq.${encodeURIComponent(id)}&select=name,datum,uhrzeit,personen,email`);
+  const getRes = await db(`reservations?id=eq.${encodeURIComponent(id)}&select=name,datum,uhrzeit,personen,email,restaurant_id`);
   const [reservation] = await getRes.json();
 
-  if (reservation) await sendGuestEmail(reservation, action);
+  let restaurant = null;
+  if (reservation?.restaurant_id) {
+    const rRes = await db(`restaurants?id=eq.${reservation.restaurant_id}&select=name,address,phone`);
+    const [r] = await rRes.json();
+    restaurant = r || null;
+  }
+
+  if (reservation) await sendGuestEmail(reservation, restaurant, action);
 
   const confirmed = action === 'bestätigt';
   const color = confirmed ? '#3a9e5f' : '#c0392b';
