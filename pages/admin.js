@@ -279,6 +279,8 @@ export default function Admin() {
 
         {tab==='availability' && <AvailabilityTab slots={slots} onDeleteSlot={deleteSlot} onSlotsGenerated={loadSlots}/>}
 
+        {tab==='profil' && <ProfileTab/>}
+
       </div>
     </div>
   );
