@@ -4,6 +4,7 @@ import Calendar from '../components/admin/Calendar';
 import DayModal from '../components/admin/DayModal';
 import NewResModal from '../components/admin/NewResModal';
 import AvailabilityTab from '../components/admin/AvailabilityTab';
+import ProfileTab from '../components/admin/ProfileTab';
 
 function parseDatum(datum) {
   if (!datum) return null;
@@ -219,6 +220,7 @@ export default function Admin() {
           {key:'reservations', label:`Reservierungen${pendingCount>0?` (${pendingCount})`:''}`},
           {key:'calendar',     label:'Kalender'},
           {key:'availability', label:'Verfügbarkeit'},
+          {key:'profil',       label:'Profil & Widget'},
         ].map(t=>(
           <button key={t.key} onClick={()=>setTab(t.key)} style={{padding:'14px 18px',fontSize:13,border:'none',background:'none',cursor:'pointer',whiteSpace:'nowrap',color:tab===t.key?'#1d1d1f':'#6e6e73',borderBottom:tab===t.key?'2px solid #1d1d1f':'2px solid transparent',fontWeight:tab===t.key?500:400,fontFamily:'inherit'}}>
             {t.label}
