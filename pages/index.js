@@ -126,7 +126,7 @@ export default function Home() {
         } else {
           finalMessages = [...finalMessages, {
             role: 'assistant',
-            content: ,
+            content: `Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: ${restaurantPhone}.`,
           }];
         }
       }
