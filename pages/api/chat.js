@@ -132,8 +132,22 @@ async function callClaude(systemPrompt, messages) {
   return r.json();
 }
 
+
+const chatRateLimit = new Map();
+function isChatRateLimited(ip) {
+  const now = Date.now();
+  const window = 15 * 60 * 1000;
+  const entry = chatRateLimit.get(ip);
+  if (!entry || now - entry.start > window) { chatRateLimit.set(ip, { count: 1, start: now }); return false; }
+  if (entry.count >= 30) return true;
+  entry.count++;
+  return false;
+}
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
+  if (isChatRateLimited(ip)) return res.status(429).json({ error: 'Zu viele Anfragen. Bitte warten.' });
 
   try {
     const { messages, mode = 'live', restaurant } = req.body;
