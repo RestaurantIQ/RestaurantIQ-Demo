@@ -5,6 +5,18 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 const BASE_URL     = process.env.NEXT_PUBLIC_BASE_URL || 'https://restaurant-iq-demo.vercel.app';
 
+const reserveRateLimit = new Map();
+function isRateLimited(ip) {
+  const now = Date.now();
+  const window = 15 * 60 * 1000;
+  const entry = reserveRateLimit.get(ip);
+  if (!entry || now - entry.start > window) { reserveRateLimit.set(ip, { count: 1, start: now }); return false; }
+  if (entry.count >= 5) return true;
+  entry.count++;
+  return false;
+}
+
+
 function db(path, options = {}) {
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
@@ -139,6 +151,9 @@ tr:last-child td{border-bottom:none}
 // ─── Handler ──────────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
+  if (isRateLimited(ip)) return res.status(429).json({ error: 'Zu viele Anfragen. Bitte einige Minuten warten.' });
 
   const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch } = req.body;
 
