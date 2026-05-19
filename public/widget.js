@@ -2,6 +2,8 @@
   if (window.__riqWidget) return;
   window.__riqWidget = true;
 
+  var scriptTag = document.currentScript || document.querySelector('script[src*="widget.js"]');
+  var restaurantName = (scriptTag && scriptTag.getAttribute('data-restaurant-name')) || 'RestaurantIQ';
   var BASE_URL = 'https://restaurant-iq-demo.vercel.app';
 
   var style = document.createElement('style');
@@ -62,7 +64,7 @@
 
   var header = document.createElement('div');
   header.id = 'riq-panel-header';
-  header.innerHTML = '<span>La Fontana di Capri</span>';
+  header.innerHTML = '<span>' + restaurantName + '</span>';
 
   var closeBtn = document.createElement('button');
   closeBtn.id = 'riq-close-btn';
