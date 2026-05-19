@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const DAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 
@@ -15,15 +15,23 @@ function fmtDate(d) {
 
 export default function AvailabilityTab({ slots, onDeleteSlot, onSlotsGenerated }) {
   const DEFAULT_TEMPLATE = { times: ['12:00', '18:00'], cells: {} };
-  const [template, setTemplate]       = useState(() => { try { const t=localStorage.getItem('riq_template'); return t?JSON.parse(t):DEFAULT_TEMPLATE; } catch{return DEFAULT_TEMPLATE;} });
+  const [template, setTemplate]       = useState(DEFAULT_TEMPLATE);
   const [weeksAhead, setWeeksAhead]   = useState(4);
+
+  useEffect(() => {
+    fetch('/api/settings').then(r => r.ok ? r.json() : null).then(t => { if (t) setTemplate(t); }).catch(() => {});
+  }, []);
   const [generating, setGenerating]   = useState(false);
   const [genResult, setGenResult]     = useState(null);
   const [newTimeInput, setNewTimeInput] = useState('');
 
   function saveTemplate(t) {
     setTemplate(t);
-    try { localStorage.setItem('riq_template', JSON.stringify(t)); } catch {}
+    fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ template: t }),
+    }).catch(() => {});
   }
 
   function toggleCell(day, time) {
