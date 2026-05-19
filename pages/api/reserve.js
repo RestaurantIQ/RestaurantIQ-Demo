@@ -16,6 +16,14 @@ function isRateLimited(ip) {
   return false;
 }
 
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function db(path, options = {}) {
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -48,15 +56,16 @@ function waLink(phone, name, datum, uhrzeit) {
   return `https://wa.me/${cleaned}?text=${msg}`;
 }
 
-// ─── Admin-Mail ───────────────────────────────────────────────────────────────
+// Admin-Mail
 function buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id, restaurantName }) {
-  const confirmToken   = encodeURIComponent(createConfirmToken(id));
-  const confirmUrl     = `${BASE_URL}/api/confirm?id=${id}&action=best%C3%A4tigt&token=${confirmToken}`;
-  const declineUrl     = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${confirmToken}`;
-  const whatsappUrl    = waLink(telefon, name, datum, uhrzeit);
-  const emailRow       = email ? `<tr><td>E-Mail</td><td>${email}</td></tr>` : '';
-  const sonderwunschRow = sonderwunsch ? `<tr><td>Sonderwunsch</td><td>${sonderwunsch}</td></tr>` : '';
-  const guestNote      = email
+  const confirmToken = encodeURIComponent(createConfirmToken(id, 'bestätigt'));
+  const declineToken = encodeURIComponent(createConfirmToken(id, 'abgesagt'));
+  const confirmUrl   = `${BASE_URL}/api/confirm?id=${encodeURIComponent(id)}&action=best%C3%A4tigt&token=${confirmToken}`;
+  const declineUrl   = `${BASE_URL}/api/confirm?id=${encodeURIComponent(id)}&action=abgesagt&token=${declineToken}`;
+  const whatsappUrl  = waLink(telefon, name, datum, uhrzeit);
+  const emailRow        = email ? `<tr><td>E-Mail</td><td>${esc(email)}</td></tr>` : '';
+  const sonderwunschRow = sonderwunsch ? `<tr><td>Sonderwunsch</td><td>${esc(sonderwunsch)}</td></tr>` : '';
+  const guestNote       = email
     ? `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">&#10003; Gast erhält automatisch eine Bestätigungsmail.</p>`
     : `<p style="font-size:12px;color:#9e8f7e;margin-top:8px">Kein E-Mail-Kontakt – Gast per WhatsApp benachrichtigen.</p>`;
 
@@ -76,13 +85,13 @@ td:first-child{color:#9e8f7e;width:110px}
 </style></head><body>
 <div class="card">
   <h2>Neue Reservierungsanfrage</h2>
-  <div class="sub">${restaurantName} &middot; RestaurantIQ</div>
+  <div class="sub">${esc(restaurantName)} &middot; RestaurantIQ</div>
   <table>
-    <tr><td>Name</td><td>${name}</td></tr>
-    <tr><td>Datum</td><td>${datum}</td></tr>
-    <tr><td>Uhrzeit</td><td>${uhrzeit} Uhr</td></tr>
-    <tr><td>Personen</td><td>${personen}</td></tr>
-    <tr><td>Telefon</td><td>${telefon}</td></tr>
+    <tr><td>Name</td><td>${esc(name)}</td></tr>
+    <tr><td>Datum</td><td>${esc(datum)}</td></tr>
+    <tr><td>Uhrzeit</td><td>${esc(uhrzeit)} Uhr</td></tr>
+    <tr><td>Personen</td><td>${esc(personen)}</td></tr>
+    <tr><td>Telefon</td><td>${esc(telefon)}</td></tr>
     ${emailRow}
     ${sonderwunschRow}
   </table>
@@ -94,10 +103,10 @@ td:first-child{color:#9e8f7e;width:110px}
 </div></body></html>`;
 }
 
-// ─── Gäste-Bestätigungs-Mail ─────────────────────────────────────────────────
+// Gäste-Bestätigungs-Mail
 function buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch, restaurantName }) {
   const sonderwunschRow = sonderwunsch
-    ? `<tr><td>Ihr Wunsch</td><td>${sonderwunsch}</td></tr>`
+    ? `<tr><td>Ihr Wunsch</td><td>${esc(sonderwunsch)}</td></tr>`
     : '';
 
   return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><style>
@@ -120,14 +129,14 @@ tr:last-child td{border-bottom:none}
 .gold{color:#a8864a}
 </style></head><body>
 <div class="card">
-  <div class="logo">${restaurantName}</div>
+  <div class="logo">${esc(restaurantName)}</div>
   <h1>Ihre Reservierungsanfrage</h1>
-  <p class="sub">Vielen Dank, ${name}! Wir haben Ihre Anfrage erhalten und melden uns in Kürze bei Ihnen.</p>
+  <p class="sub">Vielen Dank, ${esc(name)}! Wir haben Ihre Anfrage erhalten und melden uns in Kürze bei Ihnen.</p>
   <div class="badge">&#9679; Anfrage eingegangen</div>
   <table>
-    <tr><td>Datum</td><td>${datum}</td></tr>
-    <tr><td>Uhrzeit</td><td>${uhrzeit} Uhr</td></tr>
-    <tr><td>Personen</td><td>${personen}</td></tr>
+    <tr><td>Datum</td><td>${esc(datum)}</td></tr>
+    <tr><td>Uhrzeit</td><td>${esc(uhrzeit)} Uhr</td></tr>
+    <tr><td>Personen</td><td>${esc(personen)}</td></tr>
     ${sonderwunschRow}
   </table>
   <div class="note">
@@ -148,7 +157,7 @@ tr:last-child td{border-bottom:none}
 </div></body></html>`;
 }
 
-// ─── Handler ──────────────────────────────────────────────────────────────────
+// Handler
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -157,7 +166,6 @@ export default async function handler(req, res) {
 
   const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch } = req.body;
 
-  // Input-Validierung
   if (!name?.trim() || !datum || !uhrzeit || !telefon?.trim()) {
     return res.status(400).json({ error: 'Pflichtfelder fehlen.' });
   }
@@ -174,13 +182,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Telefonnummer ungültig.' });
   }
 
-  // Lookup restaurant_id by username (this endpoint is for La Fontana di Capri)
   const rRes = await db('restaurants?username=eq.lafontana&select=id,name');
   const [restaurant] = await rRes.json();
   const restaurant_id = restaurant?.id || null;
   const restaurantName = restaurant?.name || 'La Fontana di Capri';
 
-  // 1. Reservierung in Supabase speichern
   const dbRes = await db('reservations', {
     method: 'POST',
     body: JSON.stringify({
@@ -200,7 +206,6 @@ export default async function handler(req, res) {
   const [saved] = await dbRes.json();
   const id = saved?.id;
 
-  // 2. Verfügbarkeit reduzieren
   const availRes  = await db(
     `availability?datum=eq.${encodeURIComponent(datum)}&uhrzeit=eq.${encodeURIComponent(uhrzeit)}&select=id,tische_frei`
   );
@@ -212,19 +217,17 @@ export default async function handler(req, res) {
     });
   }
 
-  // 3. E-Mails versenden
   if (process.env.GMAIL_USER && id) {
     const mailer = getMailer();
+    const safeNameSubject = name.replace(/[\r\n\t]+/g, ' ');
 
-    // Admin-Benachrichtigung
     await mailer.sendMail({
       from: `"${restaurantName} via RestaurantIQ" <${process.env.GMAIL_USER}>`,
       to: process.env.GMAIL_USER,
-      subject: `[${restaurantName}] Neue Anfrage: ${name} – ${datum} um ${uhrzeit} (${personen} Pers.)`,
+      subject: `[${restaurantName}] Neue Anfrage: ${safeNameSubject} – ${datum} um ${uhrzeit} (${personen} Pers.)`,
       html: buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id, restaurantName }),
     }).catch(e => console.error('Admin-Mail Fehler:', e));
 
-    // Gäste-Bestätigung (nur wenn E-Mail angegeben)
     if (email) {
       await mailer.sendMail({
         from: `"La Fontana di Capri" <${process.env.GMAIL_USER}>`,
