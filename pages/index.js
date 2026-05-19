@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 const suggestions = [
   "Was empfehlt ihr heute?",
@@ -8,12 +9,12 @@ const suggestions = [
   "Wann habt ihr geöffnet?"
 ];
 
-function TicketCard({ reservation }) {
+function TicketCard({ reservation, restaurantName }) {
   const { name, datum, uhrzeit, personen, sonderwunsch } = reservation;
   return (
     <div className="ticket-card">
       <div className="ticket-header">
-        <div className="ticket-restaurant">La Fontana di Capri</div>
+        <div className="ticket-restaurant">{restaurantName}</div>
         <div className="ticket-title">Reservierungsanfrage</div>
       </div>
       <div className="ticket-divider" />
@@ -56,6 +57,22 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const bottomRef = useRef(null);
+  const router = useRouter();
+  const [restaurantInfo, setRestaurantInfo] = useState(null);
+  const username = router.isReady ? (router.query.restaurant || null) : undefined;
+
+  useEffect(() => {
+    if (!username) return;
+    fetch('/api/profile?username=' + encodeURIComponent(username))
+      .then(r => r.json())
+      .then(d => { if (d.name) setRestaurantInfo(d); })
+      .catch(() => {});
+  }, [username]);
+
+  const restaurantName = restaurantInfo?.name || 'La Fontana di Capri';
+  const restaurantPhone = restaurantInfo?.phone || '06205 37008';
+  const restaurantSub = restaurantInfo?.address || 'Ristorante & Pizzeria · Nelußheim';
+  const initials = restaurantName.split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -86,7 +103,7 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, mode: 'live' }),
+        body: JSON.stringify({ messages: newMessages, mode: 'live', username }),
       });
       const data = await res.json();
       const reply = data.reply || 'Ein Fehler ist aufgetreten.';
@@ -97,7 +114,7 @@ export default function Home() {
         const reserveRes = await fetch('/api/reserve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data.reservation),
+          body: JSON.stringify({ ...data.reservation, username }),
         });
         if (reserveRes.ok) {
           finalMessages = [...finalMessages, {
@@ -109,7 +126,7 @@ export default function Home() {
         } else {
           finalMessages = [...finalMessages, {
             role: 'assistant',
-            content: 'Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: 06205 37008.',
+            content: ,
           }];
         }
       }
@@ -601,10 +618,10 @@ export default function Home() {
         <header className="header">
           <div className="mark">
             <div className="mark-corner-tl" />
-            <div className="mark-inner">LF</div>
+            <div className="mark-inner">{initials}</div>
           </div>
           <div className="header-meta">
-            <div className="header-name">La Fontana di Capri</div>
+            <div className="header-name">{restaurantName}</div>
             <div className="header-sub">Ristorante &amp; Pizzeria · Neulußheim</div>
           </div>
           <div className="badge">
@@ -619,7 +636,7 @@ export default function Home() {
             if (m.type === 'ticket') {
               return (
                 <div key={i} className="ticket-row-wrap">
-                  <TicketCard reservation={m.reservation} />
+                  <TicketCard reservation={m.reservation} restaurantName={restaurantName} />
                 </div>
               );
             }
