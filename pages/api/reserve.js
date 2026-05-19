@@ -49,7 +49,7 @@ function waLink(phone, name, datum, uhrzeit) {
 }
 
 // ─── Admin-Mail ───────────────────────────────────────────────────────────────
-function buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id }) {
+function buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id, restaurantName }) {
   const confirmToken   = encodeURIComponent(createConfirmToken(id));
   const confirmUrl     = `${BASE_URL}/api/confirm?id=${id}&action=best%C3%A4tigt&token=${confirmToken}`;
   const declineUrl     = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${confirmToken}`;
@@ -76,7 +76,7 @@ td:first-child{color:#9e8f7e;width:110px}
 </style></head><body>
 <div class="card">
   <h2>Neue Reservierungsanfrage</h2>
-  <div class="sub">La Fontana di Capri &middot; RestaurantIQ</div>
+  <div class="sub">${restaurantName} &middot; RestaurantIQ</div>
   <table>
     <tr><td>Name</td><td>${name}</td></tr>
     <tr><td>Datum</td><td>${datum}</td></tr>
@@ -95,7 +95,7 @@ td:first-child{color:#9e8f7e;width:110px}
 }
 
 // ─── Gäste-Bestätigungs-Mail ─────────────────────────────────────────────────
-function buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch }) {
+function buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch, restaurantName }) {
   const sonderwunschRow = sonderwunsch
     ? `<tr><td>Ihr Wunsch</td><td>${sonderwunsch}</td></tr>`
     : '';
@@ -120,7 +120,7 @@ tr:last-child td{border-bottom:none}
 .gold{color:#a8864a}
 </style></head><body>
 <div class="card">
-  <div class="logo">La Fontana di Capri</div>
+  <div class="logo">${restaurantName}</div>
   <h1>Ihre Reservierungsanfrage</h1>
   <p class="sub">Vielen Dank, ${name}! Wir haben Ihre Anfrage erhalten und melden uns in Kürze bei Ihnen.</p>
   <div class="badge">&#9679; Anfrage eingegangen</div>
@@ -158,9 +158,10 @@ export default async function handler(req, res) {
   const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch } = req.body;
 
   // Lookup restaurant_id by username (this endpoint is for La Fontana di Capri)
-  const rRes = await db('restaurants?username=eq.lafontana&select=id');
+  const rRes = await db('restaurants?username=eq.lafontana&select=id,name');
   const [restaurant] = await rRes.json();
   const restaurant_id = restaurant?.id || null;
+  const restaurantName = restaurant?.name || 'La Fontana di Capri';
 
   // 1. Reservierung in Supabase speichern
   const dbRes = await db('reservations', {
@@ -200,10 +201,10 @@ export default async function handler(req, res) {
 
     // Admin-Benachrichtigung
     await mailer.sendMail({
-      from: `"RestaurantIQ" <${process.env.GMAIL_USER}>`,
+      from: `"${restaurantName} via RestaurantIQ" <${process.env.GMAIL_USER}>`,
       to: process.env.GMAIL_USER,
-      subject: `Neue Anfrage: ${name} – ${datum} um ${uhrzeit} (${personen} Pers.)`,
-      html: buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id }),
+      subject: `[${restaurantName}] Neue Anfrage: ${name} – ${datum} um ${uhrzeit} (${personen} Pers.)`,
+      html: buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id, restaurantName }),
     }).catch(e => console.error('Admin-Mail Fehler:', e));
 
     // Gäste-Bestätigung (nur wenn E-Mail angegeben)
@@ -212,7 +213,7 @@ export default async function handler(req, res) {
         from: `"La Fontana di Capri" <${process.env.GMAIL_USER}>`,
         to: email,
         subject: `Ihre Reservierungsanfrage – ${datum} um ${uhrzeit} Uhr`,
-        html: buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch }),
+        html: buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch, restaurantName }),
       }).catch(e => console.error('Gäste-Mail Fehler:', e));
     }
   }
