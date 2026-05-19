@@ -157,6 +157,11 @@ export default async function handler(req, res) {
 
   const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch } = req.body;
 
+  // Lookup restaurant_id by username (this endpoint is for La Fontana di Capri)
+  const rRes = await db('restaurants?username=eq.lafontana&select=id');
+  const [restaurant] = await rRes.json();
+  const restaurant_id = restaurant?.id || null;
+
   // 1. Reservierung in Supabase speichern
   const dbRes = await db('reservations', {
     method: 'POST',
@@ -165,6 +170,7 @@ export default async function handler(req, res) {
       email: email || null,
       sonderwunsch: sonderwunsch || null,
       status: 'neu',
+      restaurant_id,
     }),
   });
 
