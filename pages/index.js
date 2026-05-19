@@ -2,11 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const suggestions = [
+  "Ich möchte einen Tisch reservieren",
   "Was empfehlt ihr heute?",
-  "Gibt es vegetarische Gerichte?",
-  "Welche Pizzen habt ihr?",
-  "Ich möchte reservieren",
-  "Wann habt ihr geöffnet?"
+  "Wann habt ihr geöffnet?",
+  "Gibt es vegetarische Optionen?",
+  "Wie kann ich euch erreichen?"
 ];
 
 function TicketCard({ reservation, restaurantName }) {
@@ -78,15 +78,20 @@ export default function Home() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
+  const welcomeShown = useRef(false);
   useEffect(() => {
+    if (welcomeShown.current) return;
+    if (username === undefined) return;
+    if (username && !restaurantInfo) return;
+    welcomeShown.current = true;
     setTimeout(() => {
       setMessages([{
         role: 'assistant',
-        content: 'Benvenuto bei **La Fontana di Capri**.\n\nWie kann ich Ihnen helfen?'
+        content: `Willkommen bei **${restaurantName}**.\n\nWie kann ich Ihnen helfen?`
       }]);
       setTimeout(() => setShowSuggestions(true), 280);
     }, 300);
-  }, []);
+  }, [username, restaurantInfo, restaurantName]);
 
   async function sendMessage(text) {
     const msg = text || input;
@@ -358,8 +363,8 @@ export default function Home() {
           max-width: 82%;
           background: #fff;
           border: 1px solid rgba(168,134,74,0.3);
-          border-left: 3px solid var(--gold);
-          border-radius: 2px var(--r) var(--r) var(--r);
+          border-top: 2px solid var(--gold);
+          border-radius: var(--r);
           overflow: hidden;
           box-shadow: 0 2px 16px rgba(26,21,16,0.07), 0 1px 4px rgba(26,21,16,0.04);
         }
@@ -483,9 +488,8 @@ export default function Home() {
 
         .suggestion {
           background: transparent;
-          border: 1px solid rgba(168,134,74,0.2);
-          border-left: 2px solid rgba(168,134,74,0.5);
-          border-radius: 0 6px 6px 0;
+          border: 1px solid rgba(168,134,74,0.28);
+          border-radius: 20px;
           color: var(--ink-3);
           font-family: 'Outfit', sans-serif;
           font-size: 12.5px;
@@ -622,7 +626,7 @@ export default function Home() {
           </div>
           <div className="header-meta">
             <div className="header-name">{restaurantName}</div>
-            <div className="header-sub">Ristorante &amp; Pizzeria · Neulußheim</div>
+            <div className="header-sub">{restaurantSub}</div>
           </div>
           <div className="badge">
             <div className="badge-dot"></div>
