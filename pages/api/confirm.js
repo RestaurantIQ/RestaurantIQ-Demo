@@ -27,6 +27,15 @@ function getMailer() {
   });
 }
 
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function sendGuestEmail(reservation, action) {
   if (!process.env.GMAIL_USER || !reservation.email) return;
 
@@ -48,10 +57,10 @@ td:first-child{color:#9e8f7e;width:110px}
   <h2>Wir freuen uns auf Sie!</h2>
   <div class="sub">La Fontana di Capri &middot; Neulussheim</div>
   <table>
-    <tr><td>Name</td><td>${reservation.name}</td></tr>
-    <tr><td>Datum</td><td>${reservation.datum}</td></tr>
-    <tr><td>Uhrzeit</td><td>${reservation.uhrzeit} Uhr</td></tr>
-    <tr><td>Personen</td><td>${reservation.personen}</td></tr>
+    <tr><td>Name</td><td>${esc(reservation.name)}</td></tr>
+    <tr><td>Datum</td><td>${esc(reservation.datum)}</td></tr>
+    <tr><td>Uhrzeit</td><td>${esc(reservation.uhrzeit)} Uhr</td></tr>
+    <tr><td>Personen</td><td>${esc(reservation.personen)}</td></tr>
     <tr><td>Adresse</td><td>Hockenheimer Str. 1, 68809 Neulussheim</td></tr>
   </table>
   <p style="font-size:13px;color:#5a5245">Bei Rueckfragen erreichen Sie uns unter <strong>06205 37008</strong>.</p>
@@ -69,7 +78,7 @@ h2{font-size:20px;color:#1a1612;margin:0 0 4px}
   <div class="badge">Reservierung nicht moeglich</div>
   <h2>Leider kein Tisch verfuegbar</h2>
   <div class="sub">La Fontana di Capri &middot; Neulussheim</div>
-  <p style="font-size:14px;color:#5a5245;margin-bottom:16px">Fuer Ihren gewuenschten Termin am <strong>${reservation.datum} um ${reservation.uhrzeit} Uhr</strong> steht leider kein Tisch zur Verfuegung.</p>
+  <p style="font-size:14px;color:#5a5245;margin-bottom:16px">Fuer Ihren gewuenschten Termin am <strong>${esc(reservation.datum)} um ${esc(reservation.uhrzeit)} Uhr</strong> steht leider kein Tisch zur Verfuegung.</p>
   <p style="font-size:13px;color:#5a5245">Bitte rufen Sie uns an, wir finden gerne einen alternativen Termin: <strong>06205 37008</strong></p>
   <div class="footer">Powered by RestaurantIQ</div>
 </div></body></html>`;
@@ -89,15 +98,19 @@ h2{font-size:20px;color:#1a1612;margin:0 0 4px}
 export default async function handler(req, res) {
   const { id, action, token } = req.query;
 
-  if (!verifyConfirmToken(token, id)) {
-    return res.status(401).send('Nicht autorisiert.');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) {
+    return res.status(400).send('Ungueltige ID.');
   }
 
   if (!['bestätigt', 'abgesagt'].includes(action)) {
     return res.status(400).send('Ungueltige Aktion.');
   }
 
-  const patchRes = await db(`reservations?id=eq.${id}`, {
+  if (!verifyConfirmToken(token, id, action)) {
+    return res.status(401).send('Nicht autorisiert.');
+  }
+
+  const patchRes = await db(`reservations?id=eq.${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify({ status: action }),
   });
@@ -106,7 +119,7 @@ export default async function handler(req, res) {
     return res.status(500).send('Datenbankfehler.');
   }
 
-  const getRes = await db(`reservations?id=eq.${id}&select=name,datum,uhrzeit,personen,email`);
+  const getRes = await db(`reservations?id=eq.${encodeURIComponent(id)}&select=name,datum,uhrzeit,personen,email`);
   const [reservation] = await getRes.json();
 
   if (reservation) await sendGuestEmail(reservation, action);
