@@ -4,6 +4,7 @@
 
   var scriptTag = document.currentScript || document.querySelector('script[src*="widget.js"]');
   var restaurantName = (scriptTag && scriptTag.getAttribute('data-restaurant-name')) || 'RestaurantIQ';
+  var restaurantUsername = (scriptTag && scriptTag.getAttribute('data-restaurant')) || '';
   var BASE_URL = 'https://restaurant-iq-demo.vercel.app';
 
   var style = document.createElement('style');
@@ -86,7 +87,7 @@
   var loaded = false;
 
   function open() {
-    if (!loaded) { iframe.src = BASE_URL; loaded = true; }
+    if (!loaded) { iframe.src = BASE_URL + (restaurantUsername ? '?restaurant=' + encodeURIComponent(restaurantUsername) : ''); loaded = true; }
     overlay.classList.add('riq-open');
     btn.style.display = 'none';
   }
