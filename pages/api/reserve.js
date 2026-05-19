@@ -157,6 +157,23 @@ export default async function handler(req, res) {
 
   const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch } = req.body;
 
+  // Input-Validierung
+  if (!name?.trim() || !datum || !uhrzeit || !telefon?.trim()) {
+    return res.status(400).json({ error: 'Pflichtfelder fehlen.' });
+  }
+  if (!/^\d{2}\.\d{2}\.\d{4}$/.test(datum)) {
+    return res.status(400).json({ error: 'Datum muss im Format TT.MM.JJJJ sein.' });
+  }
+  if (!/^\d{2}:\d{2}$/.test(uhrzeit)) {
+    return res.status(400).json({ error: 'Uhrzeit muss im Format HH:MM sein.' });
+  }
+  if (!Number.isInteger(Number(personen)) || Number(personen) < 1 || Number(personen) > 50) {
+    return res.status(400).json({ error: 'Personenzahl ungültig.' });
+  }
+  if (telefon.trim().replace(/\D/g, '').length < 6) {
+    return res.status(400).json({ error: 'Telefonnummer ungültig.' });
+  }
+
   // Lookup restaurant_id by username (this endpoint is for La Fontana di Capri)
   const rRes = await db('restaurants?username=eq.lafontana&select=id,name');
   const [restaurant] = await rRes.json();
