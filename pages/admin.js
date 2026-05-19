@@ -5,6 +5,7 @@ import DayModal from '../components/admin/DayModal';
 import NewResModal from '../components/admin/NewResModal';
 import AvailabilityTab from '../components/admin/AvailabilityTab';
 import ProfileTab from '../components/admin/ProfileTab';
+import { LayoutDashboard, CalendarCheck, Calendar as CalendarIcon, Clock, SlidersHorizontal } from 'lucide-react';
 
 function parseDatum(datum) {
   if (!datum) return null;
@@ -216,13 +217,14 @@ export default function Admin() {
 
       <div style={{background:'#fff',borderBottom:'1px solid #e0e0e5',padding:'0 24px',display:'flex',overflowX:'auto'}}>
         {[
-          {key:'overview',     label:'Übersicht'},
-          {key:'reservations', label:`Reservierungen${pendingCount>0?` (${pendingCount})`:''}`},
-          {key:'calendar',     label:'Kalender'},
-          {key:'availability', label:'Verfügbarkeit'},
-          {key:'profil',       label:'Profil & Widget'},
+          {key:'overview',     label:'Übersicht',       Icon:LayoutDashboard},
+          {key:'reservations', label:`Reservierungen${pendingCount>0?` (${pendingCount})`:``}`, Icon:CalendarCheck},
+          {key:'calendar',     label:'Kalender',        Icon:CalendarIcon},
+          {key:'availability', label:'Verfügbarkeit',   Icon:Clock},
+          {key:'profil',       label:'Profil & Widget', Icon:SlidersHorizontal},
         ].map(t=>(
-          <button key={t.key} onClick={()=>setTab(t.key)} style={{padding:'14px 18px',fontSize:13,border:'none',background:'none',cursor:'pointer',whiteSpace:'nowrap',color:tab===t.key?'#1d1d1f':'#6e6e73',borderBottom:tab===t.key?'2px solid #1d1d1f':'2px solid transparent',fontWeight:tab===t.key?500:400,fontFamily:'inherit'}}>
+          <button key={t.key} onClick={()=>setTab(t.key)} style={{padding:'12px 16px',fontSize:13,border:'none',background:'none',cursor:'pointer',whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:6,color:tab===t.key?'#1d1d1f':'#6e6e73',borderBottom:tab===t.key?'2px solid #1d1d1f':'2px solid transparent',fontWeight:tab===t.key?500:400,fontFamily:'inherit',transition:'color 0.15s'}}>
+            <t.Icon size={14} strokeWidth={tab===t.key?2:1.5}/>
             {t.label}
           </button>
         ))}
@@ -231,17 +233,19 @@ export default function Admin() {
       <div style={{maxWidth:860,margin:'0 auto',padding:'24px 16px'}}>
 
         {tab==='overview' && <>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12,marginBottom:20}}>
-            {[{label:'Heute',value:todayRes.length,sub:'Reservierungen'},{label:'Offen',value:pendingCount,sub:'Warten auf Bestätigung'},{label:'Gesamt',value:reservations.length,sub:'Alle Buchungen'}].map(s=>(
-              <div key={s.label} style={{background:'#fff',borderRadius:12,padding:'20px',border:'1px solid #e0e0e5'}}>
-                <div style={{fontSize:30,fontWeight:700,color:'#1d1d1f',marginBottom:4,letterSpacing:'-0.02em'}}>{s.value}</div>
-                <div style={{fontSize:13,fontWeight:500,color:'#1d1d1f',marginBottom:2}}>{s.label}</div>
-                <div style={{fontSize:11,color:'#6e6e73'}}>{s.sub}</div>
-              </div>
-            ))}
+          {pendingCount>0 && (
+            <div style={{background:'#fdf0ee',border:'1px solid #f5c6c6',borderRadius:10,padding:'12px 16px',marginBottom:16,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+              <div style={{fontSize:13,color:'#c0392b',fontWeight:500}}>{pendingCount} {pendingCount===1?'Reservierung wartet':'Reservierungen warten'} auf Bestätigung</div>
+              <button onClick={()=>{setTab('reservations');setStatusFilter('neu');}} style={{fontSize:12,fontWeight:500,color:'#c0392b',background:'transparent',border:'1px solid #c0392b',borderRadius:6,padding:'4px 12px',cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>Ansehen</button>
+            </div>
+          )}
+          <div style={{display:'flex',gap:20,marginBottom:20,padding:'14px 16px',background:'#fff',borderRadius:10,border:'1px solid #e0e0e5',flexWrap:'wrap'}}>
+            <div style={{fontSize:13,color:'#3d3d3f'}}><span style={{fontWeight:600,color:'#1d1d1f'}}>{todayRes.length}</span> heute</div>
+            <div style={{width:1,background:'#e0e0e5',flexShrink:0}}/>
+            <div style={{fontSize:13,color:'#3d3d3f'}}><span style={{fontWeight:600,color:'#1d1d1f'}}>{reservations.length}</span> gesamt</div>
           </div>
           {nextRes && (
-            <div style={{background:'#fff',borderRadius:12,padding:'16px 20px',marginBottom:20,border:'1px solid #e0e0e5',borderLeft:'3px solid #1d1d1f'}}>
+            <div style={{background:'#f5f5f7',borderRadius:10,padding:'16px 20px',marginBottom:20,border:'1px solid #e0e0e5'}}>
               <div style={{fontSize:11,color:'#6e6e73',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:500}}>Nächste Reservierung</div>
               <div style={{fontSize:15,fontWeight:600,color:'#1d1d1f'}}>{nextRes.name}</div>
               <div style={{fontSize:13,color:'#3d3d3f',marginTop:2}}>{nextRes.datum} · {nextRes.uhrzeit} Uhr · {nextRes.personen} Personen</div>
@@ -252,7 +256,7 @@ export default function Admin() {
             <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f'}}>Heute — {td}</div>
             <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit'}}>+ Neue Reservierung</button>
           </div>
-          {todayRes.length===0 ? <p style={{color:'#6e6e73',fontSize:14}}>Keine Reservierungen heute.</p> : todayRes.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
+          {todayRes.length===0 ? <div style={{textAlign:'center',padding:'32px 16px',color:'#6e6e73',fontSize:13}}><div style={{fontSize:22,marginBottom:8}}>📋</div>Noch keine Reservierungen heute.</div> : todayRes.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
         </>}
 
         {tab==='reservations' && <>
@@ -271,7 +275,7 @@ export default function Admin() {
             <button onClick={loadReservations} style={{marginLeft:'auto',padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',border:'1px solid #e0e0e5',background:'#fff',color:'#3d3d3f',fontFamily:'inherit'}}>↻ Aktualisieren</button>
           </div>
           {loadingRes ? <p style={{color:'#6e6e73',fontSize:14}}>Lädt...</p>
-            : filtered.length===0 ? <p style={{color:'#6e6e73',fontSize:14}}>Keine Einträge.</p>
+            : filtered.length===0 ? <div style={{textAlign:'center',padding:'40px 16px',color:'#6e6e73',fontSize:13}}>Keine Reservierungen für diesen Filter.</div>
             : filtered.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
         </>}
 
