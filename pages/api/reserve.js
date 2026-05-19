@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { createConfirmToken } from '../../lib/session';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
@@ -37,9 +38,9 @@ function waLink(phone, name, datum, uhrzeit) {
 
 // ─── Admin-Mail ───────────────────────────────────────────────────────────────
 function buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id }) {
-  const adminToken     = encodeURIComponent(process.env.ADMIN_PASSWORD);
-  const confirmUrl     = `${BASE_URL}/api/confirm?id=${id}&action=best%C3%A4tigt&token=${adminToken}`;
-  const declineUrl     = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${adminToken}`;
+  const confirmToken   = encodeURIComponent(createConfirmToken(id));
+  const confirmUrl     = `${BASE_URL}/api/confirm?id=${id}&action=best%C3%A4tigt&token=${confirmToken}`;
+  const declineUrl     = `${BASE_URL}/api/confirm?id=${id}&action=abgesagt&token=${confirmToken}`;
   const whatsappUrl    = waLink(telefon, name, datum, uhrzeit);
   const emailRow       = email ? `<tr><td>E-Mail</td><td>${email}</td></tr>` : '';
   const sonderwunschRow = sonderwunsch ? `<tr><td>Sonderwunsch</td><td>${sonderwunsch}</td></tr>` : '';
