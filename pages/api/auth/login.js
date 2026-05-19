@@ -7,6 +7,11 @@ const loginAttempts = new Map();
 
 function checkRateLimit(ip) {
   const now = Date.now();
+  if (loginAttempts.size > 5000) {
+    for (const [k, times] of loginAttempts) {
+      if (times.every(t => now - t >= 15 * 60 * 1000)) loginAttempts.delete(k);
+    }
+  }
   const recent = (loginAttempts.get(ip) || []).filter(t => now - t < 15 * 60 * 1000);
   if (recent.length >= 5) return false;
   recent.push(now);
