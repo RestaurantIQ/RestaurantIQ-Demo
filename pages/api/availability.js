@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'DELETE') {
     const { id } = req.body;
-    await db(`availability?id=eq.${id}`, {
+    await db(`availability?id=eq.${encodeURIComponent(id)}&restaurant_id=eq.${restaurantId}`, {
       method: 'DELETE',
       headers: { Prefer: 'return=minimal' },
     });
