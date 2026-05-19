@@ -69,7 +69,7 @@ export default function Home() {
       .catch(() => {});
   }, [username]);
 
-  const restaurantName = restaurantInfo?.name || 'La Fontana di Capri';
+  const restaurantName = restaurantInfo?.name || '';
   const restaurantPhone = restaurantInfo?.phone || '';
   const restaurantSub   = restaurantInfo?.address || '';
   const initials = restaurantName.split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
