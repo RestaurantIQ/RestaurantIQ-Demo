@@ -4,8 +4,21 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 const SETUP_SECRET = process.env.SETUP_SECRET;
 
+const createAttempts = new Map();
+function checkCreateLimit(ip) {
+  const now = Date.now();
+  const entry = createAttempts.get(ip);
+  if (!entry || now - entry.start > 60 * 60 * 1000) { createAttempts.set(ip, { count: 1, start: now }); return true; }
+  if (entry.count >= 3) return false;
+  entry.count++;
+  return true;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
+  if (!checkCreateLimit(ip)) return res.status(429).json({ error: 'Zu viele Anfragen.' });
 
   const { secret, name, username, password } = req.body || {};
 
