@@ -72,7 +72,7 @@ export default function Home() {
   const restaurantName = restaurantInfo?.name || '';
   const restaurantPhone = restaurantInfo?.phone || '';
   const restaurantSub   = restaurantInfo?.address || '';
-  const initials = restaurantName.split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
+  const initials = restaurantName.split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
