@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { verifyConfirmToken } from '../../lib/session';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
@@ -88,7 +89,7 @@ h2{font-size:20px;color:#1a1612;margin:0 0 4px}
 export default async function handler(req, res) {
   const { id, action, token } = req.query;
 
-  if (token !== process.env.ADMIN_PASSWORD) {
+  if (!verifyConfirmToken(token, id)) {
     return res.status(401).send('Nicht autorisiert.');
   }
 
