@@ -48,21 +48,20 @@ function getMailer() {
   });
 }
 
-function waLink(phone, name, datum, uhrzeit) {
+function waLink(phone, name, datum, uhrzeit, restaurantName) {
   const cleaned = phone.replace(/\D/g, '').replace(/^0/, '49');
   const msg = encodeURIComponent(
-    `Hallo ${name}, wir freuen uns Sie am ${datum} um ${uhrzeit} Uhr bei La Fontana di Capri begrüßen zu dürfen. Bis bald!`
+    `Hallo ${name}, wir freuen uns Sie am ${datum} um ${uhrzeit} Uhr bei ${restaurantName} begrüßen zu dürfen. Bis bald!`
   );
   return `https://wa.me/${cleaned}?text=${msg}`;
 }
 
-// Admin-Mail
 function buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id, restaurantName }) {
   const confirmToken = encodeURIComponent(createConfirmToken(id, 'bestätigt'));
   const declineToken = encodeURIComponent(createConfirmToken(id, 'abgesagt'));
   const confirmUrl   = `${BASE_URL}/api/confirm?id=${encodeURIComponent(id)}&action=best%C3%A4tigt&token=${confirmToken}`;
   const declineUrl   = `${BASE_URL}/api/confirm?id=${encodeURIComponent(id)}&action=abgesagt&token=${declineToken}`;
-  const whatsappUrl  = waLink(telefon, name, datum, uhrzeit);
+  const whatsappUrl  = waLink(telefon, name, datum, uhrzeit, restaurantName);
   const emailRow        = email ? `<tr><td>E-Mail</td><td>${esc(email)}</td></tr>` : '';
   const sonderwunschRow = sonderwunsch ? `<tr><td>Sonderwunsch</td><td>${esc(sonderwunsch)}</td></tr>` : '';
   const guestNote       = email
@@ -103,8 +102,7 @@ td:first-child{color:#9e8f7e;width:110px}
 </div></body></html>`;
 }
 
-// Gäste-Bestätigungs-Mail
-function buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch, restaurantName }) {
+function buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch, restaurantName, address, phone }) {
   const sonderwunschRow = sonderwunsch
     ? `<tr><td>Ihr Wunsch</td><td>${esc(sonderwunsch)}</td></tr>`
     : '';
@@ -145,10 +143,9 @@ tr:last-child td{border-bottom:none}
   </div>
   <hr class="divider">
   <div class="contact">
-    <strong>La Fontana di Capri</strong><br>
-    Musterstraße 12 &middot; 70173 Stuttgart<br>
-    Tel: <strong>+49 711 123 456</strong><br>
-    Di–So: 12:00–14:30 &amp; 18:00–22:30 Uhr
+    <strong>${esc(restaurantName)}</strong><br>
+    ${address ? `${esc(address)}<br>` : ''}
+    ${phone ? `Tel: <strong>${esc(phone)}</strong><br>` : ''}
   </div>
   <div class="footer">
     Diese Nachricht wurde automatisch erstellt &middot; <span class="gold">RestaurantIQ</span><br>
@@ -157,14 +154,13 @@ tr:last-child td{border-bottom:none}
 </div></body></html>`;
 }
 
-// Handler
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
   if (isRateLimited(ip)) return res.status(429).json({ error: 'Zu viele Anfragen. Bitte einige Minuten warten.' });
 
-  const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch } = req.body;
+  const { name, datum, uhrzeit, personen, telefon, email, sonderwunsch, username } = req.body;
 
   if (!name?.trim() || !datum || !uhrzeit || !telefon?.trim()) {
     return res.status(400).json({ error: 'Pflichtfelder fehlen.' });
@@ -182,10 +178,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Telefonnummer ungültig.' });
   }
 
-  const rRes = await db('restaurants?username=eq.lafontana&select=id,name');
+  const lookup = username && /^[a-z0-9_-]{1,64}$/.test(username) ? username : 'lafontana';
+  const rRes = await db(`restaurants?username=eq.${encodeURIComponent(lookup)}&select=id,name,address,phone,notification_email`);
   const [restaurant] = await rRes.json();
-  const restaurant_id = restaurant?.id || null;
-  const restaurantName = restaurant?.name || 'La Fontana di Capri';
+  const restaurant_id    = restaurant?.id || null;
+  const restaurantName   = restaurant?.name || 'RestaurantIQ';
+  const restaurantAddress = restaurant?.address || null;
+  const restaurantPhone  = restaurant?.phone || null;
+  const notifyEmail      = restaurant?.notification_email || process.env.GMAIL_USER;
 
   const dbRes = await db('reservations', {
     method: 'POST',
@@ -223,17 +223,17 @@ export default async function handler(req, res) {
 
     await mailer.sendMail({
       from: `"${restaurantName} via RestaurantIQ" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER,
+      to: notifyEmail,
       subject: `[${restaurantName}] Neue Anfrage: ${safeNameSubject} – ${datum} um ${uhrzeit} (${personen} Pers.)`,
       html: buildAdminHtml({ name, datum, uhrzeit, personen, telefon, email, sonderwunsch, id, restaurantName }),
     }).catch(e => console.error('Admin-Mail Fehler:', e));
 
     if (email) {
       await mailer.sendMail({
-        from: `"La Fontana di Capri" <${process.env.GMAIL_USER}>`,
+        from: `"${restaurantName}" <${process.env.GMAIL_USER}>`,
         to: email,
         subject: `Ihre Reservierungsanfrage – ${datum} um ${uhrzeit} Uhr`,
-        html: buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch, restaurantName }),
+        html: buildGuestHtml({ name, datum, uhrzeit, personen, sonderwunsch, restaurantName, address: restaurantAddress, phone: restaurantPhone }),
       }).catch(e => console.error('Gäste-Mail Fehler:', e));
     }
   }
