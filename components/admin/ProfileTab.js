@@ -9,6 +9,7 @@ const ACCENT_OPTIONS = [
 ];
 
 const BASE_URL = 'https://restaurantiq.de';
+const CHAT_URL = 'https://chat.restaurantiq.de';
 
 export default function ProfileTab() {
   const [profile, setProfile] = useState(null);
@@ -16,7 +17,8 @@ export default function ProfileTab() {
   const [saving, setSaving]   = useState(false);
   const [saved, setSaved]     = useState(false);
   const [error, setError]     = useState('');
-  const [copied, setCopied]   = useState(false);
+  const [copied, setCopied]         = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const snippetRef            = useRef(null);
 
   useEffect(() => {
@@ -57,6 +59,14 @@ export default function ProfileTab() {
       setError('Fehler beim Speichern. Bitte nochmal versuchen.');
     }
     setSaving(false);
+  }
+
+  function copyLink() {
+    const url = CHAT_URL + '/' + (profile?.username || '');
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    });
   }
 
   function copySnippet() {
@@ -150,6 +160,17 @@ export default function ProfileTab() {
         </button>
         {saved && <span style={{ fontSize: 13, color: '#3a9e5f', fontWeight: 500 }}>Gespeichert</span>}
         {error && <span style={{ fontSize: 13, color: '#c0392b' }}>{error}</span>}
+      </div>
+
+      <div style={{ borderTop: '1px solid #e0e0e5', paddingTop: 28, marginBottom: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#1d1d1f', marginBottom: 6 }}>Ihr Chatbot-Link</h3>
+        <p style={{ fontSize: 13, color: '#6e6e73', marginBottom: 12 }}>Diesen Link können Ihre Gäste direkt aufrufen oder Sie ihn auf Ihrer Website verlinken.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f5f5f7', borderRadius: 8, padding: '10px 14px', border: '1px solid #e0e0e5' }}>
+          <span style={{ fontSize: 13, color: '#1d1d1f', flex: 1, fontFamily: 'monospace' }}>{CHAT_URL}/{profile?.username || ''}</span>
+          <button onClick={copyLink} style={{ background: copiedLink ? '#3a9e5f' : '#1d1d1f', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.2s' }}>
+            {copiedLink ? 'Kopiert' : 'Kopieren'}
+          </button>
+        </div>
       </div>
 
       <div style={{ borderTop: '1px solid #e0e0e5', paddingTop: 28 }}>
