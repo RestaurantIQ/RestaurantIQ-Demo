@@ -83,7 +83,7 @@ export default async function handler(req, res) {
   const { restaurantId, restaurantName } = session;
 
   if (req.method === 'GET') {
-    const r = await db(`reservations?or=(restaurant_id.eq.${restaurantId},restaurant_id.is.null)&order=created_at.desc`);
+    const r = await db(`reservations?restaurant_id=eq.${restaurantId}&order=created_at.desc`);
     const data = await r.json();
     return res.status(200).json(Array.isArray(data) ? data : []);
   }
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'PATCH') {
     const { id, status } = req.body;
-    const r = await db(`reservations?id=eq.${id}`, {
+    const r = await db(`reservations?id=eq.${id}&restaurant_id=eq.${restaurantId}`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     });
