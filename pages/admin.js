@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import ResCard from '../components/admin/ResCard';
 import Calendar from '../components/admin/Calendar';
-import DayModal from '../components/admin/DayModal';
 import NewResModal from '../components/admin/NewResModal';
 import AvailabilityTab from '../components/admin/AvailabilityTab';
 import ProfileTab from '../components/admin/ProfileTab';
-import { LayoutDashboard, CalendarCheck, Calendar as CalendarIcon, Clock, SlidersHorizontal, ClipboardList } from 'lucide-react';
+import ServiceMode from '../components/admin/ServiceMode';
+import { LayoutDashboard, CalendarCheck, Calendar as CalendarIcon, Clock, SlidersHorizontal, ClipboardList, Utensils } from 'lucide-react';
 
 function parseDatum(datum) {
   if (!datum) return null;
@@ -14,6 +14,11 @@ function parseDatum(datum) {
   return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
 }
 function fmtDate(d) { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
+function fmtDayFull(dayStr) {
+  const d = parseDatum(dayStr);
+  if (!d) return dayStr;
+  return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+}
 function todayStr() { return fmtDate(new Date()); }
 function tomorrowStr() { const d = new Date(); d.setDate(d.getDate()+1); return fmtDate(d); }
 function weekRange() {
@@ -41,14 +46,16 @@ export default function Admin() {
   const [statusFilter, setStatusFilter] = useState('alle');
   const [dateFilter, setDateFilter]     = useState('alle');
   const [calDay, setCalDay]             = useState(null);
-  const [dayModal, setDayModal]         = useState(null);
 
   const [newResModal, setNewResModal]   = useState(false);
   const [newResForm, setNewResForm]     = useState(EMPTY_FORM);
   const [newResLoading, setNewResLoading] = useState(false);
   const [newResError, setNewResError]   = useState('');
 
-  const [slots, setSlots] = useState([]);
+  const [slots, setSlots]               = useState([]);
+  const [addingSlot, setAddingSlot]     = useState(false);
+  const [newSlotTime, setNewSlotTime]   = useState('');
+  const [newSlotTische, setNewSlotTische] = useState('');
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -101,12 +108,30 @@ export default function Admin() {
     setReservations(prev => prev.map(r => r.id===id ? {...r, status} : r));
   }
 
+  async function checkIn(id) {
+    const checked_in_at = new Date().toISOString();
+    await fetch('/api/reservations', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, checked_in_at }),
+    });
+    setReservations(prev => prev.map(r => r.id===id ? {...r, checked_in_at} : r));
+  }
+
   async function deleteSlot(id) {
     await fetch('/api/availability', {
       method: 'DELETE', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
     setSlots(prev => prev.filter(s => s.id!==id));
+  }
+
+  async function addSlot() {
+    if (!newSlotTime || !newSlotTische || !calDay) return;
+    const r = await fetch('/api/availability', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ datum: calDay, uhrzeit: newSlotTime, tische_frei: parseInt(newSlotTische) }),
+    });
+    if (r.ok) { await loadSlots(); setNewSlotTime(''); setNewSlotTische(''); setAddingSlot(false); }
   }
 
   async function createReservation() {
@@ -187,13 +212,6 @@ export default function Admin() {
     <div style={{minHeight:'100vh',background:'#f5f5f7',fontFamily:"'Inter',-apple-system,sans-serif"}}>
       <style>{FONT}</style>
 
-      {dayModal && (
-        <DayModal dateStr={dayModal} slots={slots} reservations={reservations}
-          onDeleteSlot={deleteSlot}
-          onViewReservations={day => { setCalDay(day); setDateFilter('tag'); setTab('reservations'); }}
-          onClose={() => setDayModal(null)}/>
-      )}
-
       {newResModal && (
         <NewResModal
           form={newResForm}
@@ -221,6 +239,7 @@ export default function Admin() {
           {key:'overview',     label:'Übersicht',       Icon:LayoutDashboard},
           {key:'reservations', label:`Reservierungen${pendingCount>0?` (${pendingCount})`:``}`, Icon:CalendarCheck},
           {key:'calendar',     label:'Kalender',        Icon:CalendarIcon},
+          {key:'service',      label:'Service',         Icon:Utensils},
           {key:'availability', label:'Verfügbarkeit',   Icon:Clock},
           {key:'profil',       label:'Profil & Widget', Icon:SlidersHorizontal},
         ].map(t=>(
@@ -281,14 +300,76 @@ export default function Admin() {
             {['alle','neu','bestätigt','abgesagt','no-show'].map(f=>(
               <button key={f} onClick={()=>setStatusFilter(f)} style={{padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',fontFamily:'inherit',border:'1px solid '+(statusFilter===f?'#1d1d1f':'#e0e0e5'),background:statusFilter===f?'#1d1d1f':'#fff',color:statusFilter===f?'#fff':'#3d3d3f'}}>{f.charAt(0).toUpperCase()+f.slice(1)}</button>
             ))}
-            <button onClick={loadReservations} style={{marginLeft:'auto',padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',border:'1px solid #e0e0e5',background:'#fff',color:'#3d3d3f',fontFamily:'inherit'}}>↻ Aktualisieren</button>
+            <button onClick={loadReservations} style={{marginLeft:'auto',padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',border:'1px solid #e0e0e5',background:'#fff',color:'#3d3d3f',fontFamily:'inherit'}}>Aktualisieren</button>
           </div>
           {loadingRes ? <p style={{color:'#6e6e73',fontSize:14}}>Lädt...</p>
             : filtered.length===0 ? <div style={{textAlign:'center',padding:'40px 16px',color:'#6e6e73',fontSize:13}}>Keine Reservierungen für diesen Filter.</div>
             : filtered.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
         </>}
 
-        {tab==='calendar' && <Calendar reservations={reservations} slots={slots} onSelectDay={day=>setDayModal(day)}/>}
+        {tab==='calendar' && <>
+          <Calendar reservations={reservations} slots={slots} onSelectDay={day => setCalDay(calDay === day ? null : day)} selectedDay={calDay} />
+          {calDay && (() => {
+            const dayResItems = reservations.filter(r => r.datum === calDay).sort((a, b) => a.uhrzeit.localeCompare(b.uhrzeit));
+            const daySlots = slots.filter(s => s.datum === calDay);
+            return (
+              <div style={{ marginTop: 16, background: '#fff', borderRadius: 12, border: '1px solid #e0e0e5', padding: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: '#1d1d1f' }}>{fmtDayFull(calDay)}</div>
+                  <button onClick={() => { setCalDay(null); setAddingSlot(false); setNewSlotTime(''); setNewSlotTische(''); }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6e6e73', lineHeight: 1, padding: '0 4px' }}>×</button>
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ fontSize: 11, fontWeight: 500, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Reservierungen</div>
+                  {dayResItems.length === 0
+                    ? <div style={{ fontSize: 13, color: '#6e6e73', padding: '8px 0' }}>Keine Reservierungen an diesem Tag.</div>
+                    : dayResItems.map(r => <ResCard key={r.id} r={r} onUpdateStatus={updateStatus} />)
+                  }
+                </div>
+
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 500, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Verfügbare Zeitfenster</div>
+                  {daySlots.length === 0
+                    ? <div style={{ fontSize: 13, color: '#6e6e73', padding: '4px 0 8px' }}>Keine Zeitfenster eingetragen.</div>
+                    : daySlots.map(s => (
+                      <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: '#f5f5f7', borderRadius: 8, marginBottom: 6, border: '1px solid #e8e8ec' }}>
+                        <span style={{ fontSize: 13, color: '#1d1d1f' }}>{s.uhrzeit} Uhr · {s.tische_frei} {s.tische_frei === 1 ? 'Tisch' : 'Tische'} frei</span>
+                        <button onClick={() => deleteSlot(s.id)} style={{ fontSize: 12, color: '#c0392b', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Entfernen</button>
+                      </div>
+                    ))
+                  }
+                  {addingSlot ? (
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input type="time" value={newSlotTime} onChange={e => setNewSlotTime(e.target.value)}
+                        style={{ padding: '7px 10px', border: '1px solid #e0e0e5', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />
+                      <input type="number" min="1" max="30" placeholder="Tische" value={newSlotTische} onChange={e => setNewSlotTische(e.target.value)}
+                        style={{ padding: '7px 10px', border: '1px solid #e0e0e5', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', width: 80 }} />
+                      <button onClick={addSlot} style={{ padding: '7px 14px', fontSize: 13, fontWeight: 500, background: '#1d1d1f', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>Hinzufügen</button>
+                      <button onClick={() => { setAddingSlot(false); setNewSlotTime(''); setNewSlotTische(''); }}
+                        style={{ padding: '7px 14px', fontSize: 13, background: '#fff', color: '#6e6e73', border: '1px solid #e0e0e5', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setAddingSlot(true)}
+                      style={{ marginTop: 8, fontSize: 13, color: '#1d1d1f', background: 'none', border: '1px dashed #c7c7cc', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      + Zeitfenster hinzufügen
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </>}
+
+        {tab==='service' && (
+          <ServiceMode
+            reservations={reservations}
+            todayStr={td}
+            tomorrowStr={tm}
+            onCheckIn={checkIn}
+            onUpdateStatus={updateStatus}
+          />
+        )}
 
         {tab==='availability' && <AvailabilityTab slots={slots} onDeleteSlot={deleteSlot} onSlotsGenerated={loadSlots}/>}
 
