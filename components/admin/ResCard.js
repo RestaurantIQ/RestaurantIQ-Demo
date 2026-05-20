@@ -10,6 +10,10 @@ export default function ResCard({ r, onUpdateStatus }) {
   const col = STATUS_COLOR_MAP[r.status] || '#e0e0e5';
   const bg  = STATUS_BG_MAP[r.status]   || '#f5f5f7';
 
+  const checkinTime = r.checked_in_at
+    ? new Date(r.checked_in_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+    : null;
+
   return (
     <div style={{background:'#fff',borderRadius:10,padding:'16px 20px',marginBottom:8,border:'1px solid #e0e0e5',borderLeft:`3px solid ${col}`}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:10}}>
@@ -21,6 +25,11 @@ export default function ResCard({ r, onUpdateStatus }) {
         </div>
         <div style={{display:'flex',gap:5,alignItems:'center',flexWrap:'wrap',flexShrink:0}}>
           <span style={{fontSize:11,padding:'3px 10px',borderRadius:12,background:bg,color:col,fontWeight:500}}>{r.status}</span>
+          {checkinTime && (
+            <span style={{fontSize:11,padding:'3px 8px',borderRadius:12,background:'#edfbf2',color:'#3a9e5f',fontWeight:500,display:'flex',alignItems:'center',gap:3}}>
+              <Check size={10} strokeWidth={2.5}/>{checkinTime}
+            </span>
+          )}
           {r.status!=='bestätigt' && (
             <button onClick={()=>onUpdateStatus(r.id,'bestätigt')} title="Bestätigen"
               style={{display:'flex',alignItems:'center',justifyContent:'center',width:30,height:30,border:'1px solid #3a9e5f',borderRadius:6,background:'#fff',color:'#3a9e5f',cursor:'pointer',padding:0}}>
