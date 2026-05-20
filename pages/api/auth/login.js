@@ -47,19 +47,21 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Benutzername oder Passwort falsch.' });
   }
 
-  // Alten SHA256-Hash automatisch auf bcrypt upgraden
+  const patchBody = { last_login_at: new Date().toISOString() };
+
   if (result === 'legacy') {
-    const newHash = await hashPassword(password);
-    await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.${restaurant.id}`, {
-      method: 'PATCH',
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ password_hash: newHash }),
-    });
+    patchBody.password_hash = await hashPassword(password);
   }
+
+  await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.${restaurant.id}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(patchBody),
+  });
 
   const token = createToken({
     restaurantId: restaurant.id,
