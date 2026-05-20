@@ -36,6 +36,24 @@ export default function SuperAdmin() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
+  const [health, setHealth] = useState(null);
+
+  useEffect(() => {
+    if (!secret) return;
+    async function checkHealth() {
+      try {
+        const r = await fetch('/api/health');
+        const data = await r.json();
+        setHealth(data);
+      } catch {
+        setHealth({ ok: false });
+      }
+    }
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
+  }, [secret]);
+
   function headers() {
     return { 'Content-Type': 'application/json', 'x-superadmin-secret': secret };
   }
@@ -175,6 +193,12 @@ export default function SuperAdmin() {
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: 999 }}>RestaurantIQ</span>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          {health !== null && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: health.ok ? '#34c759' : '#ff3b30' }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: health.ok ? '#34c759' : '#ff3b30', flexShrink: 0 }} />
+              {health.ok ? `DB ${health.supabase?.latency ?? ''}ms` : 'DB-Fehler'}
+            </span>
+          )}
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{restaurants.length} Restaurants</span>
           <button
             onClick={() => setShowCreateForm(s => !s)}
