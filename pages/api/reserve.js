@@ -178,7 +178,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Telefonnummer ungültig.' });
   }
 
-  const lookup = username && /^[a-z0-9_-]{1,64}$/.test(username) ? username : 'lafontana';
+  if (!username || !/^[a-z0-9_-]{1,64}$/.test(username)) return res.status(400).json({ error: 'Ungültiger Restaurant-Link.' });
+  const lookup = username;
   const rRes = await db(`restaurants?username=eq.${encodeURIComponent(lookup)}&select=id,name,address,phone,notification_email`);
   const [restaurant] = await rRes.json();
   const restaurant_id    = restaurant?.id || null;
