@@ -166,6 +166,14 @@ export default async function handler(req, res) {
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
   if (isChatRateLimited(ip)) return res.status(429).json({ error: 'Zu viele Anfragen. Bitte warten.' });
 
+  if (!Array.isArray(req.body?.messages) || req.body.messages.length > 20) {
+    return res.status(400).json({ error: 'Ungültige Anfrage.' });
+  }
+  const totalChars = req.body.messages.reduce((s, m) => s + String(m?.content || '').length, 0);
+  if (totalChars > 8000) {
+    return res.status(429).json({ error: 'Nachricht zu lang.' });
+  }
+
   try {
     const { messages, mode = 'live', username, restaurant: demoName } = req.body;
 
@@ -209,6 +217,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ reply: reply || 'Keine Antwort erhalten.', reservation });
   } catch (err) {
-    res.status(500).json({ reply: 'Serverfehler: ' + err.message, reservation: null });
+    console.error('chat error:', err);
+    res.status(500).json({ reply: 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.', reservation: null });
   }
 }
