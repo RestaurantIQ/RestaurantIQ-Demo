@@ -5,7 +5,7 @@ import DayModal from '../components/admin/DayModal';
 import NewResModal from '../components/admin/NewResModal';
 import AvailabilityTab from '../components/admin/AvailabilityTab';
 import ProfileTab from '../components/admin/ProfileTab';
-import { LayoutDashboard, CalendarCheck, Calendar as CalendarIcon, Clock, SlidersHorizontal } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck, Calendar as CalendarIcon, Clock, SlidersHorizontal, ClipboardList } from 'lucide-react';
 
 function parseDatum(datum) {
   if (!datum) return null;
@@ -131,6 +131,7 @@ export default function Admin() {
   const td = todayStr(); const tm = tomorrowStr(); const wr = weekRange();
   const todayRes     = reservations.filter(r => r.datum===td);
   const pendingCount = reservations.filter(r => r.status==='neu').length;
+  const weekRes = reservations.filter(r => { const d=parseDatum(r.datum); return d&&d>=wr.from&&d<=wr.to; });
 
   const nextRes = useMemo(() => {
     const now = new Date(); now.setHours(0,0,0,0);
@@ -239,10 +240,18 @@ export default function Admin() {
               <button onClick={()=>{setTab('reservations');setStatusFilter('neu');}} style={{fontSize:12,fontWeight:500,color:'#c0392b',background:'transparent',border:'1px solid #c0392b',borderRadius:6,padding:'4px 12px',cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>Ansehen</button>
             </div>
           )}
-          <div style={{display:'flex',gap:20,marginBottom:20,padding:'14px 16px',background:'#fff',borderRadius:10,border:'1px solid #e0e0e5',flexWrap:'wrap'}}>
-            <div style={{fontSize:13,color:'#3d3d3f'}}><span style={{fontWeight:600,color:'#1d1d1f'}}>{todayRes.length}</span> heute</div>
-            <div style={{width:1,background:'#e0e0e5',flexShrink:0}}/>
-            <div style={{fontSize:13,color:'#3d3d3f'}}><span style={{fontWeight:600,color:'#1d1d1f'}}>{reservations.length}</span> gesamt</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
+            {[
+              {label:'Heute',       value:todayRes.length,   accent:false},
+              {label:'Ausstehend',  value:pendingCount,       accent:pendingCount>0},
+              {label:'Diese Woche', value:weekRes.length,     accent:false},
+              {label:'Gesamt',      value:reservations.length,accent:false},
+            ].map(k=>(
+              <div key={k.label} style={{background:'#fff',borderRadius:10,padding:'16px',border:'1px solid #e0e0e5'}}>
+                <div style={{fontSize:28,fontWeight:700,color:k.accent?'#c0392b':'#1d1d1f',lineHeight:1,marginBottom:5}}>{k.value}</div>
+                <div style={{fontSize:12,color:'#6e6e73'}}>{k.label}</div>
+              </div>
+            ))}
           </div>
           {nextRes && (
             <div style={{background:'#f5f5f7',borderRadius:10,padding:'16px 20px',marginBottom:20,border:'1px solid #e0e0e5'}}>
@@ -256,7 +265,7 @@ export default function Admin() {
             <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f'}}>Heute — {td}</div>
             <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit'}}>+ Neue Reservierung</button>
           </div>
-          {todayRes.length===0 ? <div style={{textAlign:'center',padding:'32px 16px',color:'#6e6e73',fontSize:13}}><div style={{fontSize:22,marginBottom:8}}>📋</div>Noch keine Reservierungen heute.</div> : todayRes.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
+          {todayRes.length===0 ? <div style={{textAlign:'center',padding:'32px 16px',color:'#6e6e73',fontSize:13}}><ClipboardList size={28} strokeWidth={1.5} style={{margin:'0 auto 10px',color:'#c7c7cc',display:'block'}}/><div>Noch keine Reservierungen heute.</div></div> : todayRes.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
         </>}
 
         {tab==='reservations' && <>
