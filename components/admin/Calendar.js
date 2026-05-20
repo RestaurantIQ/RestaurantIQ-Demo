@@ -16,7 +16,7 @@ function todayStr() { return fmtDate(new Date()); }
 const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const DAYS   = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 
-export default function Calendar({ reservations, slots, onSelectDay }) {
+export default function Calendar({ reservations, slots, onSelectDay, selectedDay }) {
   const [year, setYear]   = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth());
 
@@ -59,12 +59,13 @@ export default function Calendar({ reservations, slots, onSelectDay }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
         {cells.map((d,i) => {
           if (!d) return <div key={i}/>;
-          const label   = dayLabel(d);
-          const info    = countMap[label];
-          const hasSlot = slotMap[label] > 0;
-          const isToday = label === td;
-          const total   = (info?.neu || 0) + (info?.bestätigt || 0);
-          const hasNew  = info?.neu > 0;
+          const label    = dayLabel(d);
+          const info     = countMap[label];
+          const hasSlot  = slotMap[label] > 0;
+          const isToday  = label === td;
+          const isSelected = label === selectedDay;
+          const total    = (info?.neu || 0) + (info?.bestätigt || 0);
+          const hasNew   = info?.neu > 0;
 
           let bg = 'transparent', border = '1px solid transparent', dayColor = '#c7c7cc', badge = null;
 
@@ -74,6 +75,7 @@ export default function Calendar({ reservations, slots, onSelectDay }) {
             else        { bg='#edfbf2'; border='1px solid #a8e6c0'; dayColor='#1d1d1f'; badge={color:'#3a9e5f',bg:'#c8f0d8',label:total}; }
             if (isToday) border=`2px solid ${hasNew?'#d4860a':'#3a9e5f'}`;
           }
+          if (isSelected) { border = '2px solid #1d1d1f'; dayColor = '#1d1d1f'; }
 
           return (
             <div key={i} onClick={() => onSelectDay(label)}
@@ -81,7 +83,7 @@ export default function Calendar({ reservations, slots, onSelectDay }) {
               onMouseEnter={e=>e.currentTarget.style.opacity='0.8'}
               onMouseLeave={e=>e.currentTarget.style.opacity='1'}
             >
-              <div style={{fontSize:13,color:dayColor,fontWeight:info||isToday?600:400,lineHeight:1}}>{d}</div>
+              <div style={{fontSize:13,color:dayColor,fontWeight:info||isToday||isSelected?600:400,lineHeight:1}}>{d}</div>
               {badge && <div style={{fontSize:11,fontWeight:700,color:badge.color,background:badge.bg,borderRadius:999,padding:'1px 7px',lineHeight:1.6,minWidth:20}}>{badge.label}</div>}
               {hasSlot && !info && <div style={{width:4,height:4,borderRadius:'50%',background:'#d0d0d5'}}/>}
             </div>
