@@ -108,15 +108,18 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PATCH') {
-    const { id, status } = req.body;
+    const { id, status, checked_in_at } = req.body;
+    const patch = {};
+    if (status !== undefined) patch.status = status;
+    if (checked_in_at !== undefined) patch.checked_in_at = checked_in_at;
+
     const r = await db(`reservations?id=eq.${id}&restaurant_id=eq.${restaurantId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(patch),
     });
     const data = await r.json();
 
-    // Send guest email if status is confirmed or cancelled
-    if (['bestätigt', 'abgesagt'].includes(status)) {
+    if (status && ['bestätigt', 'abgesagt'].includes(status)) {
       const getRes = await db(`reservations?id=eq.${id}&select=name,datum,uhrzeit,personen,email`);
       const [reservation] = await getRes.json();
       if (reservation) await sendGuestEmail(reservation, status, restaurantName);
