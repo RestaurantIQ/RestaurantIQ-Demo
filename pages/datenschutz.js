@@ -12,23 +12,22 @@ export default function Datenschutz() {
       <div style={{ maxWidth: 620, margin: '0 auto', padding: '40px 24px 60px' }}>
 
         <div style={{ marginBottom: 32 }}>
-          <a href="/" style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9e978c' }}>← Zurück zum Chat</a>
+          <a href="/" style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9e978c' }}>← Zurück</a>
         </div>
 
         <div style={{ fontFamily: "'Cormorant', serif", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#9e978c', marginBottom: 8 }}>Rechtliches</div>
         <h1 style={{ fontFamily: "'Cormorant', serif", fontWeight: 300, fontSize: 32, color: '#18150f', marginBottom: 8, letterSpacing: '0.04em' }}>Datenschutzerklärung</h1>
-        <p style={{ fontSize: 13, color: '#9e978c', marginBottom: 32 }}>Stand: Mai 2025 · Gemäß DSGVO (EU) 2016/679</p>
+        <p style={{ fontSize: 13, color: '#9e978c', marginBottom: 32 }}>Stand: Mai 2026 · Gemäß DSGVO (EU) 2016/679</p>
 
         {[
           {
             title: '1. Verantwortlicher',
             content: (
               <p style={{ fontSize: 14, lineHeight: 1.8, color: '#302c24' }}>
-                Verantwortlich für die Datenverarbeitung auf dieser Website ist:<br /><br />
-                <strong>La Fontana di Capri / Zielbauer &amp; Winkler GbR</strong><br />
-                [Straße und Hausnummer]<br />
-                [PLZ] Neulußheim<br />
-                Telefon: 06205 37008<br />
+                Verantwortlich für die Datenverarbeitung auf dieser Plattform ist:<br /><br />
+                <strong>Benjamin Zielbauer</strong><br />
+                Waldhornstr. 6<br />
+                68804 Altlußheim<br />
                 E-Mail: <a href="mailto:team.restaurantiq@gmail.com">team.restaurantiq@gmail.com</a>
               </p>
             )
@@ -53,7 +52,7 @@ export default function Datenschutz() {
             title: '3. Zweck und Rechtsgrundlage',
             content: (
               <div style={{ fontSize: 14, lineHeight: 1.8, color: '#302c24' }}>
-                <p style={{ marginBottom: 8 }}>Die Daten werden ausschließlich zur <strong>Bearbeitung und Bestätigung Ihrer Tischreservierung</strong> verwendet.</p>
+                <p style={{ marginBottom: 8 }}>Die Daten werden ausschließlich zur <strong>Bearbeitung und Bestätigung von Tischreservierungen</strong> verwendet.</p>
                 <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung bzw. vorvertragliche Maßnahmen).</p>
               </div>
             )
@@ -62,7 +61,7 @@ export default function Datenschutz() {
             title: '4. Speicherung und Löschung',
             content: (
               <p style={{ fontSize: 14, lineHeight: 1.8, color: '#302c24' }}>
-                Reservierungsdaten werden in unserer Datenbank gespeichert und nach Ablauf der steuerrechtlichen Aufbewahrungsfristen (in der Regel 10 Jahre) gelöscht. Auf Anfrage löschen wir Ihre Daten vorzeitig, sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
+                Reservierungsdaten werden in unserer Datenbank gespeichert und nach Ablauf der gesetzlichen Aufbewahrungsfristen gelöscht. Auf Anfrage löschen wir Ihre Daten vorzeitig, sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
               </p>
             )
           },
@@ -124,8 +123,6 @@ export default function Datenschutz() {
 
         <div style={{ marginTop: 24, fontSize: 12, color: '#9e978c', textAlign: 'center' }}>
           <a href="/impressum">Impressum</a>
-          <span style={{ margin: '0 8px' }}>·</span>
-          <a href="/">Zurück zum Chat</a>
         </div>
 
       </div>
