@@ -7,928 +7,320 @@
   <meta name="description" content="Gasthaus zum Hirsch in Altlußheim. Gutbürgerliche deutsche Küche, Wildgerichte, Spargel, Schnitzel. Familienbetrieb. Tisch reservieren.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,700&family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* =========================================================
-       DESIGN TOKENS
-    ========================================================= */
     :root {
-      /* Palette — Wald bei Abenddämmerung */
-      --c-bg:        #F3EAD5;   /* warmes Pergament */
-      --c-bg-alt:    #E7DECA;   /* tieferes Pergament */
-      --c-surface:   #FAF6ED;   /* helle Flächen, Karten */
-      --c-dark:      #111810;   /* fast Schwarz, waldgrün getönt */
-      --c-forest:    #253B2B;   /* tiefer Waldgrün-Akzent auf hell */
-      --c-text:      #211C15;   /* Fließtext */
-      --c-muted:     #7B6F60;   /* Metainfo, sekundärer Text */
-      --c-amber:     #B5791B;   /* warmes Amber — CTAs, Highlights */
-      --c-amber-lt:  #CF9741;   /* helles Amber für Hover */
-      --c-on-dark:   #EDE3CB;   /* Text auf dunklem Grund */
-      --c-on-dark-m: #A49880;   /* gedämpft auf dunklem Grund */
-      --c-border:    #D0C4A8;   /* zarte Trennlinien */
-
-      /* Typografie */
-      --f-display: 'Cormorant Garamond', Georgia, serif;
-      --f-body:    'Jost', system-ui, sans-serif;
-
-      /* Fluid Type Scale */
-      --t-hero:   clamp(3.5rem, 10vw, 8rem);
-      --t-h2:     clamp(2.1rem, 4.5vw, 3.5rem);
-      --t-h3:     clamp(1.15rem, 2vw, 1.35rem);
-      --t-body:   1rem;
-      --t-sm:     0.875rem;
-      --t-xs:     0.72rem;
-
-      /* Spacing */
-      --s-section: clamp(4.5rem, 9vw, 8rem);
-      --s-gap:     1.5rem;
-      --max-w:     1160px;
-
-      --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-
-    /* =========================================================
-       RESET & BASE
-    ========================================================= */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; font-size: 16px; }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-
-    body {
-      font-family: var(--f-body);
-      font-weight: 300;
-      color: var(--c-text);
-      background: var(--c-bg);
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    img { display: block; width: 100%; height: 100%; object-fit: cover; }
-    a   { color: inherit; text-decoration: none; }
-    button { font: inherit; cursor: pointer; border: none; background: none; }
-
-    /* =========================================================
-       LAYOUT HELPERS
-    ========================================================= */
-    .container {
-      max-width: var(--max-w);
-      margin-inline: auto;
-      padding-inline: clamp(1.25rem, 4vw, 2.5rem);
-    }
-
-    .section         { padding-block: var(--s-section); }
-    .section--light  { background: var(--c-bg); }
-    .section--alt    { background: var(--c-bg-alt); }
-    .section--dark   { background: var(--c-dark); color: var(--c-on-dark); }
-
-    /* =========================================================
-       TYPOGRAPHY HELPERS
-    ========================================================= */
-    .eyebrow {
-      font-family: var(--f-body);
-      font-size: var(--t-xs);
-      font-weight: 500;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--c-amber);
-      display: block;
-      margin-bottom: 0.65rem;
-    }
-
-    .section-title {
-      font-family: var(--f-display);
-      font-size: var(--t-h2);
-      font-weight: 400;
-      line-height: 1.08;
-      color: var(--c-dark);
-    }
-    .section--dark .section-title { color: var(--c-on-dark); }
-
-    .lead {
-      font-size: 1.05rem;
-      color: var(--c-muted);
-      line-height: 1.8;
-      max-width: 54ch;
-    }
-    .section--dark .lead { color: var(--c-on-dark-m); }
-
-    /* =========================================================
-       BUTTONS
-    ========================================================= */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: var(--f-body);
-      font-size: var(--t-sm);
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      padding: 0.875rem 2rem;
-      border-radius: 2px;
-      transition: background 0.22s var(--ease), color 0.22s var(--ease),
-                  border-color 0.22s var(--ease), box-shadow 0.22s var(--ease);
-    }
-    .btn:focus-visible { outline: 2px solid var(--c-amber); outline-offset: 3px; }
-
-    .btn--amber {
-      background: var(--c-amber);
-      color: #fff;
-      border: 1px solid var(--c-amber);
-    }
-    .btn--amber:hover {
-      background: var(--c-amber-lt);
-      border-color: var(--c-amber-lt);
-      box-shadow: 0 4px 20px rgba(181,121,27,0.3);
-    }
-
-    .btn--ghost {
-      background: transparent;
-      color: var(--c-on-dark);
-      border: 1px solid rgba(237,227,203,0.35);
-    }
-    .btn--ghost:hover {
-      background: rgba(237,227,203,0.08);
-      border-color: rgba(237,227,203,0.65);
-    }
-
-    .btn--outline-dark {
-      background: transparent;
-      color: var(--c-on-dark);
-      border: 1px solid rgba(237,227,203,0.3);
-    }
-    .btn--outline-dark:hover {
-      background: rgba(237,227,203,0.1);
-      border-color: rgba(237,227,203,0.6);
-    }
-
-    /* =========================================================
-       SCROLL REVEAL
-    ========================================================= */
-    .reveal {
-      opacity: 0;
-      transform: translateY(22px);
-      transition: opacity 0.75s var(--ease), transform 0.75s var(--ease);
-    }
-    .reveal.is-visible     { opacity: 1; transform: none; }
-    .reveal.d1 { transition-delay: 0.1s; }
-    .reveal.d2 { transition-delay: 0.2s; }
-    .reveal.d3 { transition-delay: 0.3s; }
-    .reveal.d4 { transition-delay: 0.4s; }
-
-    /* =========================================================
-       HEADER / NAV
-    ========================================================= */
-    #site-header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding-block: 1.5rem;
-      transition: background 0.4s var(--ease), padding 0.4s var(--ease), box-shadow 0.4s;
-    }
-
-    #site-header.is-scrolled {
-      background: rgba(17, 24, 16, 0.95);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      padding-block: 1rem;
-      box-shadow: 0 1px 0 rgba(255,255,255,0.05);
-    }
-
-    .nav-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 2rem;
-    }
-
-    /* Logo */
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      flex-shrink: 0;
-    }
-    .logo-mark { color: var(--c-amber); flex-shrink: 0; }
-    .logo-name {
-      font-family: var(--f-display);
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: #fff;
-      line-height: 1.1;
-      white-space: nowrap;
-      display: block;
-    }
-    .logo-loc {
-      font-family: var(--f-body);
-      font-size: 0.63rem;
-      font-weight: 400;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--c-on-dark-m);
-      display: block;
-    }
-
-    /* Nav links */
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.15rem;
-      list-style: none;
-    }
-    .nav-links a {
-      font-size: var(--t-sm);
-      font-weight: 400;
-      color: rgba(237,227,203,0.7);
-      padding: 0.4rem 0.8rem;
-      border-radius: 2px;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--c-on-dark); }
-    .nav-links a:focus-visible { outline: 2px solid var(--c-amber); outline-offset: 2px; }
-
-    .nav-cta {
-      color: var(--c-amber) !important;
-      border: 1px solid rgba(181,121,27,0.45) !important;
-      margin-left: 0.5rem;
-    }
-    .nav-cta:hover {
-      background: rgba(181,121,27,0.12) !important;
-      border-color: var(--c-amber) !important;
-    }
-
-    /* Hamburger */
-    .nav-toggle {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      padding: 6px 4px;
-    }
-    .nav-toggle span {
-      display: block;
-      width: 22px; height: 1.5px;
-      background: var(--c-on-dark);
-      transition: transform 0.3s var(--ease), opacity 0.3s;
-    }
-    .nav-toggle[aria-expanded="true"] span:nth-child(1) {
-      transform: translateY(6.5px) rotate(45deg);
-    }
-    .nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
-    .nav-toggle[aria-expanded="true"] span:nth-child(3) {
-      transform: translateY(-6.5px) rotate(-45deg);
-    }
-    .nav-toggle:focus-visible { outline: 2px solid var(--c-amber); outline-offset: 3px; border-radius: 2px; }
-
-    @media (max-width: 760px) {
-      .nav-toggle { display: flex; }
-      #nav-menu {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: var(--c-dark);
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4rem;
-        z-index: -1;
-        padding-top: 5rem;
-      }
-      #nav-menu.is-open { display: flex; }
-      .nav-links a { font-size: 1.25rem; padding: 0.9rem 2rem; }
-      .nav-cta { border: 1px solid rgba(181,121,27,0.45) !important; }
-    }
-
-    /* =========================================================
-       HERO
-    ========================================================= */
-    .hero {
-      position: relative;
-      height: 100svh;
-      min-height: 600px;
-      display: flex;
-      align-items: flex-end;
-      overflow: hidden;
-    }
-
-    .hero__media { position: absolute; inset: 0; }
-
-    .hero__img {
-      width: 100%; height: 100%;
-      object-fit: cover; object-position: center;
-      transform: scale(1.05);
-      transition: transform 10s var(--ease);
-    }
-    .hero__img.loaded { transform: scale(1); }
-
-    /* Gradient: dark bottom vignette + subtle forest tint top-left */
-    .hero__overlay {
-      position: absolute; inset: 0;
-      background:
-        linear-gradient(to top,  rgba(11,17,10,0.94) 0%, rgba(11,17,10,0.42) 42%, rgba(11,17,10,0.12) 100%),
-        linear-gradient(140deg, rgba(17,24,16,0.38) 0%, transparent 55%);
-    }
-
-    .hero__content {
-      position: relative;
-      width: 100%;
-      padding-bottom: clamp(3rem, 8vw, 6.5rem);
-    }
-
-    .hero__eyebrow {
-      font-family: var(--f-body);
-      font-size: var(--t-xs);
-      font-weight: 500;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--c-amber);
-      display: block;
-      margin-bottom: 0.85rem;
-      opacity: 0;
-      animation: au 0.8s var(--ease) 0.25s forwards;
-    }
-
-    .hero__title {
-      font-family: var(--f-display);
-      font-size: var(--t-hero);
-      font-weight: 400;
-      font-style: italic;
-      line-height: 0.93;
-      color: #fff;
-      margin-bottom: 1.2rem;
-      max-width: 11ch;
-      opacity: 0;
-      animation: au 0.9s var(--ease) 0.45s forwards;
-    }
-
-    .hero__sub {
-      font-size: clamp(0.88rem, 2vw, 1.08rem);
-      font-weight: 300;
-      color: rgba(237,227,203,0.75);
-      margin-bottom: 2.5rem;
-      letter-spacing: 0.02em;
-      opacity: 0;
-      animation: au 0.8s var(--ease) 0.65s forwards;
-    }
-
-    .hero__actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      opacity: 0;
-      animation: au 0.8s var(--ease) 0.85s forwards;
-    }
-
-    /* Deer watermark — purely decorative, bottom-right */
-    .hero__watermark {
-      position: absolute;
-      bottom: clamp(2rem, 5vw, 4rem);
-      right: clamp(1.5rem, 5vw, 4rem);
-      width: 70px;
-      color: rgba(237,227,203,0.10);
-      opacity: 0;
-      animation: fi 1.2s var(--ease) 1.3s forwards;
-    }
-
-    /* Scroll indicator */
-    .hero__scroll {
-      position: absolute;
-      bottom: 2rem; left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      opacity: 0;
-      animation: fi 1s var(--ease) 1.5s forwards;
-    }
-    .hero__scroll span {
-      font-size: 0.62rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(237,227,203,0.35);
-    }
-    .hero__scroll-line {
-      width: 1px; height: 40px;
-      background: linear-gradient(to bottom, rgba(237,227,203,0.35), transparent);
-      animation: sp 2.2s ease-in-out infinite;
-    }
-
-    @keyframes au {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: none; }
-    }
-    @keyframes fi {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-    @keyframes sp {
-      0%, 100% { opacity: 0.35; transform: scaleY(1); }
-      50%       { opacity: 0.75; transform: scaleY(1.2); }
-    }
-
-    /* =========================================================
-       SPECIALTIES — asymmetrisches Editorial-Grid
-    ========================================================= */
-    .specials-intro {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-bottom: clamp(2.5rem, 5vw, 4rem);
-    }
-
-    .specials-grid {
-      display: grid;
-      grid-template-columns: 3fr 2fr;
-      grid-template-rows: auto auto;
-      gap: 1.25rem;
-    }
-
-    .special-card {
-      position: relative;
-      overflow: hidden;
-      background: var(--c-dark);
-      border-radius: 2px;
-    }
-
-    /* Asymmetric aspect ratios for editorial feel */
-    .special-card:nth-child(1) { aspect-ratio: 4 / 3; }
-    .special-card:nth-child(2) { aspect-ratio: 3 / 4; grid-row: span 2; }
-    .special-card:nth-child(3) { aspect-ratio: 4 / 2.4; }
-    /* Card 4 fills the right column second row alongside card 3 */
-
-    .special-card__img {
-      position: absolute; inset: 0;
-      transition: transform 0.6s var(--ease);
-    }
-    .special-card:hover .special-card__img { transform: scale(1.04); }
-
-    .special-card__overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(10,16,10,0.88) 0%, rgba(10,16,10,0.18) 55%, transparent 100%);
-    }
-
-    .special-card__body {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: clamp(1.25rem, 3vw, 1.75rem);
-    }
-
-    .special-tag {
-      display: inline-block;
-      font-size: 0.62rem;
-      font-weight: 500;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-      color: var(--c-amber);
-      border: 1px solid rgba(181,121,27,0.45);
-      padding: 0.2rem 0.55rem;
-      border-radius: 1px;
-      margin-bottom: 0.55rem;
-    }
-
-    .special-card__name {
-      font-family: var(--f-display);
-      font-size: clamp(1.3rem, 2.5vw, 1.95rem);
-      font-weight: 500;
-      color: #fff;
-      line-height: 1.12;
-      margin-bottom: 0.35rem;
-    }
-
-    .special-card__desc {
-      font-size: var(--t-sm);
-      color: rgba(237,227,203,0.68);
-      font-weight: 300;
-      line-height: 1.5;
-    }
-
-    @media (max-width: 680px) {
-      .specials-grid { grid-template-columns: 1fr; }
-      .special-card:nth-child(n) {
-        aspect-ratio: 4 / 3;
-        grid-row: auto; grid-column: auto;
-      }
-    }
-
-    /* =========================================================
-       SPEISEKARTE
-    ========================================================= */
-    .menu-intro-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      align-items: start;
-      margin-bottom: clamp(2.5rem, 5vw, 4rem);
-    }
-    @media (max-width: 600px) { .menu-intro-row { grid-template-columns: 1fr; } }
-
-    .menu-note {
-      background: rgba(181,121,27,0.08);
-      border-left: 2px solid var(--c-amber);
-      padding: 1rem 1.2rem;
-      border-radius: 0 2px 2px 0;
-      font-size: var(--t-sm);
-      color: var(--c-muted);
-      line-height: 1.65;
-    }
-    .menu-note strong { color: var(--c-text); font-weight: 500; }
-
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 2.75rem 4rem;
-    }
-
-    .menu-cat__title {
-      font-family: var(--f-display);
-      font-size: 1.5rem;
-      font-weight: 400;
-      color: var(--c-forest);
-      padding-bottom: 0.55rem;
-      border-bottom: 1px solid var(--c-border);
-      margin-bottom: 1.2rem;
-      position: relative;
-    }
-    .menu-cat__title::after {
-      content: '';
-      position: absolute;
-      bottom: -1px; left: 0;
-      width: 2.25rem; height: 1px;
-      background: var(--c-amber);
-    }
-
-    .menu-list { list-style: none; display: flex; flex-direction: column; gap: 0.95rem; }
-
-    .menu-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 1rem;
-    }
-    .menu-item__left { flex: 1; }
-    .menu-item__name { font-size: 0.95rem; font-weight: 400; color: var(--c-text); margin-bottom: 0.12rem; }
-    .menu-item__desc { font-size: 0.8rem; color: var(--c-muted); line-height: 1.45; }
-    .menu-item__price {
-      font-family: var(--f-display);
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--c-text);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 0.59rem;
-      font-weight: 500;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      background: rgba(181,121,27,0.11);
-      color: var(--c-amber);
-      padding: 0.1rem 0.4rem;
-      border-radius: 1px;
-      margin-left: 0.35rem;
-      vertical-align: middle;
-    }
-
-    /* Desserts span full width */
-    .menu-desserts { grid-column: 1 / -1; }
-    .menu-desserts .menu-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 0.95rem 3.5rem;
-    }
-
-    /* =========================================================
-       ÜBER UNS
-    ========================================================= */
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: clamp(2.5rem, 6vw, 5rem);
-      align-items: center;
-    }
-    @media (max-width: 680px) {
-      .about-grid { grid-template-columns: 1fr; }
-      .about-img  { order: -1; aspect-ratio: 4/3 !important; }
-    }
-
-    .about-body { display: flex; flex-direction: column; gap: 0.75rem; }
-    .about-body .section-title { margin-bottom: 0.5rem; }
-
-    .about-text {
-      font-size: 1.03rem;
-      line-height: 1.82;
-      color: var(--c-text);
-    }
-
-    .about-facts {
-      display: flex;
-      gap: 2.5rem;
-      flex-wrap: wrap;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--c-border);
-      margin-top: 0.5rem;
-    }
-    .about-fact { display: flex; flex-direction: column; gap: 0.1rem; }
-    .about-fact__label {
-      font-size: var(--t-xs);
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--c-amber);
-    }
-    .about-fact__value {
-      font-family: var(--f-display);
-      font-size: 1.15rem;
-      color: var(--c-dark);
-    }
-
-    .about-img {
-      aspect-ratio: 3 / 4;
-      overflow: hidden;
-      border-radius: 2px;
-      position: relative;
-    }
-    .about-img::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, transparent 55%, rgba(37,59,43,0.12));
-    }
-
-    /* =========================================================
-       FESTE & FEIERN
-    ========================================================= */
-    .events-inner {
-      display: grid;
-      grid-template-columns: 1fr 1.15fr;
-      gap: clamp(2.5rem, 6vw, 5rem);
-      align-items: center;
-    }
-    @media (max-width: 680px) {
-      .events-inner { grid-template-columns: 1fr; }
-    }
-
-    .events-img-wrap {
-      aspect-ratio: 5 / 4;
-      overflow: hidden;
-      border-radius: 2px;
-    }
-
-    .events-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.7rem;
-      margin: 1.75rem 0 2.25rem;
-    }
-    .events-list li {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      font-size: var(--t-sm);
-      color: var(--c-on-dark-m);
-      list-style: none;
-    }
-    .events-list li::before {
-      content: '';
-      width: 18px; height: 1px;
-      background: var(--c-amber);
-      flex-shrink: 0;
-    }
-
-    /* =========================================================
-       KONTAKT & RESERVIERUNG
-    ========================================================= */
-    .contact-intro { margin-bottom: clamp(2.5rem, 5vw, 4rem); }
-
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1fr 1.5fr;
-      gap: clamp(2.5rem, 5vw, 5rem);
-      align-items: start;
-    }
-    @media (max-width: 760px) { .contact-grid { grid-template-columns: 1fr; } }
-
-    .contact-sidebar { display: flex; flex-direction: column; gap: 2.25rem; }
-
-    .contact-block__title {
-      font-family: var(--f-display);
-      font-size: 1.2rem;
-      font-weight: 500;
-      color: var(--c-dark);
-      margin-bottom: 0.7rem;
-    }
-
-    /* Hours table */
-    .hours-table { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
-    .hours-table tr { border-bottom: 1px solid rgba(0,0,0,0.06); }
-    .hours-table tr:last-child { border-bottom: none; }
-    .hours-table td { padding: 0.5rem 0; vertical-align: top; }
-    .hours-table td:first-child { font-weight: 500; color: var(--c-text); width: 4rem; }
-    .hours-table td:last-child  { color: var(--c-muted); }
-    .hours-closed { color: var(--c-muted) !important; font-style: italic; }
-
-    /* Map */
-    .contact-map {
-      aspect-ratio: 16 / 10;
-      border-radius: 2px;
-      overflow: hidden;
-      border: 1px solid var(--c-border);
-    }
-    .contact-map iframe { width: 100%; height: 100%; border: none; }
-
-    /* Contact links */
-    .contact-links { display: flex; flex-direction: column; gap: 0.55rem; }
-    .contact-link {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: var(--t-sm);
-      color: var(--c-text);
-      transition: color 0.2s;
-      word-break: break-all;
-    }
-    .contact-link:hover { color: var(--c-amber); }
-    .contact-link:focus-visible { outline: 2px solid var(--c-amber); outline-offset: 2px; }
-    .contact-link svg { flex-shrink: 0; }
-
-    /* Reservation Form */
-    .form-block { }
-    .form-block__title {
-      font-family: var(--f-display);
-      font-size: clamp(1.7rem, 3vw, 2.4rem);
-      font-weight: 400;
-      color: var(--c-dark);
-      margin-bottom: 0.4rem;
-    }
-    .form-block__sub {
-      font-size: var(--t-sm);
-      color: var(--c-muted);
-      margin-bottom: 2rem;
-      line-height: 1.65;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem 1.25rem;
-    }
-    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
-
-    .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
-    .form-field.full { grid-column: 1 / -1; }
-
-    label.form-label {
-      font-size: var(--t-xs);
-      font-weight: 500;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: var(--c-muted);
-    }
-
-    .form-input,
-    .form-select,
-    .form-textarea {
-      font-family: var(--f-body);
-      font-size: 0.95rem;
-      font-weight: 300;
-      color: var(--c-text);
-      background: var(--c-surface);
-      border: 1px solid var(--c-border);
-      border-radius: 2px;
-      padding: 0.75rem 1rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      -webkit-appearance: none; appearance: none;
-    }
-    .form-input:focus,
-    .form-select:focus,
-    .form-textarea:focus {
-      outline: none;
-      border-color: var(--c-amber);
-      box-shadow: 0 0 0 3px rgba(181,121,27,0.1);
-    }
-    .form-textarea { resize: vertical; min-height: 96px; }
-
-    .select-wrap { position: relative; }
-    .select-wrap::after {
-      content: '';
-      position: absolute;
-      right: 1rem; top: 50%;
-      transform: translateY(-50%);
-      width: 0; height: 0;
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top: 5px solid var(--c-muted);
-      pointer-events: none;
-    }
-
-    .form-submit { margin-top: 0.5rem; }
-
-    .form-success {
-      display: none;
-      margin-top: 1.25rem;
-      padding: 1rem 1.2rem;
-      background: rgba(37,59,43,0.08);
-      border: 1px solid rgba(37,59,43,0.25);
-      border-radius: 2px;
-      font-size: var(--t-sm);
-      color: var(--c-forest);
-      line-height: 1.65;
-    }
-    .form-success.is-visible { display: block; }
-    .form-success a { color: var(--c-forest); font-weight: 500; }
-
-    /* =========================================================
-       FOOTER
-    ========================================================= */
-    .site-footer {
-      background: var(--c-dark);
-      color: var(--c-on-dark-m);
-      padding-top: 3.5rem;
-      padding-bottom: 2rem;
-    }
-
-    .footer-top {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr;
-      gap: 3rem;
-      padding-bottom: 2.5rem;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 1.75rem;
-    }
-    @media (max-width: 680px) {
-      .footer-top { grid-template-columns: 1fr 1fr; }
-      .footer-brand { grid-column: 1 / -1; }
-    }
-    @media (max-width: 420px) { .footer-top { grid-template-columns: 1fr; } }
-
-    .footer-logo { margin-bottom: 0.85rem; }
-
-    .footer-tagline {
-      font-size: var(--t-sm);
-      font-weight: 300;
-      line-height: 1.65;
-      margin-bottom: 1.1rem;
-      max-width: 28ch;
-    }
-
-    .footer-col-title {
-      font-size: 0.65rem;
-      font-weight: 500;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      color: var(--c-amber);
-      margin-bottom: 0.85rem;
-    }
-
-    .footer-hours { font-size: var(--t-sm); line-height: 2; }
-    .footer-hours strong { color: var(--c-on-dark); font-weight: 400; }
-
-    .footer-addr { font-style: normal; font-size: var(--t-sm); line-height: 2; }
-    .footer-addr a { color: var(--c-on-dark-m); transition: color 0.2s; }
-    .footer-addr a:hover { color: var(--c-on-dark); }
-
-    .footer-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      font-size: 0.73rem;
-      color: rgba(164,152,128,0.45);
-    }
-    .footer-bottom a { color: rgba(164,152,128,0.45); transition: color 0.2s; }
-    .footer-bottom a:hover { color: var(--c-on-dark-m); }
-    .footer-legal { display: flex; gap: 1.5rem; }
-
-    /* =========================================================
-       ICON HELPER
-    ========================================================= */
-    .icon {
-      display: inline-block;
-      flex-shrink: 0;
-    }
+      --night:   #0B1410;
+      --forest:  #162110;
+      --parch:   #F0E3C5;
+      --parch2:  #E3D4B0;
+      --gold:    #C4851A;
+      --gold-lt: #DDA240;
+      --ink:     #1B1409;
+      --muted:   #7A6D58;
+      --cream:   #EDE1C6;
+      --cream-m: #9A8F76;
+      --ease: cubic-bezier(.25,.46,.45,.94);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;font-size:16px}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    body{font-family:'Figtree',system-ui,sans-serif;font-weight:300;background:var(--night);color:var(--cream);-webkit-font-smoothing:antialiased;line-height:1.7}
+    img{display:block;width:100%;height:100%;object-fit:cover}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit;cursor:pointer;border:none;background:none}
+
+    .wrap{max-width:1160px;margin-inline:auto;padding-inline:clamp(1.25rem,4vw,2.5rem)}
+
+    /* reveal */
+    .rv{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+    .rv.in{opacity:1;transform:none}
+    .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.32s}
+
+    /* ── HEADER ──────────────────────────────────────── */
+    #hdr{position:fixed;top:0;left:0;right:0;z-index:200;padding:1.5rem 0;transition:background .4s var(--ease),padding .35s}
+    #hdr.on{background:rgba(11,20,16,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:.95rem 0}
+    .hdr-row{display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:.65rem}
+    .logo-mark{color:var(--gold);flex-shrink:0}
+    .logo-name{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:'opsz' 18;font-size:1.02rem;color:var(--cream);line-height:1.1;display:block}
+    .logo-loc{font-family:'Figtree',sans-serif;font-size:.6rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-m);display:block}
+    .nav-links{display:flex;align-items:center;gap:.2rem;list-style:none}
+    .nav-links a{font-size:.875rem;font-weight:400;color:rgba(237,225,198,.62);padding:.4rem .75rem;transition:color .2s;border-radius:2px}
+    .nav-links a:hover{color:var(--cream)}
+    .nav-links a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+    .nav-res{color:var(--gold)!important;border:1px solid rgba(196,133,26,.38)!important;padding:.4rem 1rem!important;margin-left:.5rem}
+    .nav-res:hover{background:rgba(196,133,26,.1)!important;border-color:var(--gold)!important}
+    .nav-toggle{display:none;flex-direction:column;gap:5px;padding:4px}
+    .nav-toggle span{display:block;width:22px;height:1.5px;background:var(--cream);transition:transform .3s var(--ease),opacity .3s}
+    .nav-toggle[aria-expanded=true] span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+    .nav-toggle[aria-expanded=true] span:nth-child(2){opacity:0}
+    .nav-toggle[aria-expanded=true] span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+    .nav-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:2px}
+    @media(max-width:720px){
+      .nav-toggle{display:flex}
+      #nav{display:none;position:fixed;inset:0;background:var(--night);flex-direction:column;align-items:center;justify-content:center;gap:.5rem;z-index:-1}
+      #nav.open{display:flex}
+      .nav-links a{font-size:1.3rem;padding:.9rem 2rem}
+    }
+
+    /* ── HERO ────────────────────────────────────────── */
+    .hero{position:relative;height:100svh;min-height:600px;display:grid;place-items:center;overflow:hidden}
+    .hero-bg{position:absolute;inset:0}
+    .hero-bg img{transform:scale(1.06);transition:transform 10s var(--ease)}
+    .hero-bg img.loaded{transform:scale(1)}
+    .hero-bg::after{content:'';position:absolute;inset:0;background:rgba(8,14,9,.6)}
+    .hero-body{position:relative;width:100%;padding-bottom:clamp(3rem,7vw,5.5rem)}
+
+    .hero-pre{
+      font-family:'Figtree',sans-serif;font-size:.68rem;font-weight:500;
+      letter-spacing:.22em;text-transform:uppercase;color:var(--gold);
+      display:block;margin-bottom:.6rem;
+      opacity:0;animation:up .8s var(--ease) .3s forwards
+    }
+    .hero-zum{
+      display:block;font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 48;font-weight:400;
+      font-size:clamp(1.6rem,5vw,3.8rem);
+      color:rgba(237,225,198,.7);line-height:1.05;letter-spacing:-.02em;
+      margin-bottom:-.12em;
+      opacity:0;animation:up .85s var(--ease) .5s forwards
+    }
+    /* THE star element */
+    .hero-hirsch{
+      display:block;font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 144;font-weight:700;
+      font-size:clamp(5.5rem,17vw,14rem);
+      line-height:.88;letter-spacing:-.045em;color:#fff;
+      opacity:0;animation:up .9s var(--ease) .65s forwards
+    }
+    .hero-sub{
+      margin-top:1.75rem;font-size:clamp(.85rem,1.8vw,1.05rem);font-weight:300;
+      color:rgba(237,225,198,.62);letter-spacing:.02em;
+      opacity:0;animation:up .8s var(--ease) .85s forwards
+    }
+    .hero-ctas{
+      margin-top:2.5rem;display:flex;gap:1rem;flex-wrap:wrap;
+      opacity:0;animation:up .8s var(--ease) 1.05s forwards
+    }
+    /* Large antler watermark right side */
+    .hero-antler{
+      position:absolute;top:50%;right:-3%;transform:translateY(-52%);
+      width:clamp(160px,26vw,340px);color:rgba(237,225,198,.055);
+      pointer-events:none;
+      opacity:0;animation:fi 2s var(--ease) 1.2s forwards
+    }
+    .hero-scroll{
+      position:absolute;bottom:1.75rem;left:50%;transform:translateX(-50%);
+      display:flex;flex-direction:column;align-items:center;gap:.4rem;
+      opacity:0;animation:fi 1s var(--ease) 1.5s forwards
+    }
+    .hero-scroll-line{width:1px;height:34px;background:linear-gradient(to bottom,rgba(237,225,198,.3),transparent);animation:sp 2.2s ease-in-out infinite}
+    .hero-scroll-txt{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(237,225,198,.28)}
+
+    @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    @keyframes fi{from{opacity:0}to{opacity:1}}
+    @keyframes sp{0%,100%{opacity:.3}50%{opacity:.7}}
+
+    /* ── BUTTONS ─────────────────────────────────────── */
+    .btn{display:inline-flex;align-items:center;gap:.5rem;font-family:'Figtree',sans-serif;font-size:.875rem;font-weight:500;letter-spacing:.03em;padding:.85rem 1.9rem;border-radius:2px;transition:all .22s var(--ease)}
+    .btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .btn-gold{background:var(--gold);color:#fff;border:1px solid var(--gold)}
+    .btn-gold:hover{background:var(--gold-lt);border-color:var(--gold-lt);box-shadow:0 4px 18px rgba(196,133,26,.32)}
+    .btn-ghost{background:transparent;color:var(--cream);border:1px solid rgba(237,225,198,.28)}
+    .btn-ghost:hover{background:rgba(237,225,198,.07);border-color:rgba(237,225,198,.5)}
+    .btn-ink{background:transparent;color:var(--ink);border:1px solid rgba(0,0,0,.22)}
+    .btn-ink:hover{background:var(--ink);color:var(--parch)}
+
+    /* ── IDENTITY STRIP ──────────────────────────────── */
+    .strip{background:var(--forest);border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);padding:.95rem 0}
+    .strip-inner{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+    .strip-item{font-size:.67rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--cream-m)}
+    .strip-dot{color:var(--gold);font-size:.45rem;line-height:1}
+
+    /* ── SPECIALS ────────────────────────────────────── */
+    .specials{background:var(--night);padding-block:clamp(5rem,9vw,8.5rem)}
+    .specials-hd{margin-bottom:clamp(3rem,6vw,5rem)}
+    .specials-hd h2{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 72;font-weight:400;
+      font-size:clamp(2.2rem,5vw,4rem);line-height:1.05;color:var(--cream)
+    }
+    .specials-hd h2 em{color:var(--gold);font-style:italic}
+    .specials-hd p{font-size:.9rem;color:var(--cream-m);margin-top:.9rem;max-width:50ch;line-height:1.75}
+
+    /* No cards. Images are images. Text is beside them. */
+    .specials-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(1.5rem,3vw,2.5rem)}
+    @media(max-width:640px){.specials-grid{grid-template-columns:1fr}}
+
+    .special{display:flex;flex-direction:column;gap:.9rem}
+    .special-img{aspect-ratio:4/3;overflow:hidden}
+    .special-img img{transition:transform .7s var(--ease)}
+    .special:hover .special-img img{transform:scale(1.04)}
+    .special-season{font-size:.65rem;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--gold)}
+    .special h3{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 36;font-weight:400;
+      font-size:clamp(1.3rem,2.5vw,1.7rem);color:var(--cream);line-height:1.15
+    }
+    .special p{font-size:.875rem;color:var(--cream-m);line-height:1.65;max-width:44ch}
+
+    /* ── MENU ────────────────────────────────────────── */
+    .menu{background:var(--parch);color:var(--ink);padding-block:clamp(5rem,9vw,8.5rem)}
+    .menu-hd{
+      display:flex;justify-content:space-between;align-items:flex-end;
+      gap:2rem;flex-wrap:wrap;
+      padding-bottom:1.5rem;border-bottom:1px solid rgba(0,0,0,.1);
+      margin-bottom:3rem
+    }
+    .menu-hd h2{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 72;font-weight:400;
+      font-size:clamp(2.2rem,5vw,4rem);line-height:1.05;color:var(--ink)
+    }
+    .menu-note{font-size:.84rem;color:var(--muted);max-width:38ch;line-height:1.65}
+    .menu-note strong{color:var(--ink);font-weight:500}
+
+    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:3rem 5rem}
+    .menu-cat h3{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 18;font-weight:400;
+      font-size:1.4rem;color:var(--forest);
+      padding-bottom:.5rem;border-bottom:1px solid rgba(0,0,0,.09);
+      margin-bottom:.9rem;position:relative
+    }
+    .menu-cat h3::after{content:'';position:absolute;bottom:-1px;left:0;width:1.8rem;height:1px;background:var(--gold)}
+    .menu-cat ul{list-style:none;display:flex;flex-direction:column;gap:.85rem}
+    .dish{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem}
+    .dish-l{flex:1}
+    .dish-name{font-size:.92rem;font-weight:400;color:var(--ink);margin-bottom:.1rem}
+    .dish-desc{font-size:.78rem;color:var(--muted);line-height:1.4}
+    .dish-price{font-family:'Fraunces',serif;font-size:.98rem;font-weight:400;color:var(--ink);white-space:nowrap;flex-shrink:0}
+    .tag{display:inline-block;font-size:.57rem;font-weight:500;letter-spacing:.09em;text-transform:uppercase;background:rgba(196,133,26,.1);color:var(--gold);padding:.1rem .38rem;border-radius:1px;margin-left:.3rem;vertical-align:middle}
+
+    .menu-desserts{grid-column:1/-1}
+    .menu-desserts ul{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.85rem 4rem}
+
+    /* ── ABOUT ───────────────────────────────────────── */
+    .about{background:var(--night);padding-block:clamp(5rem,9vw,8.5rem)}
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2.5rem,6vw,5rem);align-items:center}
+    @media(max-width:680px){.about-grid{grid-template-columns:1fr}.about-photo{order:-1}}
+
+    /* Pull-quote as the "heading" — not a generic H2 */
+    .about-quote{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 48;font-weight:400;
+      font-size:clamp(1.9rem,3.5vw,2.9rem);line-height:1.2;
+      color:var(--cream);margin-bottom:1.75rem
+    }
+    .about-quote em{color:var(--gold);font-style:normal}
+    .about-p{font-size:1.02rem;line-height:1.82;color:var(--cream-m);margin-bottom:1.2rem}
+    .about-facts{display:flex;gap:2.5rem;flex-wrap:wrap;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.07);margin-top:.5rem}
+    .about-fact label{display:block;font-size:.66rem;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin-bottom:.12rem}
+    .about-fact span{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:'opsz' 18;font-size:1.1rem;color:var(--cream)}
+    .about-photo{aspect-ratio:3/4;overflow:hidden;border-radius:1px}
+
+    /* ── EVENTS ──────────────────────────────────────── */
+    .events{background:var(--parch2);color:var(--ink);padding-block:clamp(5rem,9vw,8.5rem)}
+    .events-inner{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(2.5rem,6vw,5rem);align-items:center}
+    @media(max-width:680px){.events-inner{grid-template-columns:1fr}}
+    .events h2{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 72;font-weight:400;
+      font-size:clamp(2.2rem,5vw,4rem);line-height:1.05;color:var(--ink);margin-bottom:.9rem
+    }
+    .events-lead{font-size:1.02rem;color:var(--muted);line-height:1.78;margin-bottom:1.75rem;max-width:44ch}
+    .events-list{list-style:none;margin-bottom:2.25rem;display:flex;flex-direction:column;gap:.6rem}
+    .events-list li{font-size:.875rem;color:var(--muted);display:flex;align-items:center;gap:.9rem}
+    .events-list li::before{content:'';width:16px;height:1px;background:var(--gold);flex-shrink:0}
+    .events-photo{aspect-ratio:5/4;overflow:hidden;border-radius:1px}
+
+    /* ── CONTACT ─────────────────────────────────────── */
+    .contact{background:var(--parch);color:var(--ink);padding-block:clamp(5rem,9vw,8.5rem)}
+    .contact>div>h2{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 72;font-weight:400;
+      font-size:clamp(2.2rem,5vw,4rem);color:var(--ink);
+      margin-bottom:clamp(2.5rem,5vw,4rem)
+    }
+    .contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:clamp(2.5rem,5vw,5rem);align-items:start}
+    @media(max-width:760px){.contact-grid{grid-template-columns:1fr}}
+    .c-side{display:flex;flex-direction:column;gap:2.5rem}
+    .c-block h3{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 18;font-weight:400;
+      font-size:1.2rem;color:var(--forest);margin-bottom:.7rem
+    }
+    .map-wrap{aspect-ratio:4/3;border-radius:1px;overflow:hidden;border:1px solid rgba(0,0,0,.1)}
+    .map-wrap iframe{width:100%;height:100%;border:none}
+    .c-links{display:flex;flex-direction:column;gap:.5rem}
+    .cl{display:flex;align-items:center;gap:.55rem;font-size:.875rem;color:var(--ink);transition:color .2s;word-break:break-all}
+    .cl:hover{color:var(--gold)}
+    .cl:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+    .hours-tbl{width:100%;border-collapse:collapse;font-size:.875rem}
+    .hours-tbl tr{border-bottom:1px solid rgba(0,0,0,.06)}
+    .hours-tbl tr:last-child{border-bottom:none}
+    .hours-tbl td{padding:.45rem 0}
+    .hours-tbl td:first-child{font-weight:500;width:3.5rem}
+    .hours-tbl td:last-child{color:var(--muted)}
+    .closed{color:var(--muted)!important;font-style:italic}
+
+    /* Form — no card, just fields on parchment */
+    .form-title{
+      font-family:'Fraunces',serif;font-style:italic;
+      font-variation-settings:'opsz' 48;font-weight:400;
+      font-size:clamp(1.7rem,3vw,2.4rem);color:var(--ink);margin-bottom:.4rem
+    }
+    .form-sub{font-size:.875rem;color:var(--muted);margin-bottom:1.75rem;line-height:1.65}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.95rem 1.25rem}
+    @media(max-width:480px){.form-grid{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:.28rem}
+    .field.full{grid-column:1/-1}
+    .field label{font-size:.68rem;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+    .field input,.field select,.field textarea{
+      font-family:'Figtree',sans-serif;font-size:.95rem;font-weight:300;
+      color:var(--ink);background:rgba(255,255,255,.55);
+      border:1px solid rgba(0,0,0,.14);border-radius:2px;
+      padding:.72rem 1rem;transition:border-color .2s,box-shadow .2s;
+      -webkit-appearance:none;appearance:none
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{
+      outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(196,133,26,.1)
+    }
+    .field textarea{resize:vertical;min-height:90px}
+    .sel-w{position:relative}
+    .sel-w::after{content:'';position:absolute;right:1rem;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--muted);pointer-events:none}
+    .form-ok{display:none;margin-top:1.2rem;padding:1rem 1.2rem;background:rgba(22,33,16,.07);border:1px solid rgba(22,33,16,.2);border-radius:2px;font-size:.875rem;color:var(--forest);line-height:1.65}
+    .form-ok.show{display:block}
+    .form-ok a{color:var(--forest);font-weight:500}
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    .footer{background:var(--night);padding-top:3.5rem;padding-bottom:2rem}
+    .footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:3rem;padding-bottom:2.5rem;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:1.75rem}
+    @media(max-width:680px){.footer-top{grid-template-columns:1fr 1fr}.footer-brand{grid-column:1/-1}}
+    @media(max-width:420px){.footer-top{grid-template-columns:1fr}}
+    .f-logo{margin-bottom:.8rem}
+    .f-tagline{font-size:.875rem;font-weight:300;line-height:1.65;color:var(--cream-m);max-width:28ch;margin-bottom:1rem}
+    .f-title{font-size:.63rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.85rem}
+    .f-hours{font-size:.875rem;line-height:2;color:var(--cream-m)}
+    .f-hours strong{color:var(--cream);font-weight:400}
+    .f-addr{font-style:normal;font-size:.875rem;line-height:2;color:var(--cream-m)}
+    .f-addr a{transition:color .2s}
+    .f-addr a:hover{color:var(--cream)}
+    .f-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;font-size:.72rem;color:rgba(154,143,118,.38)}
+    .f-bottom a{color:rgba(154,143,118,.38);transition:color .2s}
+    .f-bottom a:hover{color:var(--cream-m)}
+    .f-legal{display:flex;gap:1.5rem}
+    .f-contact-links{display:flex;flex-direction:column;gap:.5rem}
   </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HEADER
-═══════════════════════════════════════════════════════════ -->
-<header id="site-header">
-  <nav class="container nav-inner" aria-label="Hauptnavigation">
-
-    <a href="#" class="logo" aria-label="Gasthaus zum Hirsch — Zurück zur Startseite">
-      <!-- Geweih-Marke: zwei stilisierte Geweihe, nur Kontur -->
-      <svg class="logo-mark" width="32" height="28" viewBox="0 0 40 32" fill="none" aria-hidden="true">
+<!-- HEADER -->
+<header id="hdr">
+  <nav class="wrap hdr-row" aria-label="Hauptnavigation">
+    <a href="#" class="logo" aria-label="Gasthaus zum Hirsch">
+      <svg class="logo-mark" width="30" height="26" viewBox="0 0 40 32" fill="none" aria-hidden="true">
         <path d="M14 22 L10 12 L7 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         <path d="M10 12 L7 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         <path d="M8.5 8.5 L12 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -942,338 +334,183 @@
         <span class="logo-loc">Altlußheim</span>
       </span>
     </a>
-
-    <button
-      class="nav-toggle"
-      aria-label="Navigation öffnen"
-      aria-expanded="false"
-      aria-controls="nav-menu"
-    >
+    <button class="nav-toggle" aria-label="Navigation öffnen" aria-expanded="false" aria-controls="nav">
       <span></span><span></span><span></span>
     </button>
-
-    <ul class="nav-links" id="nav-menu" role="list">
+    <ul class="nav-links" id="nav" role="list">
       <li><a href="#spezialitaeten">Spezialitäten</a></li>
       <li><a href="#speisekarte">Speisekarte</a></li>
       <li><a href="#ueber-uns">Über uns</a></li>
       <li><a href="#feste">Feste &amp; Feiern</a></li>
-      <li><a href="#kontakt" class="nav-cta">Reservieren</a></li>
+      <li><a href="#kontakt" class="nav-res">Reservieren</a></li>
     </ul>
-
   </nav>
 </header>
 
-
 <main>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HERO
-═══════════════════════════════════════════════════════════ -->
-<section id="hero" class="hero" aria-label="Willkommen">
-
-  <div class="hero__media" aria-hidden="true">
-    <img
-      class="hero__img"
-      src="hero.jpg"
+<!-- HERO -->
+<section class="hero" aria-label="Willkommen">
+  <div class="hero-bg" aria-hidden="true">
+    <img class="hero-img" src="hero.jpg"
       data-src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1920&q=80"
-      alt="Gemütliches Ambiente im Gasthaus zum Hirsch — warme Beleuchtung, gedeckte Tische"
-      fetchpriority="high"
-      loading="eager"
-    >
-    <div class="hero__overlay"></div>
+      alt="Warmes Ambiente im Gasthaus zum Hirsch" fetchpriority="high" loading="eager">
   </div>
 
-  <div class="hero__content container">
-    <span class="hero__eyebrow">Willkommen im</span>
-    <h1 class="hero__title">Gasthaus<br>zum&nbsp;Hirsch</h1>
-    <p class="hero__sub">Gutbürgerliche Küche in Altlußheim · Familienbetrieb seit Generationen</p>
-    <div class="hero__actions">
-      <a href="#kontakt" class="btn btn--amber">Tisch reservieren</a>
-      <a href="tel:+4962053303" class="btn btn--ghost">
-        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82A16 16 0 0 0 15.1 16l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17.28v-.36z"/>
-        </svg>
+  <div class="hero-body wrap">
+    <span class="hero-pre">Gasthaus</span>
+    <span class="hero-zum">zum</span>
+    <span class="hero-hirsch">Hirsch</span>
+    <p class="hero-sub">Gutbürgerliche Küche in Altlußheim &nbsp;·&nbsp; Familienbetrieb</p>
+    <div class="hero-ctas">
+      <a href="#kontakt" class="btn btn-gold">Tisch reservieren</a>
+      <a href="tel:+4962053303" class="btn btn-ghost">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.82A16 16 0 0 0 15.1 16l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17.28v-.36z"/></svg>
         06205&nbsp;33030
       </a>
     </div>
   </div>
 
-  <!-- Geweih-Wasserzeichen, rein dekorativ -->
-  <div class="hero__watermark" aria-hidden="true">
-    <svg viewBox="0 0 40 32" fill="none">
-      <path d="M14 22 L10 12 L7 5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-      <path d="M10 12 L7 10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-      <path d="M8.5 8.5 L12 6.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-      <path d="M26 22 L30 12 L33 5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-      <path d="M30 12 L33 10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-      <path d="M31.5 8.5 L28 6.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-      <path d="M14 22 Q20 19 26 22" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+  <!-- Atmospheric large antler mark -->
+  <div class="hero-antler" aria-hidden="true">
+    <svg viewBox="0 0 80 70" fill="none">
+      <path d="M28 48 L22 32 L17 18 L13 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M22 32 L16 27" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M19 22 L24 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M15 11 L18 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M52 48 L58 32 L63 18 L67 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M58 32 L64 27" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M61 22 L56 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M65 11 L62 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M28 48 Q40 43 52 48" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
   </div>
 
-  <div class="hero__scroll" aria-hidden="true">
-    <div class="hero__scroll-line"></div>
-    <span>Entdecken</span>
+  <div class="hero-scroll" aria-hidden="true">
+    <div class="hero-scroll-line"></div>
+    <span class="hero-scroll-txt">Entdecken</span>
   </div>
-
 </section>
 
+<!-- IDENTITY STRIP -->
+<div class="strip" aria-hidden="true">
+  <div class="strip-inner">
+    <span class="strip-item">Familienbetrieb</span>
+    <span class="strip-dot">◆</span>
+    <span class="strip-item">Altlußheim am Rhein</span>
+    <span class="strip-dot">◆</span>
+    <span class="strip-item">Gutbürgerliche Küche</span>
+    <span class="strip-dot">◆</span>
+    <span class="strip-item">Seit Generationen</span>
+  </div>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SPEZIALITÄTEN
-═══════════════════════════════════════════════════════════ -->
-<section id="spezialitaeten" class="section section--light">
-  <div class="container">
-
-    <div class="specials-intro reveal">
-      <span class="eyebrow">Unsere Aushängeschilder</span>
-      <h2 class="section-title">Was den Hirsch ausmacht</h2>
+<!-- SPEZIALITÄTEN — no cards -->
+<section id="spezialitaeten" class="specials">
+  <div class="wrap">
+    <div class="specials-hd rv">
+      <h2>Was den Hirsch<br><em>ausmacht</em></h2>
+      <p>Frisch zubereitet, täglich. Was die Region und die Saison bringen, kommt auf den Tisch.</p>
     </div>
-
     <div class="specials-grid">
-
-      <!-- Wild -->
-      <article class="special-card reveal">
-        <div class="special-card__img">
-          <img
-            src="wild.jpg"
-            data-src="https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=1200&q=80"
-            alt="Rehgulasch mit Preiselbeeren und Semmelknödel"
-            loading="lazy"
-          >
+      <article class="special rv">
+        <div class="special-img">
+          <img src="wild.jpg"
+            data-src="https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=900&q=80"
+            alt="Rehgulasch mit Preiselbeeren" loading="lazy">
         </div>
-        <div class="special-card__overlay"></div>
-        <div class="special-card__body">
-          <span class="special-tag">Saisonal</span>
-          <h3 class="special-card__name">Wildgerichte</h3>
-          <p class="special-card__desc">Reh, Hirsch & Wildente — frisch aus heimischen Revieren, nach überlieferten Rezepten.</p>
-        </div>
+        <span class="special-season">Saisonal</span>
+        <h3>Wildgerichte</h3>
+        <p>Reh, Hirsch &amp; Wildente — aus heimischen Revieren, nach überlieferten Rezepten.</p>
       </article>
-
-      <!-- Spargel — spans two rows -->
-      <article class="special-card reveal d1">
-        <div class="special-card__img">
-          <img
-            src="spargel.jpg"
+      <article class="special rv d1">
+        <div class="special-img">
+          <img src="spargel.jpg"
             data-src="https://images.unsplash.com/photo-1528712306091-ed0763094c98?auto=format&fit=crop&w=900&q=80"
-            alt="Weißer Spargel mit Sauce Hollandaise und neuen Kartoffeln"
-            loading="lazy"
-          >
+            alt="Weißer Spargel mit Sauce Hollandaise" loading="lazy">
         </div>
-        <div class="special-card__overlay"></div>
-        <div class="special-card__body">
-          <span class="special-tag">April – Juni</span>
-          <h3 class="special-card__name">Spargel</h3>
-          <p class="special-card__desc">Knackfrischer Regionalspargel, klassisch mit Hollandaise oder als Cremesuppe.</p>
-        </div>
+        <span class="special-season">April – Juni</span>
+        <h3>Spargel</h3>
+        <p>Knackfrischer Regionalspargel, klassisch mit Hollandaise oder als Cremesuppe.</p>
       </article>
-
-      <!-- Schnitzel -->
-      <article class="special-card reveal d2">
-        <div class="special-card__img">
-          <img
-            src="schnitzel.jpg"
-            data-src="https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=1200&q=80"
-            alt="Knuspriges Wiener Schnitzel mit Zitrone und Petersilienkartoffeln"
-            loading="lazy"
-          >
+      <article class="special rv d1">
+        <div class="special-img">
+          <img src="schnitzel.jpg"
+            data-src="https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=900&q=80"
+            alt="Knuspriges Wiener Schnitzel" loading="lazy">
         </div>
-        <div class="special-card__overlay"></div>
-        <div class="special-card__body">
-          <span class="special-tag">Klassiker</span>
-          <h3 class="special-card__name">Schnitzel &amp; Cordon Bleu</h3>
-          <p class="special-card__desc">Knusprig, zart und hausgemacht — unsere beliebtesten Teller, täglich frisch.</p>
-        </div>
+        <span class="special-season">Klassiker</span>
+        <h3>Schnitzel &amp; Cordon Bleu</h3>
+        <p>Knusprig, zart, hausgemacht — unsere beliebtesten Teller, täglich frisch.</p>
       </article>
-
+      <article class="special rv d2">
+        <div class="special-img">
+          <img src="dessert.jpg"
+            data-src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=900&q=80"
+            alt="Hausgemachte Crème brûlée" loading="lazy">
+        </div>
+        <span class="special-season">Hausgemacht</span>
+        <h3>Desserts</h3>
+        <p>Von Crème brûlée bis Kaiserschmarrn — der süße Abschluss, der bleibt.</p>
+      </article>
     </div>
   </div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     SPEISEKARTE
-═══════════════════════════════════════════════════════════ -->
-<section id="speisekarte" class="section section--alt">
-  <div class="container">
-
-    <div class="menu-intro-row">
-      <div class="reveal">
-        <span class="eyebrow">Speisekarte</span>
-        <h2 class="section-title">Gerichte &amp; Preise</h2>
-        <p class="lead" style="margin-top: 0.75rem;">
-          Täglich frisch zubereitet — aus Zutaten, die wir kennen und vertrauen.
-          Was die Saison bringt, kommt auf den Tisch.
-        </p>
-      </div>
-      <div class="menu-note reveal d1">
-        <strong>Saisonale Karte</strong><br>
-        <span style="color: var(--c-amber)">🌿 Spargel</span> April bis Juni
-        &nbsp;·&nbsp;
-        <span style="color: var(--c-amber)">🦌 Wild</span> Herbst &amp; Winter<br>
-        Saisonale Verfügbarkeit auf Anfrage — wir beraten Sie gerne telefonisch.
-      </div>
+<!-- SPEISEKARTE -->
+<section id="speisekarte" class="menu">
+  <div class="wrap">
+    <div class="menu-hd rv">
+      <h2>Speisekarte</h2>
+      <p class="menu-note"><strong>Saisonale Hinweise:</strong> Spargel April–Juni · Wild Herbst &amp; Winter. Täglich frisch zubereitet aus regionalen Zutaten.</p>
     </div>
-
     <div class="menu-grid">
 
-      <!-- VORSPEISEN -->
-      <div class="reveal">
-        <h3 class="menu-cat__title">Vorspeisen</h3>
-        <ul class="menu-list">
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Hausgemachte Leberknödelsuppe</div>
-              <div class="menu-item__desc">Kräftige Rinderbrühe, zarte Knödel, Schnittlauch</div>
-            </div>
-            <span class="menu-item__price">5,50&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Rinderkraftbrühe mit Backerbsen</div>
-            </div>
-            <span class="menu-item__price">4,80&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Wildterrine <span class="badge">Wild</span></div>
-              <div class="menu-item__desc">Preiselbeerkompott, geröstetes Sauerteigbrot</div>
-            </div>
-            <span class="menu-item__price">8,90&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Spargelcremesuppe <span class="badge">Spargel</span></div>
-              <div class="menu-item__desc">Geröstete Mandelsplitter, Schlagsahne</div>
-            </div>
-            <span class="menu-item__price">7,50&nbsp;€</span>
-          </li>
+      <div class="menu-cat rv">
+        <h3>Vorspeisen</h3>
+        <ul>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Hausgemachte Leberknödelsuppe</div><div class="dish-desc">Kräftige Rinderbrühe, Schnittlauch</div></div><span class="dish-price">5,50&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Rinderkraftbrühe mit Backerbsen</div></div><span class="dish-price">4,80&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Wildterrine <span class="tag">Wild</span></div><div class="dish-desc">Preiselbeerkompott, Sauerteigbrot</div></div><span class="dish-price">8,90&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Spargelcremesuppe <span class="tag">Spargel</span></div><div class="dish-desc">Geröstete Mandeln, Rahm</div></div><span class="dish-price">7,50&nbsp;€</span></li>
         </ul>
       </div>
 
-      <!-- KLASSIKER -->
-      <div class="reveal d1">
-        <h3 class="menu-cat__title">Klassiker</h3>
-        <ul class="menu-list">
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Wiener Schnitzel vom Kalb</div>
-              <div class="menu-item__desc">Petersilienkartoffeln, Preiselbeeren, Zitrone</div>
-            </div>
-            <span class="menu-item__price">18,90&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Cordon Bleu vom Schwein</div>
-              <div class="menu-item__desc">Bratensoße, hausgemachte Pommes frites</div>
-            </div>
-            <span class="menu-item__price">16,50&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Rinderrahmgulasch</div>
-              <div class="menu-item__desc">Semmelknödel, cremige Rahmsoße</div>
-            </div>
-            <span class="menu-item__price">15,90&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Jägerschnitzel</div>
-              <div class="menu-item__desc">Waldpilz-Rahmsoße, hausgemachte Spätzle</div>
-            </div>
-            <span class="menu-item__price">16,80&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Bauernbratwurst mit Sauerkraut</div>
-              <div class="menu-item__desc">Hausgemachter Kartoffelbrei</div>
-            </div>
-            <span class="menu-item__price">13,50&nbsp;€</span>
-          </li>
+      <div class="menu-cat rv d1">
+        <h3>Klassiker</h3>
+        <ul>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Wiener Schnitzel vom Kalb</div><div class="dish-desc">Petersilienkartoffeln, Preiselbeeren, Zitrone</div></div><span class="dish-price">18,90&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Cordon Bleu vom Schwein</div><div class="dish-desc">Bratensoße, hausgemachte Pommes frites</div></div><span class="dish-price">16,50&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Rinderrahmgulasch</div><div class="dish-desc">Semmelknödel, cremige Rahmsoße</div></div><span class="dish-price">15,90&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Jägerschnitzel</div><div class="dish-desc">Waldpilz-Rahmsoße, hausgemachte Spätzle</div></div><span class="dish-price">16,80&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Bauernbratwurst mit Sauerkraut</div><div class="dish-desc">Hausgemachter Kartoffelbrei</div></div><span class="dish-price">13,50&nbsp;€</span></li>
         </ul>
       </div>
 
-      <!-- WILD -->
-      <div class="reveal">
-        <h3 class="menu-cat__title">Wild <span class="badge">Saisonal</span></h3>
-        <ul class="menu-list">
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Rehbraten in Rotweinjus</div>
-              <div class="menu-item__desc">Rotkohl, Kartoffelknödel, Preiselbeeren</div>
-            </div>
-            <span class="menu-item__price">22,50&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Wildentenbrust</div>
-              <div class="menu-item__desc">Preiselbeerkompott, Serviettenknödel, Bratensauce</div>
-            </div>
-            <span class="menu-item__price">21,90&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Wildgulasch</div>
-              <div class="menu-item__desc">Hausgemachte Spätzle, Waldpilze</div>
-            </div>
-            <span class="menu-item__price">18,50&nbsp;€</span>
-          </li>
+      <div class="menu-cat rv">
+        <h3>Wild <span class="tag">Saisonal</span></h3>
+        <ul>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Rehbraten in Rotweinjus</div><div class="dish-desc">Rotkohl, Kartoffelknödel, Preiselbeeren</div></div><span class="dish-price">22,50&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Wildentenbrust</div><div class="dish-desc">Preiselbeerkompott, Serviettenknödel</div></div><span class="dish-price">21,90&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Wildgulasch</div><div class="dish-desc">Hausgemachte Spätzle, Waldpilze</div></div><span class="dish-price">18,50&nbsp;€</span></li>
         </ul>
       </div>
 
-      <!-- SPARGEL -->
-      <div class="reveal d1">
-        <h3 class="menu-cat__title">Spargel <span class="badge">April–Juni</span></h3>
-        <ul class="menu-list">
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Weißer Spargel klassisch</div>
-              <div class="menu-item__desc">Sauce Hollandaise, neue Kartoffeln, Schinken</div>
-            </div>
-            <span class="menu-item__price">19,90&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Spargel mit Sauce Béarnaise</div>
-              <div class="menu-item__desc">Neue Kartoffeln, Lachsfilet</div>
-            </div>
-            <span class="menu-item__price">21,50&nbsp;€</span>
-          </li>
+      <div class="menu-cat rv d1">
+        <h3>Spargel <span class="tag">April–Juni</span></h3>
+        <ul>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Weißer Spargel klassisch</div><div class="dish-desc">Sauce Hollandaise, neue Kartoffeln, Schinken</div></div><span class="dish-price">19,90&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Spargel mit Sauce Béarnaise</div><div class="dish-desc">Neue Kartoffeln, Lachsfilet</div></div><span class="dish-price">21,50&nbsp;€</span></li>
         </ul>
       </div>
 
-      <!-- DESSERTS (volle Breite) -->
-      <div class="menu-desserts reveal">
-        <h3 class="menu-cat__title">Süßspeisen</h3>
-        <ul class="menu-list">
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Hausgemachte Crème brûlée</div>
-              <div class="menu-item__desc">Karamellisiert, saisonale Beeren</div>
-            </div>
-            <span class="menu-item__price">6,50&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Kaiserschmarrn</div>
-              <div class="menu-item__desc">Zwetschgenkompott, Puderzucker</div>
-            </div>
-            <span class="menu-item__price">8,90&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Schokoladenfondant</div>
-              <div class="menu-item__desc">Flüssiger Kern, hausgemachtes Vanilleeis</div>
-            </div>
-            <span class="menu-item__price">7,80&nbsp;€</span>
-          </li>
-          <li class="menu-item">
-            <div class="menu-item__left">
-              <div class="menu-item__name">Saisonale Obsttarte</div>
-              <div class="menu-item__desc">Täglich wechselnd, Schlagsahne</div>
-            </div>
-            <span class="menu-item__price">6,90&nbsp;€</span>
-          </li>
+      <div class="menu-cat menu-desserts rv">
+        <h3>Süßspeisen</h3>
+        <ul>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Hausgemachte Crème brûlée</div><div class="dish-desc">Karamellisiert, saisonale Beeren</div></div><span class="dish-price">6,50&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Kaiserschmarrn</div><div class="dish-desc">Zwetschgenkompott, Puderzucker</div></div><span class="dish-price">8,90&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Schokoladenfondant</div><div class="dish-desc">Flüssiger Kern, Vanilleeis</div></div><span class="dish-price">7,80&nbsp;€</span></li>
+          <li class="dish"><div class="dish-l"><div class="dish-name">Saisonale Obsttarte</div><div class="dish-desc">Täglich wechselnd, Schlagsahne</div></div><span class="dish-price">6,90&nbsp;€</span></li>
         </ul>
       </div>
 
@@ -1281,266 +518,148 @@
   </div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     ÜBER UNS
-═══════════════════════════════════════════════════════════ -->
-<section id="ueber-uns" class="section section--light">
-  <div class="container">
+<!-- ÜBER UNS -->
+<section id="ueber-uns" class="about">
+  <div class="wrap">
     <div class="about-grid">
-
-      <div class="about-body reveal">
-        <span class="eyebrow">Über uns</span>
-        <h2 class="section-title">Tradition &amp;<br>Gastfreundschaft</h2>
-        <p class="about-text">
-          Das Gasthaus zum Hirsch ist ein echter Treffpunkt. Seit Generationen kochen wir
-          für Familien, Stammgäste und alle, die nach einem langen Tag etwas Ehrliches auf
-          dem Teller suchen — gutbürgerliche Küche, die satt macht und schmeckt.
+      <div class="rv">
+        <p class="about-quote">
+          „Wer einmal am Tisch saß,<br>
+          <em>kommt wieder.</em>"
         </p>
-        <p class="about-text">
-          Frische Zutaten aus der Region, hausgemachte Soßen und Desserts, und ein
-          Serviceteam, das jeden Gast kennt. Kein Schnickschnack — wir kochen, was wir
-          selbst gerne essen. Und das schmeckt man.
-        </p>
+        <p class="about-p">Das Gasthaus zum Hirsch ist ein echter Treffpunkt. Seit Generationen kochen wir für Familien, Stammgäste und alle, die nach einem langen Tag etwas Ehrliches auf dem Teller suchen — gutbürgerliche Küche, die satt macht und schmeckt.</p>
+        <p class="about-p">Frische Zutaten aus der Region, hausgemachte Soßen, ein Serviceteam, das jeden Gast kennt. Kein Schnickschnack — wir kochen, was wir selbst gerne essen.</p>
         <div class="about-facts">
-          <div class="about-fact">
-            <span class="about-fact__label">Küche</span>
-            <span class="about-fact__value">Gutbürgerlich</span>
-          </div>
-          <div class="about-fact">
-            <span class="about-fact__label">Betrieb</span>
-            <span class="about-fact__value">Familienbetrieb</span>
-          </div>
-          <div class="about-fact">
-            <span class="about-fact__label">Standort</span>
-            <span class="about-fact__value">Altlußheim</span>
-          </div>
+          <div class="about-fact"><label>Küche</label><span>Gutbürgerlich</span></div>
+          <div class="about-fact"><label>Betrieb</label><span>Familienbetrieb</span></div>
+          <div class="about-fact"><label>Standort</label><span>Altlußheim</span></div>
         </div>
       </div>
-
-      <div class="about-img reveal d2">
-        <img
-          src="about.jpg"
+      <div class="about-photo rv d2">
+        <img src="about.jpg"
           data-src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80"
-          alt="Gedeckter Tisch im Gasthaus zum Hirsch — warmes Kerzenlicht, einladende Atmosphäre"
-          loading="lazy"
-        >
+          alt="Gedeckter Tisch im Gasthaus zum Hirsch" loading="lazy">
       </div>
-
     </div>
   </div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     FESTE & FEIERN
-═══════════════════════════════════════════════════════════ -->
-<section id="feste" class="section section--dark">
-  <div class="container">
+<!-- FESTE & FEIERN -->
+<section id="feste" class="events">
+  <div class="wrap">
     <div class="events-inner">
-
-      <div class="reveal">
-        <span class="eyebrow">Feste &amp; Feiern</span>
-        <h2 class="section-title">Ihr Fest —<br>unser Gasthaus</h2>
-        <p class="lead" style="margin-top: 0.75rem;">
-          Ob Geburtstag, Hochzeit, Betriebsfeier oder Familientreffen — wir richten
-          Ihr Fest aus. Mit Erfahrung, gutem Essen und dem Charme eines echten Gasthauses.
-        </p>
+      <div class="rv">
+        <h2>Ihr Fest —<br>unser Gasthaus</h2>
+        <p class="events-lead">Ob Geburtstag, Hochzeit, Betriebsfeier oder Familientreffen — wir richten Ihr Fest aus. Mit Erfahrung, gutem Essen und dem Charme eines echten Gasthauses.</p>
         <ul class="events-list">
           <li>Bis zu 60 Gäste im gemütlichen Gastraum</li>
           <li>Individuell abgestimmte Menüs &amp; Buffets</li>
           <li>Catering auf Anfrage auch außer Haus</li>
           <li>Persönliche Beratung und Planung</li>
         </ul>
-        <a href="#kontakt" class="btn btn--outline-dark">Anfrage stellen</a>
+        <a href="#kontakt" class="btn btn-ink">Anfrage stellen</a>
       </div>
-
-      <div class="reveal d2">
-        <div class="events-img-wrap">
-          <img
-            src="feste.jpg"
-            data-src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1000&q=80"
-            alt="Festlich gedeckter Tisch für eine Feier im Gasthaus"
-            loading="lazy"
-          >
-        </div>
+      <div class="events-photo rv d2">
+        <img src="feste.jpg"
+          data-src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1000&q=80"
+          alt="Festlich gedeckter Tisch" loading="lazy">
       </div>
-
     </div>
   </div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     KONTAKT & RESERVIERUNG
-═══════════════════════════════════════════════════════════ -->
-<section id="kontakt" class="section section--alt">
-  <div class="container">
-
-    <div class="contact-intro reveal">
-      <span class="eyebrow">Kontakt &amp; Anfahrt</span>
-      <h2 class="section-title">Wir freuen uns auf Sie</h2>
-    </div>
-
+<!-- KONTAKT & RESERVIERUNG -->
+<section id="kontakt" class="contact">
+  <div class="wrap">
+    <h2 class="rv">Wir freuen uns<br>auf Sie</h2>
     <div class="contact-grid">
-
-      <!-- Sidebar: Karte + Adresse + Zeiten -->
-      <div class="contact-sidebar">
-
-        <div class="contact-map reveal">
-          <iframe
-            src="https://maps.google.com/maps?q=Rheinhäuser+Str.+10,+68804+Altlußheim&output=embed"
-            title="Lage des Gasthauses zum Hirsch in Altlußheim"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
+      <div class="c-side">
+        <div class="c-block rv">
+          <div class="map-wrap">
+            <iframe src="https://maps.google.com/maps?q=Rheinhäuser+Str.+10,+68804+Altlußheim&output=embed"
+              title="Lage des Gasthauses zum Hirsch" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
         </div>
-
-        <div class="reveal d1">
-          <h3 class="contact-block__title">Adresse &amp; Kontakt</h3>
-          <div class="contact-links">
-            <a
-              href="https://maps.google.com/?q=Rheinhäuser+Str.+10,+68804+Altlußheim"
-              class="contact-link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div class="c-block rv d1">
+          <h3>Adresse &amp; Kontakt</h3>
+          <div class="c-links">
+            <a href="https://maps.google.com/?q=Rheinhäuser+Str.+10,+68804+Altlußheim" class="cl" target="_blank" rel="noopener noreferrer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               Rheinhäuser Str. 10, 68804 Altlußheim
             </a>
-            <a href="tel:+4962053303" class="contact-link">
-              <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82A16 16 0 0 0 15.1 16l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17.28v-.36z"/></svg>
+            <a href="tel:+4962053303" class="cl">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.82A16 16 0 0 0 15.1 16l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17.28v-.36z"/></svg>
               06205 33030
             </a>
-            <a href="mailto:gasthauszumhirsch-altlussheim@gmx.de" class="contact-link">
-              <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <a href="mailto:gasthauszumhirsch-altlussheim@gmx.de" class="cl">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               gasthauszumhirsch-altlussheim@gmx.de
             </a>
           </div>
         </div>
-
-        <div class="reveal d2">
-          <h3 class="contact-block__title">Öffnungszeiten</h3>
-          <table class="hours-table" aria-label="Öffnungszeiten des Gasthauses">
+        <div class="c-block rv d2">
+          <h3>Öffnungszeiten</h3>
+          <table class="hours-tbl" aria-label="Öffnungszeiten">
             <tbody>
               <tr><td>Mo</td><td>11:30 – 13:30 Uhr</td></tr>
-              <tr><td>Di</td><td class="hours-closed">Ruhetag</td></tr>
+              <tr><td>Di</td><td class="closed">Ruhetag</td></tr>
               <tr><td>Mi – Fr</td><td>11:30 – 13:30 &amp; 17:00 – 21:00 Uhr</td></tr>
               <tr><td>Sa</td><td>17:00 – 21:00 Uhr</td></tr>
               <tr><td>So</td><td>11:30 – 13:30 &amp; 17:00 – 19:45 Uhr</td></tr>
             </tbody>
           </table>
         </div>
-
-      </div><!-- /contact-sidebar -->
-
-      <!-- Reservierungsformular -->
-      <div class="form-block reveal d1">
-        <h3 class="form-block__title">Tisch reservieren</h3>
-        <p class="form-block__sub">
-          Bitte mindestens einen Tag im Voraus. Wir melden uns zeitnah unter
-          der angegebenen Nummer — oder rufen Sie uns direkt an.
-        </p>
-
-        <form id="reservation-form" novalidate>
-          <div class="form-grid">
-
-            <div class="form-field">
-              <label class="form-label" for="rf-name">Name *</label>
-              <input class="form-input" type="text" id="rf-name" name="name" autocomplete="name" required placeholder="Ihr Name">
-            </div>
-
-            <div class="form-field">
-              <label class="form-label" for="rf-phone">Telefon *</label>
-              <input class="form-input" type="tel" id="rf-phone" name="phone" autocomplete="tel" required placeholder="Ihre Nummer">
-            </div>
-
-            <div class="form-field">
-              <label class="form-label" for="rf-date">Datum *</label>
-              <input class="form-input" type="date" id="rf-date" name="date" required>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label" for="rf-time">Uhrzeit *</label>
-              <input class="form-input" type="time" id="rf-time" name="time" required>
-            </div>
-
-            <div class="form-field full">
-              <label class="form-label" for="rf-guests">Personenzahl *</label>
-              <div class="select-wrap">
-                <select class="form-select" id="rf-guests" name="guests" required>
-                  <option value="">Bitte wählen</option>
-                  <option value="1">1 Person</option>
-                  <option value="2">2 Personen</option>
-                  <option value="3">3 Personen</option>
-                  <option value="4">4 Personen</option>
-                  <option value="5">5 Personen</option>
-                  <option value="6">6 Personen</option>
-                  <option value="7-10">7 – 10 Personen</option>
-                  <option value="11+">Mehr als 10 Personen</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label" for="rf-email">E-Mail</label>
-              <input class="form-input" type="email" id="rf-email" name="email" autocomplete="email" placeholder="Optional">
-            </div>
-
-            <div class="form-field">
-              <label class="form-label" for="rf-occasion">Anlass</label>
-              <div class="select-wrap">
-                <select class="form-select" id="rf-occasion" name="occasion">
-                  <option value="">Kein besonderer</option>
-                  <option value="geburtstag">Geburtstag</option>
-                  <option value="jubilaeum">Jubiläum</option>
-                  <option value="betriebsfeier">Betriebsfeier</option>
-                  <option value="sonstiges">Sonstiges</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-field full">
-              <label class="form-label" for="rf-message">Anmerkungen</label>
-              <textarea class="form-textarea" id="rf-message" name="message" placeholder="Sonderwünsche, Allergien, Hinweise …"></textarea>
-            </div>
-
-          </div>
-
-          <div class="form-submit">
-            <button type="submit" class="btn btn--amber">
-              Reservierungsanfrage senden
-            </button>
-          </div>
-
-          <div class="form-success" id="form-success" role="alert" aria-live="polite">
-            Vielen Dank für Ihre Anfrage! Wir melden uns zeitnah unter der angegebenen
-            Telefonnummer. Bei dringenden Reservierungen rufen Sie uns direkt an:
-            <a href="tel:+4962053303">06205 33030</a>
-          </div>
-
-        </form>
       </div>
 
+      <div class="rv d1">
+        <p class="form-title">Tisch reservieren</p>
+        <p class="form-sub">Bitte mindestens einen Tag im Voraus. Wir melden uns zeitnah — oder rufen Sie direkt an.</p>
+        <form id="rform" novalidate>
+          <div class="form-grid">
+            <div class="field"><label for="fn">Name *</label><input type="text" id="fn" name="name" autocomplete="name" required placeholder="Ihr Name"></div>
+            <div class="field"><label for="fp">Telefon *</label><input type="tel" id="fp" name="phone" autocomplete="tel" required placeholder="Ihre Nummer"></div>
+            <div class="field"><label for="fd">Datum *</label><input type="date" id="fd" name="date" required></div>
+            <div class="field"><label for="ft">Uhrzeit *</label><input type="time" id="ft" name="time" required></div>
+            <div class="field full"><label for="fg">Personenzahl *</label>
+              <div class="sel-w"><select id="fg" name="guests" required>
+                <option value="">Bitte wählen</option>
+                <option>1 Person</option><option>2 Personen</option><option>3 Personen</option>
+                <option>4 Personen</option><option>5 Personen</option><option>6 Personen</option>
+                <option>7 – 10 Personen</option><option>Mehr als 10 Personen</option>
+              </select></div>
+            </div>
+            <div class="field"><label for="fe">E-Mail</label><input type="email" id="fe" name="email" autocomplete="email" placeholder="Optional"></div>
+            <div class="field"><label for="fo">Anlass</label>
+              <div class="sel-w"><select id="fo" name="occasion">
+                <option value="">Kein besonderer</option>
+                <option>Geburtstag</option><option>Jubiläum</option>
+                <option>Betriebsfeier</option><option>Sonstiges</option>
+              </select></div>
+            </div>
+            <div class="field full"><label for="fm">Anmerkungen</label><textarea id="fm" name="message" placeholder="Sonderwünsche, Allergien, Hinweise …"></textarea></div>
+          </div>
+          <div style="margin-top:.75rem">
+            <button type="submit" class="btn btn-gold">Reservierungsanfrage senden</button>
+          </div>
+          <div class="form-ok" id="form-ok" role="alert" aria-live="polite">
+            Vielen Dank für Ihre Anfrage! Wir melden uns zeitnah. Bei dringenden Reservierungen rufen Sie uns direkt an: <a href="tel:+4962053303">06205 33030</a>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </section>
 
 </main>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     FOOTER
-═══════════════════════════════════════════════════════════ -->
-<footer class="site-footer" role="contentinfo">
-  <div class="container">
-
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+  <div class="wrap">
     <div class="footer-top">
-
       <div class="footer-brand">
-        <div class="footer-logo">
+        <div class="f-logo">
           <a href="#" class="logo" aria-label="Gasthaus zum Hirsch">
-            <svg class="logo-mark" width="28" height="24" viewBox="0 0 40 32" fill="none" aria-hidden="true">
+            <svg class="logo-mark" width="26" height="22" viewBox="0 0 40 32" fill="none" aria-hidden="true">
               <path d="M14 22 L10 12 L7 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               <path d="M10 12 L7 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               <path d="M8.5 8.5 L12 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -1555,160 +674,115 @@
             </span>
           </a>
         </div>
-        <p class="footer-tagline">Gutbürgerliche Küche, seit Generationen. Treffpunkt für Genießer aus der Region.</p>
-        <div class="contact-links">
-          <a href="tel:+4962053303" class="contact-link" style="color: var(--c-on-dark-m); font-size: 0.85rem;">
-            <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82A16 16 0 0 0 15.1 16l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17.28v-.36z"/></svg>
+        <p class="f-tagline">Gutbürgerliche Küche, seit Generationen. Treffpunkt für Genießer aus der Region.</p>
+        <div class="f-contact-links">
+          <a href="tel:+4962053303" class="cl" style="color:var(--cream-m);font-size:.85rem">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.82A16 16 0 0 0 15.1 16l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17.28v-.36z"/></svg>
             06205 33030
           </a>
-          <a href="mailto:gasthauszumhirsch-altlussheim@gmx.de" class="contact-link" style="color: var(--c-on-dark-m); font-size: 0.85rem; word-break: break-all;">
-            <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a href="mailto:gasthauszumhirsch-altlussheim@gmx.de" class="cl" style="color:var(--cream-m);font-size:.85rem;word-break:break-all">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             gasthauszumhirsch-altlussheim@gmx.de
           </a>
         </div>
       </div>
-
       <div>
-        <p class="footer-col-title">Öffnungszeiten</p>
-        <div class="footer-hours">
+        <p class="f-title">Öffnungszeiten</p>
+        <div class="f-hours">
           <div><strong>Mo</strong> &nbsp;11:30 – 13:30</div>
-          <div style="color: rgba(164,152,128,0.4);">Di &nbsp; Ruhetag</div>
+          <div style="opacity:.35">Di &nbsp; Ruhetag</div>
           <div><strong>Mi – Fr</strong> &nbsp;Mittag &amp; Abend</div>
           <div><strong>Sa</strong> &nbsp;17:00 – 21:00</div>
           <div><strong>So</strong> &nbsp;Mittag &amp; Abend</div>
         </div>
       </div>
-
       <div>
-        <p class="footer-col-title">Anfahrt</p>
-        <address class="footer-addr">
-          Rheinhäuser Str. 10<br>
-          68804 Altlußheim<br><br>
-          <a href="https://maps.google.com/?q=Rheinhäuser+Str.+10,+68804+Altlußheim" target="_blank" rel="noopener noreferrer">
-            Route berechnen →
-          </a>
+        <p class="f-title">Anfahrt</p>
+        <address class="f-addr">
+          Rheinhäuser Str. 10<br>68804 Altlußheim<br><br>
+          <a href="https://maps.google.com/?q=Rheinhäuser+Str.+10,+68804+Altlußheim" target="_blank" rel="noopener noreferrer">Route berechnen →</a>
         </address>
       </div>
-
-    </div><!-- /footer-top -->
-
-    <div class="footer-bottom">
-      <span>© 2026 Gasthaus zum Hirsch · Altlußheim</span>
-      <div class="footer-legal">
-        <a href="#impressum">Impressum</a>
-        <a href="#datenschutz">Datenschutz</a>
-      </div>
     </div>
-
+    <div class="f-bottom">
+      <span>© 2026 Gasthaus zum Hirsch · Altlußheim</span>
+      <div class="f-legal"><a href="#impressum">Impressum</a><a href="#datenschutz">Datenschutz</a></div>
+    </div>
   </div>
 </footer>
 
-
 <script>
-(function () {
-  'use strict';
+(function(){
+  // Sticky header
+  var hdr=document.getElementById('hdr');
+  function tick(){hdr.classList.toggle('on',window.scrollY>60)}
+  window.addEventListener('scroll',tick,{passive:true});tick();
 
-  // ── Sticky header ───────────────────────────────────────
-  var header = document.getElementById('site-header');
-  function onScroll() {
-    header.classList.toggle('is-scrolled', window.scrollY > 60);
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-
-  // ── Mobile nav ──────────────────────────────────────────
-  var toggle = document.querySelector('.nav-toggle');
-  var menu   = document.getElementById('nav-menu');
-
-  toggle.addEventListener('click', function () {
-    var open = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!open));
-    toggle.setAttribute('aria-label', open ? 'Navigation öffnen' : 'Navigation schließen');
-    menu.classList.toggle('is-open', !open);
-    document.body.style.overflow = open ? '' : 'hidden';
+  // Mobile nav
+  var tog=document.querySelector('.nav-toggle'),nav=document.getElementById('nav');
+  tog.addEventListener('click',function(){
+    var open=tog.getAttribute('aria-expanded')==='true';
+    tog.setAttribute('aria-expanded',String(!open));
+    tog.setAttribute('aria-label',open?'Navigation öffnen':'Navigation schließen');
+    nav.classList.toggle('open',!open);
+    document.body.style.overflow=open?'':'hidden';
   });
-
-  menu.querySelectorAll('a').forEach(function (a) {
-    a.addEventListener('click', function () {
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.setAttribute('aria-label', 'Navigation öffnen');
-      menu.classList.remove('is-open');
-      document.body.style.overflow = '';
+  nav.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click',function(){
+      tog.setAttribute('aria-expanded','false');
+      tog.setAttribute('aria-label','Navigation öffnen');
+      nav.classList.remove('open');
+      document.body.style.overflow='';
     });
   });
 
-  // ── Hero image — load eagerly, then animate ─────────────
-  var heroImg = document.querySelector('.hero__img');
-  if (heroImg && heroImg.dataset.src) {
-    heroImg.src = heroImg.dataset.src;
-    heroImg.addEventListener('load', function () {
-      heroImg.classList.add('loaded');
-    });
+  // Hero image
+  var hi=document.querySelector('.hero-img');
+  if(hi&&hi.dataset.src){
+    hi.src=hi.dataset.src;
+    hi.addEventListener('load',function(){hi.classList.add('loaded')});
   }
 
-  // ── Lazy-load demo images via IntersectionObserver ──────
-  var imgObserver = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (!e.isIntersecting) return;
-      var img = e.target;
-      if (img.dataset.src) {
-        img.src = img.dataset.src;
-        img.removeAttribute('data-src');
-      }
-      imgObserver.unobserve(img);
+  // Lazy images
+  var io=new IntersectionObserver(function(ee){
+    ee.forEach(function(e){
+      if(!e.isIntersecting)return;
+      var img=e.target;
+      if(img.dataset.src){img.src=img.dataset.src;img.removeAttribute('data-src')}
+      io.unobserve(img);
     });
-  }, { rootMargin: '300px' });
+  },{rootMargin:'300px'});
+  document.querySelectorAll('img[data-src]:not(.hero-img)').forEach(function(i){io.observe(i)});
 
-  document.querySelectorAll('img[data-src]:not(.hero__img)').forEach(function (img) {
-    imgObserver.observe(img);
-  });
-
-  // ── Scroll reveal ───────────────────────────────────────
-  var revealObserver = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (!e.isIntersecting) return;
-      e.target.classList.add('is-visible');
-      revealObserver.unobserve(e.target);
+  // Scroll reveal
+  var ro=new IntersectionObserver(function(ee){
+    ee.forEach(function(e){
+      if(!e.isIntersecting)return;
+      e.target.classList.add('in');
+      ro.unobserve(e.target);
     });
-  }, { threshold: 0.1 });
+  },{threshold:.1});
+  document.querySelectorAll('.rv').forEach(function(el){ro.observe(el)});
 
-  document.querySelectorAll('.reveal').forEach(function (el) {
-    revealObserver.observe(el);
-  });
+  // Date min
+  var fd=document.getElementById('fd');
+  if(fd)fd.setAttribute('min',new Date().toISOString().split('T')[0]);
 
-  // ── Set date input minimum to today ────────────────────
-  var dateInput = document.getElementById('rf-date');
-  if (dateInput) {
-    dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
-  }
-
-  // ── Reservation form ────────────────────────────────────
-  var form    = document.getElementById('reservation-form');
-  var success = document.getElementById('form-success');
-
-  form.addEventListener('submit', function (e) {
+  // Form
+  var form=document.getElementById('rform'),ok=document.getElementById('form-ok');
+  form.addEventListener('submit',function(e){
     e.preventDefault();
-
-    var valid = true;
-    form.querySelectorAll('[required]').forEach(function (field) {
-      field.style.borderColor = '';
-      if (!field.value.trim()) {
-        field.style.borderColor = '#a93226';
-        valid = false;
-      }
+    var valid=true;
+    form.querySelectorAll('[required]').forEach(function(f){
+      f.style.borderColor='';
+      if(!f.value.trim()){f.style.borderColor='#a93226';valid=false}
     });
-    if (!valid) return;
-
-    // Disable and show confirmation
-    form.querySelectorAll('input, select, textarea, button').forEach(function (f) {
-      f.disabled = true;
-    });
-    success.classList.add('is-visible');
-    success.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if(!valid)return;
+    form.querySelectorAll('input,select,textarea,button').forEach(function(f){f.disabled=true});
+    ok.classList.add('show');
+    ok.scrollIntoView({behavior:'smooth',block:'nearest'});
   });
-
 })();
 </script>
-
 </body>
 </html>
