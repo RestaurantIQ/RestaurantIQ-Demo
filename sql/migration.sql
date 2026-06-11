@@ -15,3 +15,6 @@ ALTER TABLE reservations ADD COLUMN IF NOT EXISTS restaurant_id uuid REFERENCES 
 ALTER TABLE availability  ADD COLUMN IF NOT EXISTS restaurant_id uuid REFERENCES restaurants(id);
 
 -- Fertig. Danach über POST /api/auth/create-restaurant das erste Restaurant anlegen.
+
+-- Migration 2026-06-11: Chat-Theme
+ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS chat_theme varchar(32) NOT NULL DEFAULT 'elegant';

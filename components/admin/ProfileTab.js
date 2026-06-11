@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import ChatThemePicker from './ChatThemePicker';
 
 const ACCENT_OPTIONS = [
   { value: 'classic',  label: 'Klassisch' },
@@ -35,6 +36,7 @@ export default function ProfileTab() {
           bot_accent:         d.bot_accent || 'classic',
           description:        d.description || '',
           notification_email: d.notification_email || '',
+          chat_theme:         d.chat_theme || 'elegant',
         });
       })
       .catch(() => setError('Profil konnte nicht geladen werden.'));
@@ -160,6 +162,15 @@ export default function ProfileTab() {
         </button>
         {saved && <span style={{ fontSize: 13, color: '#3a9e5f', fontWeight: 500 }}>Gespeichert</span>}
         {error && <span style={{ fontSize: 13, color: '#c0392b' }}>{error}</span>}
+      </div>
+
+      <div style={{ borderTop: '1px solid #e0e0e5', paddingTop: 28, marginBottom: 32 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#1d1d1f', marginBottom: 6 }}>Chat-Design</h3>
+        <p style={{ fontSize: 13, color: '#6e6e73', marginBottom: 16 }}>So sieht der Chatbot für Ihre Gäste aus. Wählen Sie einen Stil.</p>
+        <ChatThemePicker
+          selectedTheme={form.chat_theme}
+          onSelect={val => set('chat_theme', val)}
+        />
       </div>
 
       <div style={{ borderTop: '1px solid #e0e0e5', paddingTop: 28, marginBottom: 24 }}>

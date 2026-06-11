@@ -16,9 +16,9 @@ function db(path, options = {}) {
   });
 }
 
-const PUBLIC_SELECT = 'name,address,phone,hours,bot_name,bot_accent,description';
+const PUBLIC_SELECT = 'name,address,phone,hours,bot_name,bot_accent,description,chat_theme';
 const PRIVATE_SELECT = `${PUBLIC_SELECT},menu,notification_email,username`;
-const ALLOWED_PATCH = ['address', 'phone', 'hours', 'menu', 'bot_name', 'bot_accent', 'description', 'notification_email'];
+const ALLOWED_PATCH = ['address', 'phone', 'hours', 'menu', 'bot_name', 'bot_accent', 'description', 'notification_email', 'chat_theme'];
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {

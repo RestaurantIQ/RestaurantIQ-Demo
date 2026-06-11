@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { CHAT_THEMES } from '../components/admin/ChatThemePicker';
 
 const suggestions = [
   "Ich möchte einen Tisch reservieren",
@@ -73,6 +74,10 @@ export default function Home() {
   const restaurantPhone = restaurantInfo?.phone || '06205 37008';
   const restaurantSub = restaurantInfo?.address || 'Ristorante & Pizzeria · Nelußheim';
   const initials = restaurantName.split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
+
+  const themeKey = restaurantInfo?.chat_theme || 'elegant';
+  const theme = CHAT_THEMES[themeKey] || CHAT_THEMES.elegant;
+  const v = theme.vars;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -153,27 +158,27 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap');
+        @import url('${theme.fontUrl}');
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-          --bg:      #f5f0e8;
-          --surface: #fdfaf5;
-          --ink:     #1a1510;
-          --ink-2:   #2e2820;
-          --ink-3:   #5c5448;
-          --muted:   #9e978c;
-          --gold:    #a8864a;
-          --gold-lt: #c9a96e;
-          --line:    rgba(26,21,16,0.09);
-          --r:       10px;
+          --bg:      ${v.bg};
+          --surface: ${v.surface};
+          --ink:     ${v.ink};
+          --ink-2:   ${v.ink2};
+          --ink-3:   ${v.ink3};
+          --muted:   ${v.muted};
+          --gold:    ${v.gold};
+          --gold-lt: ${v.goldLt};
+          --line:    ${v.line};
+          --r:       ${v.r};
         }
 
         html, body { height: 100%; background: var(--bg); }
 
         body {
-          font-family: 'Outfit', sans-serif;
+          font-family: ${theme.fontBody};
           font-weight: 300;
           color: var(--ink);
           -webkit-font-smoothing: antialiased;
@@ -263,7 +268,7 @@ export default function Home() {
         }
 
         .mark-inner {
-          font-family: 'Cormorant', serif;
+          font-family: ${theme.fontDisplay};
           font-weight: 400; font-size: 18px;
           color: var(--gold); letter-spacing: 0.02em; line-height: 1;
           font-style: italic;
@@ -272,7 +277,7 @@ export default function Home() {
         .header-meta { flex: 1; min-width: 0; }
 
         .header-name {
-          font-family: 'Cormorant', serif;
+          font-family: ${theme.fontDisplay};
           font-weight: 400; font-size: 19px;
           color: var(--ink); letter-spacing: 0.06em;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -384,7 +389,7 @@ export default function Home() {
         }
 
         .ticket-title {
-          font-family: 'Cormorant', serif;
+          font-family: ${theme.fontDisplay};
           font-size: 16px;
           font-weight: 400;
           color: var(--ink);
@@ -491,7 +496,7 @@ export default function Home() {
           border: 1px solid rgba(168,134,74,0.28);
           border-radius: 20px;
           color: var(--ink-3);
-          font-family: 'Outfit', sans-serif;
+          font-family: ${theme.fontBody};
           font-size: 12.5px;
           font-weight: 400;
           letter-spacing: 0.025em;
@@ -547,7 +552,7 @@ export default function Home() {
           flex: 1;
           background: transparent;
           border: none; outline: none;
-          font-family: 'Outfit', sans-serif;
+          font-family: ${theme.fontBody};
           font-size: 13.5px; font-weight: 300;
           color: var(--ink); padding: 5px 0;
           letter-spacing: 0.01em;
