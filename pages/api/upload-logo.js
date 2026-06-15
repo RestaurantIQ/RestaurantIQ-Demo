@@ -24,7 +24,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Nur Bilder erlaubt.' });
   }
 
-  const body = await readBody(req);
+  let body;
+  try {
+    body = await readBody(req);
+  } catch (err) {
+    console.error('upload-logo readBody error:', err);
+    return res.status(500).json({ error: 'Fehler beim Lesen der Datei.' });
+  }
+
   if (body.length > 2 * 1024 * 1024) {
     return res.status(400).json({ error: 'Logo darf max. 2 MB groß sein.' });
   }
@@ -36,24 +43,38 @@ export default async function handler(req, res) {
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
-  const path = `${session.restaurantId}/${Date.now()}.${ext}`;
 
-  const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/logos/${path}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': contentType,
-      'x-upsert': 'true',
-    },
-    body,
-  });
-
-  if (!uploadRes.ok) {
-    const err = await uploadRes.json().catch(() => ({}));
-    return res.status(500).json({ error: err.error || 'Upload fehlgeschlagen' });
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error('upload-logo: missing env vars');
+    return res.status(500).json({ error: 'Server-Konfigurationsfehler.' });
   }
 
-  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/logos/${path}`;
+  const storagePath = `${session.restaurantId}/${Date.now()}.${ext}`;
+
+  let uploadRes;
+  try {
+    uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/logos/${storagePath}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': contentType,
+        'Content-Length': String(body.length),
+        'x-upsert': 'true',
+      },
+      body: new Blob([body], { type: contentType }),
+    });
+  } catch (err) {
+    console.error('upload-logo fetch error:', err);
+    return res.status(500).json({ error: 'Upload fehlgeschlagen.' });
+  }
+
+  if (!uploadRes.ok) {
+    const errText = await uploadRes.text().catch(() => '');
+    console.error('upload-logo supabase error:', uploadRes.status, errText);
+    return res.status(500).json({ error: 'Upload fehlgeschlagen: ' + errText });
+  }
+
+  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/logos/${storagePath}`;
 
   await fetch(`${SUPABASE_URL}/rest/v1/restaurants?id=eq.${session.restaurantId}`, {
     method: 'PATCH',
