@@ -72,7 +72,7 @@ export default function Home() {
 
   const restaurantName = restaurantInfo?.name || 'RestaurantIQ';
   const restaurantPhone = restaurantInfo?.phone || '06205 37008';
-  const restaurantSub = restaurantInfo?.address || 'Ristorante & Pizzeria · Nelußheim';
+  const restaurantSub = restaurantInfo?.address || '';
   const initials = restaurantName.split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
 
   const themeKey = restaurantInfo?.chat_theme || 'elegant';

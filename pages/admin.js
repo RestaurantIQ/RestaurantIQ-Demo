@@ -5,7 +5,10 @@ import NewResModal from '../components/admin/NewResModal';
 import AvailabilityTab from '../components/admin/AvailabilityTab';
 import ProfileTab from '../components/admin/ProfileTab';
 import ServiceMode from '../components/admin/ServiceMode';
-import { LayoutDashboard, CalendarCheck, Calendar as CalendarIcon, Clock, SlidersHorizontal, ClipboardList, Utensils } from 'lucide-react';
+import {
+  LayoutDashboard, CalendarCheck, Calendar as CalendarIcon,
+  Clock, SlidersHorizontal, Utensils, LogOut, ClipboardList,
+} from 'lucide-react';
 
 function parseDatum(datum) {
   if (!datum) return null;
@@ -29,7 +32,148 @@ function weekRange() {
   return { from: mon, to: sun };
 }
 
-const FONT = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0}input:focus{outline:none;border-color:#1d1d1f !important}@keyframes spin{to{transform:rotate(360deg)}}`;
+const GLOBAL = `
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --riq-bg:      #f7f5f0;
+    --riq-surface: #ffffff;
+    --riq-nav:     #0d0c0b;
+    --riq-gold:    #a8864a;
+    --riq-gold-lt: rgba(168,134,74,0.12);
+    --riq-text:    #1a1714;
+    --riq-text2:   #4a4540;
+    --riq-muted:   #8c867e;
+    --riq-border:  #e8e3da;
+    --riq-border2: #f0ece4;
+    --font: 'Outfit', -apple-system, sans-serif;
+  }
+  body { font-family: var(--font); background: var(--riq-bg); color: var(--riq-text); }
+  input, textarea, select, button { font-family: var(--font); }
+  input:focus, textarea:focus, select:focus { outline: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .riq-sidebar {
+    width: 220px; background: var(--riq-nav);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 50;
+  }
+  .riq-main {
+    margin-left: 220px;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+  .riq-content {
+    flex: 1;
+    max-width: 820px;
+    padding: 28px 32px;
+  }
+  .riq-mobile-bar { display: none; }
+
+  @media (max-width: 768px) {
+    .riq-sidebar { display: none !important; }
+    .riq-main { margin-left: 0 !important; }
+    .riq-content { padding: 20px 16px 88px !important; max-width: 100% !important; }
+    .riq-mobile-bar {
+      display: flex !important;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--riq-nav);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      z-index: 50;
+      padding: 0 4px;
+    }
+    .riq-mobile-tab {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 3px; padding: 10px 4px 12px;
+      background: none; border: none; cursor: pointer;
+      font-size: 10px; font-family: var(--font);
+      color: rgba(255,255,255,0.45);
+    }
+    .riq-mobile-tab.active { color: var(--riq-gold); }
+  }
+  @media (min-width: 769px) {
+    .riq-mobile-bar { display: none !important; }
+  }
+
+  .riq-nav-item {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border: none; cursor: pointer; text-align: left;
+    font-size: 13.5px; font-family: var(--font); font-weight: 400;
+    background: transparent; color: rgba(255,255,255,0.5);
+    border-left: 2px solid transparent;
+    transition: color 0.15s, background 0.15s;
+  }
+  .riq-nav-item:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.04); }
+  .riq-nav-item.active {
+    color: var(--riq-gold); font-weight: 500;
+    background: var(--riq-gold-lt); border-left-color: var(--riq-gold);
+  }
+
+  .riq-stat {
+    background: var(--riq-surface); border: 1px solid var(--riq-border);
+    border-radius: 14px; padding: 20px;
+    animation: fadeIn 0.3s ease both;
+  }
+  .riq-stat-value { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 5px; }
+  .riq-stat-label { font-size: 12px; color: var(--riq-muted); font-weight: 400; letter-spacing: 0.02em; }
+
+  .riq-pill {
+    padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 400;
+    cursor: pointer; border: 1px solid var(--riq-border); background: var(--riq-surface);
+    color: var(--riq-text2); font-family: var(--font); transition: all 0.12s;
+  }
+  .riq-pill.active {
+    background: var(--riq-text); color: #fff; border-color: var(--riq-text);
+  }
+  .riq-pill:hover:not(.active) { border-color: #b8b4ac; }
+
+  .riq-btn-primary {
+    padding: 9px 18px; background: var(--riq-text); color: #fff;
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: var(--font); transition: opacity 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .riq-btn-primary:hover { opacity: 0.88; }
+  .riq-btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+  .riq-input {
+    width: 100%; padding: 9px 13px;
+    border: 1px solid var(--riq-border); border-radius: 8px;
+    font-size: 13.5px; font-family: var(--font); font-weight: 300;
+    color: var(--riq-text); background: var(--riq-surface);
+    transition: border-color 0.15s;
+  }
+  .riq-input:focus { border-color: var(--riq-gold); }
+
+  .riq-next-card {
+    background: var(--riq-nav); border-radius: 14px; padding: 18px 22px;
+    margin-bottom: 22px; animation: fadeIn 0.4s ease both;
+  }
+
+  .riq-section-title {
+    font-size: 13px; font-weight: 500; color: var(--riq-muted);
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;
+  }
+
+  .riq-slot-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px; background: var(--riq-bg);
+    border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--riq-border2);
+    font-size: 13px; color: var(--riq-text);
+  }
+
+  .riq-search {
+    flex: 1; padding: 9px 13px;
+    border: 1px solid var(--riq-border); border-radius: 8px;
+    font-size: 13.5px; font-family: var(--font); font-weight: 300;
+    color: var(--riq-text); background: var(--riq-surface); max-width: 300px;
+  }
+  .riq-search:focus { outline: none; border-color: var(--riq-gold); }
+`;
+
 const EMPTY_FORM = { name:'', datum:'', uhrzeit:'', personen:'2', telefon:'', email:'', sonderwunsch:'' };
 
 export default function Admin() {
@@ -46,8 +190,8 @@ export default function Admin() {
   const [statusFilter, setStatusFilter] = useState('alle');
   const [dateFilter, setDateFilter]     = useState('alle');
   const [calDay, setCalDay]             = useState(null);
-
   const [search, setSearch]             = useState('');
+
   const [newResModal, setNewResModal]   = useState(false);
   const [newResForm, setNewResForm]     = useState(EMPTY_FORM);
   const [newResLoading, setNewResLoading] = useState(false);
@@ -148,16 +292,14 @@ export default function Admin() {
     if (r.ok) {
       const saved = await r.json(); setReservations(prev => [saved, ...prev]);
       setNewResModal(false); setNewResForm(EMPTY_FORM);
-    } else {
-      setNewResError('Fehler beim Speichern.');
-    }
+    } else { setNewResError('Fehler beim Speichern.'); }
     setNewResLoading(false);
   }
 
   const td = todayStr(); const tm = tomorrowStr(); const wr = weekRange();
   const todayRes     = reservations.filter(r => r.datum===td);
   const pendingCount = reservations.filter(r => r.status==='neu').length;
-  const weekRes = reservations.filter(r => { const d=parseDatum(r.datum); return d&&d>=wr.from&&d<=wr.to; });
+  const weekRes      = reservations.filter(r => { const d=parseDatum(r.datum); return d&&d>=wr.from&&d<=wr.to; });
 
   const nextRes = useMemo(() => {
     const now = new Date(); now.setHours(0,0,0,0);
@@ -180,33 +322,52 @@ export default function Admin() {
     return true;
   });
 
+  const NAV_TABS = [
+    { key:'overview',     label:'Übersicht',       Icon:LayoutDashboard },
+    { key:'reservations', label:`Reservierungen`,   Icon:CalendarCheck   },
+    { key:'calendar',     label:'Kalender',         Icon:CalendarIcon    },
+    { key:'service',      label:'Service',          Icon:Utensils        },
+    { key:'availability', label:'Verfügbarkeit',    Icon:Clock           },
+    { key:'profil',       label:'Profil & Widget',  Icon:SlidersHorizontal },
+  ];
+
   if (!authChecked) return (
-    <div style={{minHeight:'100vh',background:'#f5f5f7',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Inter',-apple-system,sans-serif"}}>
-      <style>{FONT}</style>
-      <div style={{width:24,height:24,border:'2px solid #e0e0e5',borderTop:'2px solid #1d1d1f',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>
+    <div style={{ minHeight:'100vh', background:'#f7f5f0', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <style>{GLOBAL}</style>
+      <div style={{ width:24, height:24, border:'2px solid #e8e3da', borderTop:'2px solid #a8864a', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
     </div>
   );
 
   if (!session) return (
-    <div style={{minHeight:'100vh',background:'#f5f5f7',display:'flex',alignItems:'center',justifyContent:'center',padding:16,fontFamily:"'Inter',-apple-system,sans-serif"}}>
-      <style>{FONT}</style>
-      <div style={{background:'#fff',borderRadius:20,padding:'44px 40px',width:'100%',maxWidth:380,boxShadow:'0 8px 48px rgba(0,0,0,0.10)',border:'1px solid #e0e0e5'}}>
-        <div style={{marginBottom:36,textAlign:'center'}}>
-          <img src="/logo.png" alt="RestaurantIQ" style={{height:44,width:'auto',display:'block',margin:'0 auto 14px'}}/>
-          <div style={{fontSize:20,fontWeight:700,color:'#1d1d1f',letterSpacing:'-0.02em',marginBottom:8}}>RestaurantIQ</div>
-          <div style={{display:'inline-block',fontSize:11,fontWeight:500,color:'#6e6e73',background:'#f5f5f7',padding:'4px 12px',borderRadius:999,letterSpacing:'0.06em',textTransform:'uppercase'}}>Admin-Bereich</div>
+    <div style={{ minHeight:'100vh', background:'#f7f5f0', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
+      <style>{GLOBAL}</style>
+      <div style={{ background:'#fff', borderRadius:20, padding:'44px 40px', width:'100%', maxWidth:380, border:'1px solid #e8e3da', boxShadow:'0 8px 48px rgba(26,21,16,0.10)' }}>
+
+        <div style={{ textAlign:'center', marginBottom:36 }}>
+          <div style={{ width:52, height:52, background:'#0d0c0b', borderRadius:14, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+            <img src="/logo.png" alt="RestaurantIQ" style={{ height:26, filter:'brightness(0) invert(1)' }} />
+          </div>
+          <div style={{ fontSize:20, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em', marginBottom:6 }}>RestaurantIQ</div>
+          <div style={{ display:'inline-block', fontSize:11, fontWeight:500, color:'#8c867e', background:'#f7f5f0', padding:'4px 12px', borderRadius:999, letterSpacing:'0.06em', textTransform:'uppercase' }}>Admin-Bereich</div>
         </div>
-        <div style={{display:'flex',flexDirection:'column',gap:14}}>
-          {[{state:loginUser,set:setLoginUser,label:'Benutzername',type:'text',auto:'username'},{state:loginPass,set:setLoginPass,label:'Passwort',type:'password',auto:'current-password'}].map(f=>(
+
+        <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          {[
+            { state:loginUser, set:setLoginUser, label:'Benutzername', type:'text',     auto:'username'         },
+            { state:loginPass, set:setLoginPass, label:'Passwort',     type:'password', auto:'current-password' },
+          ].map(f => (
             <div key={f.label}>
-              <div style={{fontSize:11,fontWeight:500,color:'#6e6e73',letterSpacing:'0.05em',textTransform:'uppercase',marginBottom:6}}>{f.label}</div>
-              <input type={f.type} autoComplete={f.auto} value={f.state} onChange={e=>f.set(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}
-                style={{width:'100%',padding:'11px 14px',border:'1px solid #e0e0e5',borderRadius:8,fontSize:14,fontWeight:300,fontFamily:'inherit',color:'#1d1d1f'}}/>
+              <div style={{ fontSize:11, fontWeight:500, color:'#8c867e', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:6 }}>{f.label}</div>
+              <input className="riq-input" type={f.type} autoComplete={f.auto}
+                value={f.state} onChange={e=>f.set(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}
+              />
             </div>
           ))}
-          {loginError && <div style={{fontSize:13,color:'#c0392b',padding:'8px 12px',background:'#fdf0ee',borderRadius:8}}>{loginError}</div>}
-          <button onClick={login} disabled={loggingIn||!loginUser||!loginPass} style={{width:'100%',padding:'12px',marginTop:4,background:'#1d1d1f',color:'#fff',border:'none',borderRadius:10,fontSize:14,fontWeight:500,cursor:'pointer',fontFamily:'inherit',opacity:loggingIn||!loginUser||!loginPass?0.4:1}}>
-            {loggingIn ? 'Einloggen…' : 'Einloggen'}
+          {loginError && (
+            <div style={{ fontSize:13, color:'#991b1b', padding:'9px 12px', background:'#fee2e2', borderRadius:8, border:'1px solid #fca5a5' }}>{loginError}</div>
+          )}
+          <button onClick={login} disabled={loggingIn||!loginUser||!loginPass} className="riq-btn-primary" style={{ width:'100%', justifyContent:'center', marginTop:4 }}>
+            {loggingIn ? 'Einloggen...' : 'Einloggen'}
           </button>
         </div>
       </div>
@@ -214,8 +375,8 @@ export default function Admin() {
   );
 
   return (
-    <div style={{minHeight:'100vh',background:'#f5f5f7',fontFamily:"'Inter',-apple-system,sans-serif"}}>
-      <style>{FONT}</style>
+    <div style={{ fontFamily: 'var(--font)', background:'var(--riq-bg)', minHeight:'100vh' }}>
+      <style>{GLOBAL}</style>
 
       {newResModal && (
         <NewResModal
@@ -228,165 +389,218 @@ export default function Admin() {
         />
       )}
 
-      <div style={{background:'#1d1d1f',padding:'0 24px',display:'flex',alignItems:'center',justifyContent:'space-between',height:56,gap:12}}>
-        <div style={{display:'flex',alignItems:'center',gap:12,minWidth:0}}>
-          <img src="/logo.png" alt="RestaurantIQ" style={{height:22,width:'auto',filter:'brightness(0) invert(1)',flexShrink:0}}/>
-          <span style={{fontSize:12,color:'rgba(255,255,255,0.6)',background:'rgba(255,255,255,0.1)',padding:'3px 10px',borderRadius:999,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:200}}>
-            {session.restaurantName}
-          </span>
-          {pendingCount>0 && <span style={{fontSize:11,background:'#c0392b',color:'#fff',borderRadius:999,padding:'2px 8px',fontWeight:600,flexShrink:0}}>{pendingCount} offen</span>}
+      {/* Sidebar */}
+      <nav className="riq-sidebar">
+        <div style={{ padding:'22px 18px 18px', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>
+          <img src="/logo.png" alt="RestaurantIQ" style={{ height:22, filter:'brightness(0) invert(1)', marginBottom:10 }} />
+          <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', lineHeight:1.4, wordBreak:'break-word' }}>{session.restaurantName}</div>
+          {pendingCount > 0 && (
+            <div style={{ marginTop:8, display:'inline-flex', alignItems:'center', gap:5, fontSize:11, color:'#fbbf24', background:'rgba(251,191,36,0.12)', padding:'3px 9px', borderRadius:999 }}>
+              <span style={{ width:5, height:5, borderRadius:'50%', background:'#fbbf24' }} />
+              {pendingCount} offen
+            </div>
+          )}
         </div>
-        <button onClick={logout} style={{fontSize:12,color:'rgba(255,255,255,0.65)',background:'transparent',border:'1px solid rgba(255,255,255,0.15)',borderRadius:6,padding:'5px 12px',cursor:'pointer',fontFamily:'inherit',flexShrink:0}}>Ausloggen</button>
-      </div>
 
-      <div style={{background:'#fff',borderBottom:'1px solid #e0e0e5',padding:'0 24px',display:'flex',overflowX:'auto'}}>
-        {[
-          {key:'overview',     label:'Übersicht',       Icon:LayoutDashboard},
-          {key:'reservations', label:`Reservierungen${pendingCount>0?` (${pendingCount})`:``}`, Icon:CalendarCheck},
-          {key:'calendar',     label:'Kalender',        Icon:CalendarIcon},
-          {key:'service',      label:'Service',         Icon:Utensils},
-          {key:'availability', label:'Verfügbarkeit',   Icon:Clock},
-          {key:'profil',       label:'Profil & Widget', Icon:SlidersHorizontal},
-        ].map(t=>(
-          <button key={t.key} onClick={()=>setTab(t.key)} style={{padding:'12px 16px',fontSize:13,border:'none',background:'none',cursor:'pointer',whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:6,color:tab===t.key?'#1d1d1f':'#6e6e73',borderBottom:tab===t.key?'2px solid #1d1d1f':'2px solid transparent',fontWeight:tab===t.key?500:400,fontFamily:'inherit',transition:'color 0.15s'}}>
-            <t.Icon size={14} strokeWidth={tab===t.key?2:1.5}/>
-            {t.label}
+        <div style={{ flex:1, padding:'8px 0', overflowY:'auto' }}>
+          {NAV_TABS.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)} className={`riq-nav-item${tab===t.key?' active':''}`}>
+              <t.Icon size={15} strokeWidth={tab===t.key ? 2 : 1.5} />
+              {t.label}
+              {t.key==='reservations' && pendingCount>0 && (
+                <span style={{ marginLeft:'auto', fontSize:10, background:'#dc2626', color:'#fff', borderRadius:999, padding:'1px 6px', fontWeight:600 }}>
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ padding:'14px 16px', borderTop:'1px solid rgba(255,255,255,0.07)' }}>
+          <button onClick={logout} style={{ width:'100%', padding:'8px 12px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'rgba(255,255,255,0.45)', fontSize:12, cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', justifyContent:'center', gap:7, transition:'all 0.15s' }}>
+            <LogOut size={13} strokeWidth={1.5} /> Ausloggen
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="riq-mobile-bar">
+        {NAV_TABS.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)} className={`riq-mobile-tab${tab===t.key?' active':''}`}>
+            <t.Icon size={18} strokeWidth={tab===t.key ? 2 : 1.5} />
+            {t.key==='reservations' && pendingCount>0 ? `Res. (${pendingCount})` : t.label.split(' ')[0]}
           </button>
         ))}
-      </div>
+      </nav>
 
-      <div style={{maxWidth:860,margin:'0 auto',padding:'24px 16px'}}>
+      {/* Main content */}
+      <div className="riq-main">
+        <div className="riq-content">
 
-        {tab==='overview' && <>
-          {pendingCount>0 && (
-            <div style={{background:'#fdf0ee',border:'1px solid #f5c6c6',borderRadius:10,padding:'12px 16px',marginBottom:16,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
-              <div style={{fontSize:13,color:'#c0392b',fontWeight:500}}>{pendingCount} {pendingCount===1?'Reservierung wartet':'Reservierungen warten'} auf Bestätigung</div>
-              <button onClick={()=>{setTab('reservations');setStatusFilter('neu');}} style={{fontSize:12,fontWeight:500,color:'#c0392b',background:'transparent',border:'1px solid #c0392b',borderRadius:6,padding:'4px 12px',cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>Ansehen</button>
+          {/* OVERVIEW */}
+          {tab==='overview' && <>
+            <div style={{ marginBottom:24 }}>
+              <h1 style={{ fontSize:22, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em' }}>Übersicht</h1>
+              <p style={{ fontSize:13, color:'#8c867e', marginTop:3 }}>{td}</p>
             </div>
-          )}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
-            {[
-              {label:'Heute',       value:todayRes.length,   accent:false},
-              {label:'Ausstehend',  value:pendingCount,       accent:pendingCount>0},
-              {label:'Diese Woche', value:weekRes.length,     accent:false},
-              {label:'Gesamt',      value:reservations.length,accent:false},
-            ].map(k=>(
-              <div key={k.label} style={{background:'#fff',borderRadius:10,padding:'16px',border:'1px solid #e0e0e5'}}>
-                <div style={{fontSize:28,fontWeight:700,color:k.accent?'#c0392b':'#1d1d1f',lineHeight:1,marginBottom:5}}>{k.value}</div>
-                <div style={{fontSize:12,color:'#6e6e73'}}>{k.label}</div>
+
+            {pendingCount>0 && (
+              <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:12, padding:'13px 18px', marginBottom:22, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                <div style={{ fontSize:13, color:'#92400e', fontWeight:500 }}>
+                  {pendingCount} {pendingCount===1?'Reservierung wartet':'Reservierungen warten'} auf Bestätigung
+                </div>
+                <button onClick={()=>{setTab('reservations');setStatusFilter('neu');}} style={{ fontSize:12, fontWeight:500, color:'#92400e', background:'rgba(0,0,0,0.06)', border:'none', borderRadius:6, padding:'5px 12px', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                  Ansehen
+                </button>
               </div>
-            ))}
-          </div>
-          {nextRes && (
-            <div style={{background:'#f5f5f7',borderRadius:10,padding:'16px 20px',marginBottom:20,border:'1px solid #e0e0e5'}}>
-              <div style={{fontSize:11,color:'#6e6e73',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.08em',fontWeight:500}}>Nächste Reservierung</div>
-              <div style={{fontSize:15,fontWeight:600,color:'#1d1d1f'}}>{nextRes.name}</div>
-              <div style={{fontSize:13,color:'#3d3d3f',marginTop:2}}>{nextRes.datum} · {nextRes.uhrzeit} Uhr · {nextRes.personen} Personen</div>
-              {nextRes.sonderwunsch && <div style={{fontSize:12,color:'#6e6e73',marginTop:6}}>{nextRes.sonderwunsch}</div>}
+            )}
+
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
+              {[
+                { label:'Heute',        value:todayRes.length,    accent:false             },
+                { label:'Ausstehend',   value:pendingCount,        accent:pendingCount>0    },
+                { label:'Diese Woche',  value:weekRes.length,      accent:false             },
+                { label:'Gesamt',       value:reservations.length, accent:false             },
+              ].map((k,i) => (
+                <div key={k.label} className="riq-stat" style={{ animationDelay:`${i*0.06}s` }}>
+                  <div className="riq-stat-value" style={{ color: k.accent ? '#b45309' : '#1a1714' }}>{k.value}</div>
+                  <div className="riq-stat-label">{k.label}</div>
+                </div>
+              ))}
             </div>
-          )}
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-            <div style={{fontSize:14,fontWeight:600,color:'#1d1d1f'}}>Heute — {td}</div>
-            <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit'}}>+ Neue Reservierung</button>
-          </div>
-          {todayRes.length===0 ? <div style={{textAlign:'center',padding:'32px 16px',color:'#6e6e73',fontSize:13}}><ClipboardList size={28} strokeWidth={1.5} style={{margin:'0 auto 10px',color:'#c7c7cc',display:'block'}}/><div>Noch keine Reservierungen heute.</div></div> : todayRes.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
-        </>}
 
-        {tab==='reservations' && <>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,gap:10}}>
-            <input
-              type="text"
-              placeholder="Name, Telefon oder E-Mail suchen…"
-              value={search}
-              onChange={e=>{setSearch(e.target.value);setDateFilter('alle');setStatusFilter('alle');}}
-              style={{flex:1,padding:'8px 12px',border:'1px solid #e0e0e5',borderRadius:8,fontSize:13,fontFamily:'inherit',background:'#fff',color:'#1d1d1f',maxWidth:320}}
-            />
-            <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>+ Neue Reservierung</button>
-          </div>
-          <div style={{display:'flex',gap:8,marginBottom:10,flexWrap:'wrap'}}>
-            {[{key:'alle',label:'Alle'},{key:'heute',label:'Heute'},{key:'morgen',label:'Morgen'},{key:'woche',label:'Diese Woche'}].map(f=>(
-              <button key={f.key} onClick={()=>setDateFilter(f.key)} style={{padding:'6px 14px',fontSize:12,borderRadius:20,cursor:'pointer',fontFamily:'inherit',border:'1px solid '+(dateFilter===f.key?'#1d1d1f':'#e0e0e5'),background:dateFilter===f.key?'#1d1d1f':'#fff',color:dateFilter===f.key?'#fff':'#3d3d3f'}}>{f.label}</button>
-            ))}
-          </div>
-          <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap',alignItems:'center'}}>
-            {['alle','neu','bestätigt','abgesagt','no-show'].map(f=>(
-              <button key={f} onClick={()=>setStatusFilter(f)} style={{padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',fontFamily:'inherit',border:'1px solid '+(statusFilter===f?'#1d1d1f':'#e0e0e5'),background:statusFilter===f?'#1d1d1f':'#fff',color:statusFilter===f?'#fff':'#3d3d3f'}}>{f.charAt(0).toUpperCase()+f.slice(1)}</button>
-            ))}
-            <button onClick={loadReservations} style={{marginLeft:'auto',padding:'5px 12px',fontSize:12,borderRadius:20,cursor:'pointer',border:'1px solid #e0e0e5',background:'#fff',color:'#3d3d3f',fontFamily:'inherit'}}>Aktualisieren</button>
-          </div>
-          {loadingRes ? <p style={{color:'#6e6e73',fontSize:14}}>Lädt...</p>
-            : filtered.length===0 ? <div style={{textAlign:'center',padding:'40px 16px',color:'#6e6e73',fontSize:13}}>Keine Reservierungen für diesen Filter.</div>
-            : filtered.map(r=><ResCard key={r.id} r={r} onUpdateStatus={updateStatus}/>)}
-        </>}
+            {nextRes && (
+              <div className="riq-next-card">
+                <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', fontWeight:500, marginBottom:10 }}>Naechste Reservierung</div>
+                <div style={{ fontSize:22, fontWeight:600, color:'#fff', marginBottom:4 }}>{nextRes.name}</div>
+                <div style={{ fontSize:14, color:'rgba(255,255,255,0.6)' }}>{nextRes.datum} · {nextRes.uhrzeit} Uhr · {nextRes.personen} Personen</div>
+                {nextRes.sonderwunsch && <div style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginTop:6, fontStyle:'italic' }}>{nextRes.sonderwunsch}</div>}
+              </div>
+            )}
 
-        {tab==='calendar' && <>
-          <Calendar reservations={reservations} slots={slots} onSelectDay={day => setCalDay(calDay === day ? null : day)} selectedDay={calDay} />
-          {calDay && (() => {
-            const dayResItems = reservations.filter(r => r.datum === calDay).sort((a, b) => a.uhrzeit.localeCompare(b.uhrzeit));
-            const daySlots = slots.filter(s => s.datum === calDay);
-            return (
-              <div style={{ marginTop: 16, background: '#fff', borderRadius: 12, border: '1px solid #e0e0e5', padding: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#1d1d1f' }}>{fmtDayFull(calDay)}</div>
-                  <button onClick={() => { setCalDay(null); setAddingSlot(false); setNewSlotTime(''); setNewSlotTische(''); }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#6e6e73', lineHeight: 1, padding: '0 4px' }}>×</button>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+              <div className="riq-section-title" style={{ margin:0 }}>Heute</div>
+              <button onClick={()=>setNewResModal(true)} className="riq-btn-primary" style={{ fontSize:12, padding:'7px 14px' }}>+ Neu</button>
+            </div>
+            {todayRes.length===0
+              ? <div style={{ textAlign:'center', padding:'40px 16px', color:'#8c867e', fontSize:13 }}>
+                  <ClipboardList size={28} strokeWidth={1.2} style={{ margin:'0 auto 10px', color:'#d4cfc6', display:'block' }} />
+                  Keine Reservierungen heute.
                 </div>
+              : todayRes.map(r => <ResCard key={r.id} r={r} onUpdateStatus={updateStatus} />)
+            }
+          </>}
 
-                <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 11, fontWeight: 500, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Reservierungen</div>
-                  {dayResItems.length === 0
-                    ? <div style={{ fontSize: 13, color: '#6e6e73', padding: '8px 0' }}>Keine Reservierungen an diesem Tag.</div>
-                    : dayResItems.map(r => <ResCard key={r.id} r={r} onUpdateStatus={updateStatus} />)
-                  }
-                </div>
+          {/* RESERVATIONS */}
+          {tab==='reservations' && <>
+            <div style={{ marginBottom:20 }}>
+              <h1 style={{ fontSize:22, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em', marginBottom:14 }}>Reservierungen</h1>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
+                <input
+                  className="riq-search"
+                  type="text"
+                  placeholder="Name, Telefon oder E-Mail..."
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setDateFilter('alle'); setStatusFilter('alle'); }}
+                />
+                <button onClick={()=>setNewResModal(true)} className="riq-btn-primary" style={{ fontSize:12, padding:'9px 14px' }}>+ Neu</button>
+              </div>
+              <div style={{ display:'flex', gap:6, marginBottom:8, flexWrap:'wrap' }}>
+                {[{key:'alle',label:'Alle'},{key:'heute',label:'Heute'},{key:'morgen',label:'Morgen'},{key:'woche',label:'Diese Woche'}].map(f => (
+                  <button key={f.key} onClick={()=>setDateFilter(f.key)} className={`riq-pill${dateFilter===f.key?' active':''}`}>{f.label}</button>
+                ))}
+              </div>
+              <div style={{ display:'flex', gap:6, flexWrap:'wrap', alignItems:'center' }}>
+                {['alle','neu','bestätigt','abgesagt','no-show'].map(f => (
+                  <button key={f} onClick={()=>setStatusFilter(f)} className={`riq-pill${statusFilter===f?' active':''}`}>
+                    {f.charAt(0).toUpperCase()+f.slice(1)}
+                  </button>
+                ))}
+                <button onClick={loadReservations} className="riq-pill" style={{ marginLeft:'auto' }}>Reload</button>
+              </div>
+            </div>
+            {loadingRes
+              ? <p style={{ color:'#8c867e', fontSize:13 }}>Laden...</p>
+              : filtered.length===0
+                ? <div style={{ textAlign:'center', padding:'40px 16px', color:'#8c867e', fontSize:13 }}>Keine Eintraege fuer diesen Filter.</div>
+                : filtered.map(r => <ResCard key={r.id} r={r} onUpdateStatus={updateStatus} />)
+            }
+          </>}
 
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 500, color: '#6e6e73', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Verfügbare Zeitfenster</div>
-                  {daySlots.length === 0
-                    ? <div style={{ fontSize: 13, color: '#6e6e73', padding: '4px 0 8px' }}>Keine Zeitfenster eingetragen.</div>
-                    : daySlots.map(s => (
-                      <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: '#f5f5f7', borderRadius: 8, marginBottom: 6, border: '1px solid #e8e8ec' }}>
-                        <span style={{ fontSize: 13, color: '#1d1d1f' }}>{s.uhrzeit} Uhr · {s.tische_frei} {s.tische_frei === 1 ? 'Tisch' : 'Tische'} frei</span>
-                        <button onClick={() => deleteSlot(s.id)} style={{ fontSize: 12, color: '#c0392b', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Entfernen</button>
-                      </div>
-                    ))
-                  }
-                  {addingSlot ? (
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <input type="time" value={newSlotTime} onChange={e => setNewSlotTime(e.target.value)}
-                        style={{ padding: '7px 10px', border: '1px solid #e0e0e5', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />
-                      <input type="number" min="1" max="30" placeholder="Tische" value={newSlotTische} onChange={e => setNewSlotTische(e.target.value)}
-                        style={{ padding: '7px 10px', border: '1px solid #e0e0e5', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', width: 80 }} />
-                      <button onClick={addSlot} style={{ padding: '7px 14px', fontSize: 13, fontWeight: 500, background: '#1d1d1f', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>Hinzufügen</button>
-                      <button onClick={() => { setAddingSlot(false); setNewSlotTime(''); setNewSlotTische(''); }}
-                        style={{ padding: '7px 14px', fontSize: 13, background: '#fff', color: '#6e6e73', border: '1px solid #e0e0e5', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setAddingSlot(true)}
-                      style={{ marginTop: 8, fontSize: 13, color: '#1d1d1f', background: 'none', border: '1px dashed #c7c7cc', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      + Zeitfenster hinzufügen
+          {/* CALENDAR */}
+          {tab==='calendar' && <>
+            <h1 style={{ fontSize:22, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em', marginBottom:20 }}>Kalender</h1>
+            <Calendar reservations={reservations} slots={slots} onSelectDay={day => setCalDay(calDay===day ? null : day)} selectedDay={calDay} />
+            {calDay && (() => {
+              const dayResItems = reservations.filter(r => r.datum===calDay).sort((a,b) => a.uhrzeit.localeCompare(b.uhrzeit));
+              const daySlots    = slots.filter(s => s.datum===calDay);
+              return (
+                <div style={{ marginTop:16, background:'#fff', borderRadius:14, border:'1px solid #e8e3da', padding:'22px' }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+                    <div style={{ fontSize:15, fontWeight:600, color:'#1a1714' }}>{fmtDayFull(calDay)}</div>
+                    <button onClick={()=>{setCalDay(null);setAddingSlot(false);setNewSlotTime('');setNewSlotTische('');}}
+                      style={{ background:'none', border:'none', cursor:'pointer', fontSize:22, color:'#8c867e', lineHeight:1 }}>
+                      x
                     </button>
-                  )}
+                  </div>
+                  <div style={{ marginBottom:22 }}>
+                    <div className="riq-section-title">Reservierungen</div>
+                    {dayResItems.length===0
+                      ? <div style={{ fontSize:13, color:'#8c867e' }}>Keine Reservierungen an diesem Tag.</div>
+                      : dayResItems.map(r => <ResCard key={r.id} r={r} onUpdateStatus={updateStatus} />)
+                    }
+                  </div>
+                  <div>
+                    <div className="riq-section-title">Zeitfenster</div>
+                    {daySlots.map(s => (
+                      <div key={s.id} className="riq-slot-row">
+                        <span>{s.uhrzeit} Uhr · {s.tische_frei} {s.tische_frei===1?'Tisch':'Tische'} frei</span>
+                        <button onClick={()=>deleteSlot(s.id)} style={{ fontSize:12, color:'#dc2626', background:'none', border:'none', cursor:'pointer', fontFamily:'inherit' }}>Entfernen</button>
+                      </div>
+                    ))}
+                    {daySlots.length===0 && !addingSlot && (
+                      <div style={{ fontSize:13, color:'#8c867e', marginBottom:10 }}>Keine Zeitfenster.</div>
+                    )}
+                    {addingSlot ? (
+                      <div style={{ display:'flex', gap:8, marginTop:8, alignItems:'center', flexWrap:'wrap' }}>
+                        <input type="time" value={newSlotTime} onChange={e=>setNewSlotTime(e.target.value)} className="riq-input" style={{ width:'auto', flex:'none' }} />
+                        <input type="number" min="1" max="30" placeholder="Tische" value={newSlotTische} onChange={e=>setNewSlotTische(e.target.value)} className="riq-input" style={{ width:80, flex:'none' }} />
+                        <button onClick={addSlot} className="riq-btn-primary" style={{ padding:'8px 14px', fontSize:13 }}>Hinzufuegen</button>
+                        <button onClick={()=>{setAddingSlot(false);setNewSlotTime('');setNewSlotTische('');}}
+                          style={{ padding:'8px 14px', fontSize:13, background:'#fff', color:'#8c867e', border:'1px solid #e8e3da', borderRadius:8, cursor:'pointer', fontFamily:'inherit' }}>
+                          Abbrechen
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={()=>setAddingSlot(true)}
+                        style={{ marginTop:8, fontSize:13, color:'#4a4540', background:'none', border:'1px dashed #c8c2b8', borderRadius:8, padding:'8px 14px', cursor:'pointer', fontFamily:'inherit' }}>
+                        + Zeitfenster
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
-        </>}
+              );
+            })()}
+          </>}
 
-        {tab==='service' && (
-          <ServiceMode
-            reservations={reservations}
-            todayStr={td}
-            tomorrowStr={tm}
-            onCheckIn={checkIn}
-            onUpdateStatus={updateStatus}
-          />
-        )}
+          {/* SERVICE */}
+          {tab==='service' && <>
+            <h1 style={{ fontSize:22, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em', marginBottom:20 }}>Service-Modus</h1>
+            <ServiceMode reservations={reservations} todayStr={td} tomorrowStr={tm} onCheckIn={checkIn} onUpdateStatus={updateStatus} />
+          </>}
 
-        {tab==='availability' && <AvailabilityTab slots={slots} onDeleteSlot={deleteSlot} onSlotsGenerated={loadSlots}/>}
+          {/* AVAILABILITY */}
+          {tab==='availability' && <>
+            <h1 style={{ fontSize:22, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em', marginBottom:20 }}>Verfuegbarkeit</h1>
+            <AvailabilityTab slots={slots} onDeleteSlot={deleteSlot} onSlotsGenerated={loadSlots} />
+          </>}
 
-        {tab==='profil' && <ProfileTab/>}
+          {/* PROFIL */}
+          {tab==='profil' && <>
+            <ProfileTab />
+          </>}
 
+        </div>
       </div>
     </div>
   );

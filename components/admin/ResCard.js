@@ -1,54 +1,74 @@
 import { Check, X, Minus } from 'lucide-react';
 
-export const STATUS_COLOR = { neu: '#d4860a', bestaetigt: '#3a9e5f', abgesagt: '#c0392b', 'no-show': '#6e6e73' };
-export const STATUS_BG    = { neu: '#fff8ed', bestaetigt: '#edfbf2', abgesagt: '#fdf0ee', 'no-show': '#f5f5f7' };
-
-const STATUS_COLOR_MAP = { neu: '#d4860a', 'bestätigt': '#3a9e5f', abgesagt: '#c0392b', 'no-show': '#6e6e73' };
-const STATUS_BG_MAP    = { neu: '#fff8ed', 'bestätigt': '#edfbf2', abgesagt: '#fdf0ee', 'no-show': '#f5f5f7' };
+const STATUS = {
+  'neu':       { label: 'Neu',       color: '#92400e', bg: '#fef3c7', dot: '#d97706' },
+  'bestätigt': { label: 'Bestätigt', color: '#14532d', bg: '#dcfce7', dot: '#16a34a' },
+  'abgesagt':  { label: 'Abgesagt',  color: '#7f1d1d', bg: '#fee2e2', dot: '#dc2626' },
+  'no-show':   { label: 'No-Show',   color: '#3f3f46', bg: '#f4f4f5', dot: '#71717a' },
+};
 
 export default function ResCard({ r, onUpdateStatus }) {
-  const col = STATUS_COLOR_MAP[r.status] || '#e0e0e5';
-  const bg  = STATUS_BG_MAP[r.status]   || '#f5f5f7';
+  const s = STATUS[r.status] || STATUS['neu'];
 
   const checkinTime = r.checked_in_at
     ? new Date(r.checked_in_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
     : null;
 
   return (
-    <div style={{background:'#fff',borderRadius:10,padding:'16px 20px',marginBottom:8,border:'1px solid #e0e0e5',borderLeft:`3px solid ${col}`}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:10}}>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:15,fontWeight:600,color:'#1d1d1f',marginBottom:3}}>{r.name}</div>
-          <div style={{fontSize:13,color:'#3d3d3f'}}>{r.datum} · {r.uhrzeit} Uhr · {r.personen} {r.personen===1?'Person':'Personen'}</div>
-          <div style={{fontSize:13,color:'#6e6e73',marginTop:2}}>{r.telefon}{r.email?` · ${r.email}`:''}</div>
-          {r.sonderwunsch && <div style={{fontSize:12,color:'#3d3d3f',marginTop:5,background:'#f5f5f7',padding:'3px 8px',borderRadius:6,display:'inline-block'}}>{r.sonderwunsch}</div>}
-        </div>
-        <div style={{display:'flex',gap:5,alignItems:'center',flexWrap:'wrap',flexShrink:0}}>
-          <span style={{fontSize:11,padding:'3px 10px',borderRadius:12,background:bg,color:col,fontWeight:500}}>{r.status}</span>
-          {checkinTime && (
-            <span style={{fontSize:11,padding:'3px 8px',borderRadius:12,background:'#edfbf2',color:'#3a9e5f',fontWeight:500,display:'flex',alignItems:'center',gap:3}}>
-              <Check size={10} strokeWidth={2.5}/>{checkinTime}
+    <div style={{
+      background: '#fff',
+      borderRadius: 12,
+      marginBottom: 7,
+      border: '1px solid #e8e3da',
+      overflow: 'hidden',
+    }}>
+      <div style={{ padding: '14px 16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 5 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1714', lineHeight: 1.2 }}>{r.name}</div>
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
+            {checkinTime && (
+              <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: '#dcfce7', color: '#14532d', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Check size={9} strokeWidth={2.5} /> {checkinTime}
+              </span>
+            )}
+            <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 20, background: s.bg, color: s.color, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
+              {s.label}
             </span>
-          )}
-          {r.status!=='bestätigt' && (
-            <button onClick={()=>onUpdateStatus(r.id,'bestätigt')} title="Bestätigen"
-              style={{display:'flex',alignItems:'center',justifyContent:'center',width:30,height:30,border:'1px solid #3a9e5f',borderRadius:6,background:'#fff',color:'#3a9e5f',cursor:'pointer',padding:0}}>
-              <Check size={14} strokeWidth={2.5}/>
-            </button>
-          )}
-          {r.status!=='abgesagt' && (
-            <button onClick={()=>onUpdateStatus(r.id,'abgesagt')} title="Absagen"
-              style={{display:'flex',alignItems:'center',justifyContent:'center',width:30,height:30,border:'1px solid #c0392b',borderRadius:6,background:'#fff',color:'#c0392b',cursor:'pointer',padding:0}}>
-              <X size={14} strokeWidth={2.5}/>
-            </button>
-          )}
-          {r.status!=='no-show' && (
-            <button onClick={()=>onUpdateStatus(r.id,'no-show')} title="No-Show"
-              style={{display:'flex',alignItems:'center',justifyContent:'center',width:30,height:30,border:'1px solid #e0e0e5',borderRadius:6,background:'#fff',color:'#6e6e73',cursor:'pointer',padding:0}}>
-              <Minus size={14} strokeWidth={2}/>
-            </button>
-          )}
+          </div>
         </div>
+
+        <div style={{ fontSize: 13, color: '#4a4540', marginBottom: 3 }}>
+          {r.datum} · {r.uhrzeit} Uhr · {r.personen} {r.personen === 1 ? 'Person' : 'Personen'}
+        </div>
+
+        <div style={{ fontSize: 12, color: '#8c867e' }}>
+          {r.telefon}{r.email ? ` · ${r.email}` : ''}
+        </div>
+
+        {r.sonderwunsch && (
+          <div style={{ marginTop: 8, fontSize: 12, color: '#6b4c0a', background: '#fef9ee', border: '1px solid #fde68a', padding: '5px 10px', borderRadius: 6 }}>
+            {r.sonderwunsch}
+          </div>
+        )}
+      </div>
+
+      <div style={{ borderTop: '1px solid #f0ece4', padding: '8px 16px', display: 'flex', gap: 6, background: '#faf9f7' }}>
+        {r.status !== 'bestätigt' && (
+          <button onClick={() => onUpdateStatus(r.id, 'bestätigt')} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, padding: '5px 11px', borderRadius: 6, border: '1px solid #86efac', background: '#f0fdf4', color: '#14532d', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <Check size={11} strokeWidth={2.5} /> Bestätigen
+          </button>
+        )}
+        {r.status !== 'abgesagt' && (
+          <button onClick={() => onUpdateStatus(r.id, 'abgesagt')} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, padding: '5px 11px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff1f2', color: '#991b1b', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <X size={11} strokeWidth={2.5} /> Absagen
+          </button>
+        )}
+        {r.status !== 'no-show' && (
+          <button onClick={() => onUpdateStatus(r.id, 'no-show')} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 400, padding: '5px 11px', borderRadius: 6, border: '1px solid #e8e3da', background: '#fff', color: '#71717a', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <Minus size={11} strokeWidth={2} /> No-Show
+          </button>
+        )}
       </div>
     </div>
   );
