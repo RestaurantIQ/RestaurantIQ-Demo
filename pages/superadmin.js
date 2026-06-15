@@ -32,9 +32,11 @@ const GLOBAL = `
   }
   .sa-btn-primary { background: var(--riq-nav); color: #fff; border: none; }
   .sa-btn-primary:hover { opacity: 0.85; }
+  .sa-btn-primary:active { transform: translateY(1px); opacity: 1; }
   .sa-btn-primary:disabled { opacity: 0.4; cursor: default; }
   .sa-btn-ghost { background: var(--riq-surface); color: var(--riq-muted); border: 1px solid var(--riq-border); }
   .sa-btn-ghost:hover { border-color: #b8b4ac; }
+  .sa-btn-ghost:active { transform: translateY(1px); }
   .sa-card {
     background: var(--riq-surface); border: 1px solid var(--riq-border);
     border-radius: 12px; overflow: hidden;
@@ -142,7 +144,7 @@ export default function SuperAdmin() {
   async function createRestaurant() {
     setCreateError('');
     const { name, username, password } = createForm;
-    if (!name || !username || !password) { setCreateError('Alle Felder ausfullen.'); return; }
+    if (!name || !username || !password) { setCreateError('Alle Felder ausfüllen.'); return; }
     setCreating(true);
     const r = await fetch('/api/superadmin/restaurants', { method:'POST', headers:headers(), body:JSON.stringify({ name, username, password }) });
     if (r.ok) { await reload(); setCreateForm({ name:'', username:'', password:'' }); setShowCreateForm(false); }

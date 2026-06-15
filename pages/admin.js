@@ -7,7 +7,7 @@ import ProfileTab from '../components/admin/ProfileTab';
 import ServiceMode from '../components/admin/ServiceMode';
 import {
   LayoutDashboard, CalendarCheck, Calendar as CalendarIcon,
-  Clock, SlidersHorizontal, Utensils, LogOut, ClipboardList,
+  Clock, SlidersHorizontal, Utensils, LogOut, ClipboardList, X,
 } from 'lucide-react';
 
 function parseDatum(datum) {
@@ -50,7 +50,7 @@ const GLOBAL = `
   }
   body { font-family: var(--font); background: var(--riq-bg); color: var(--riq-text); }
   input, textarea, select, button { font-family: var(--font); }
-  input:focus, textarea:focus, select:focus { outline: none; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--riq-gold); }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -62,7 +62,7 @@ const GLOBAL = `
   }
   .riq-main {
     margin-left: 220px;
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex; flex-direction: column;
   }
   .riq-content {
@@ -76,6 +76,7 @@ const GLOBAL = `
     .riq-sidebar { display: none !important; }
     .riq-main { margin-left: 0 !important; }
     .riq-content { padding: 20px 16px 88px !important; max-width: 100% !important; }
+    .riq-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .riq-mobile-bar {
       display: flex !important;
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -111,12 +112,14 @@ const GLOBAL = `
     background: var(--riq-gold-lt); border-left-color: var(--riq-gold);
   }
 
+  .riq-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+
   .riq-stat {
     background: var(--riq-surface); border: 1px solid var(--riq-border);
     border-radius: 14px; padding: 20px;
     animation: fadeIn 0.3s ease both;
   }
-  .riq-stat-value { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 5px; }
+  .riq-stat-value { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 5px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .riq-stat-label { font-size: 12px; color: var(--riq-muted); font-weight: 400; letter-spacing: 0.02em; }
 
   .riq-pill {
@@ -137,6 +140,7 @@ const GLOBAL = `
     white-space: nowrap;
   }
   .riq-btn-primary:hover { opacity: 0.88; }
+  .riq-btn-primary:active { transform: translateY(1px); opacity: 1; }
   .riq-btn-primary:disabled { opacity: 0.4; cursor: default; }
 
   .riq-input {
@@ -455,7 +459,7 @@ export default function Admin() {
               </div>
             )}
 
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
+            <div className="riq-stat-grid">
               {[
                 { label:'Heute',        value:todayRes.length,    accent:false             },
                 { label:'Ausstehend',   value:pendingCount,        accent:pendingCount>0    },
@@ -471,7 +475,7 @@ export default function Admin() {
 
             {nextRes && (
               <div className="riq-next-card">
-                <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', fontWeight:500, marginBottom:10 }}>Naechste Reservierung</div>
+                <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', fontWeight:500, marginBottom:10 }}>Nächste Reservierung</div>
                 <div style={{ fontSize:22, fontWeight:600, color:'#fff', marginBottom:4 }}>{nextRes.name}</div>
                 <div style={{ fontSize:14, color:'rgba(255,255,255,0.6)' }}>{nextRes.datum} · {nextRes.uhrzeit} Uhr · {nextRes.personen} Personen</div>
                 {nextRes.sonderwunsch && <div style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginTop:6, fontStyle:'italic' }}>{nextRes.sonderwunsch}</div>}
@@ -522,7 +526,7 @@ export default function Admin() {
             {loadingRes
               ? <p style={{ color:'#8c867e', fontSize:13 }}>Laden...</p>
               : filtered.length===0
-                ? <div style={{ textAlign:'center', padding:'40px 16px', color:'#8c867e', fontSize:13 }}>Keine Eintraege fuer diesen Filter.</div>
+                ? <div style={{ textAlign:'center', padding:'40px 16px', color:'#8c867e', fontSize:13 }}>Keine Einträge für diesen Filter.</div>
                 : filtered.map(r => <ResCard key={r.id} r={r} onUpdateStatus={updateStatus} />)
             }
           </>}
@@ -539,8 +543,8 @@ export default function Admin() {
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
                     <div style={{ fontSize:15, fontWeight:600, color:'#1a1714' }}>{fmtDayFull(calDay)}</div>
                     <button onClick={()=>{setCalDay(null);setAddingSlot(false);setNewSlotTime('');setNewSlotTische('');}}
-                      style={{ background:'none', border:'none', cursor:'pointer', fontSize:22, color:'#8c867e', lineHeight:1 }}>
-                      x
+                      style={{ background:'none', border:'none', cursor:'pointer', color:'#8c867e', display:'flex', alignItems:'center', padding:4 }}>
+                      <X size={16} strokeWidth={1.5} />
                     </button>
                   </div>
                   <div style={{ marginBottom:22 }}>
@@ -565,7 +569,7 @@ export default function Admin() {
                       <div style={{ display:'flex', gap:8, marginTop:8, alignItems:'center', flexWrap:'wrap' }}>
                         <input type="time" value={newSlotTime} onChange={e=>setNewSlotTime(e.target.value)} className="riq-input" style={{ width:'auto', flex:'none' }} />
                         <input type="number" min="1" max="30" placeholder="Tische" value={newSlotTische} onChange={e=>setNewSlotTische(e.target.value)} className="riq-input" style={{ width:80, flex:'none' }} />
-                        <button onClick={addSlot} className="riq-btn-primary" style={{ padding:'8px 14px', fontSize:13 }}>Hinzufuegen</button>
+                        <button onClick={addSlot} className="riq-btn-primary" style={{ padding:'8px 14px', fontSize:13 }}>Hinzufügen</button>
                         <button onClick={()=>{setAddingSlot(false);setNewSlotTime('');setNewSlotTische('');}}
                           style={{ padding:'8px 14px', fontSize:13, background:'#fff', color:'#8c867e', border:'1px solid #e8e3da', borderRadius:8, cursor:'pointer', fontFamily:'inherit' }}>
                           Abbrechen
@@ -591,7 +595,7 @@ export default function Admin() {
 
           {/* AVAILABILITY */}
           {tab==='availability' && <>
-            <h1 style={{ fontSize:22, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em', marginBottom:20 }}>Verfuegbarkeit</h1>
+            <h1 style={{ fontSize:22, fontWeight:600, color:'#1a1714', letterSpacing:'-0.01em', marginBottom:20 }}>Verfügbarkeit</h1>
             <AvailabilityTab slots={slots} onDeleteSlot={deleteSlot} onSlotsGenerated={loadSlots} />
           </>}
 
