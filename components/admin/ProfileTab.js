@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import ChatThemePicker from './ChatThemePicker';
 
+
 const ACCENT_OPTIONS = [
   { value: 'classic',  label: 'Klassisch' },
   { value: 'modern',   label: 'Modern' },
@@ -21,12 +22,16 @@ export default function ProfileTab() {
   const [copied, setCopied]         = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const snippetRef            = useRef(null);
+  const fileInputRef          = useRef(null);
+  const [logoUrl, setLogoUrl]           = useState(null);
+  const [logoUploading, setLogoUploading] = useState(false);
 
   useEffect(() => {
     fetch('/api/profile')
       .then(r => r.json())
       .then(d => {
         setProfile(d);
+        setLogoUrl(d.logo_url || null);
         setForm({
           address:            d.address || '',
           phone:              d.phone || '',
@@ -61,6 +66,29 @@ export default function ProfileTab() {
       setError('Fehler beim Speichern. Bitte nochmal versuchen.');
     }
     setSaving(false);
+  }
+
+  async function handleLogoUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setError('Nur Bilder erlaubt.'); return; }
+    if (file.size > 2 * 1024 * 1024) { setError('Logo darf max. 2 MB groß sein.'); return; }
+    setLogoUploading(true);
+    setError('');
+    try {
+      const r = await fetch('/api/upload-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      const data = await r.json();
+      if (r.ok) setLogoUrl(data.url);
+      else setError(data.error || 'Upload fehlgeschlagen');
+    } catch {
+      setError('Upload fehlgeschlagen');
+    }
+    setLogoUploading(false);
+    e.target.value = '';
   }
 
   function copyLink() {
@@ -101,6 +129,29 @@ export default function ProfileTab() {
       <div style={{ marginBottom: 28, paddingBottom: 20, borderBottom: '1px solid #e0e0e5' }}>
         <h2 style={{ fontSize: 18, fontWeight: 600, color: '#1d1d1f', marginBottom: 4 }}>Restaurant-Profil</h2>
         <p style={{ fontSize: 13, color: '#6e6e73' }}>Diese Informationen verwendet der Chatbot und erscheinen in E-Mails an Gäste.</p>
+      </div>
+
+      <div style={section}>
+        <label style={label}>Logo</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 10, border: '1px solid #e0e0e5', background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+            {logoUrl
+              ? <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }} />
+              : <span style={{ fontSize: 11, color: '#9e9ea0', textAlign: 'center', lineHeight: 1.4 }}>Kein<br/>Logo</span>
+            }
+          </div>
+          <div>
+            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={logoUploading}
+              style={{ background: '#f5f5f7', color: '#1d1d1f', border: '1px solid #e0e0e5', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 500, cursor: logoUploading ? 'default' : 'pointer', fontFamily: 'inherit', opacity: logoUploading ? 0.6 : 1 }}
+            >
+              {logoUploading ? 'Wird hochgeladen…' : logoUrl ? 'Logo ändern' : 'Logo hochladen'}
+            </button>
+            <p style={{ fontSize: 11, color: '#9e9ea0', marginTop: 6 }}>PNG, JPG oder WebP · max. 2 MB</p>
+          </div>
+        </div>
       </div>
 
       <div style={section}>

@@ -627,7 +627,10 @@ export default function Home() {
         <header className="header">
           <div className="mark">
             <div className="mark-corner-tl" />
-            <div className="mark-inner">{initials}</div>
+            {restaurantInfo?.logo_url
+              ? <img src={restaurantInfo.logo_url} alt={restaurantName} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 2 }} />
+              : <div className="mark-inner">{initials}</div>
+            }
           </div>
           <div className="header-meta">
             <div className="header-name">{restaurantName}</div>

@@ -1,9 +1,9 @@
 import { getSession } from '../../lib/session';
 import { db } from '../../lib/db';
 
-const PUBLIC_SELECT = 'name,address,phone,hours,bot_name,bot_accent,description,chat_theme';
+const PUBLIC_SELECT = 'name,address,phone,hours,bot_name,bot_accent,description,chat_theme,logo_url';
 const PRIVATE_SELECT = `${PUBLIC_SELECT},menu,notification_email,username`;
-const ALLOWED_PATCH = ['address', 'phone', 'hours', 'menu', 'bot_name', 'bot_accent', 'description', 'notification_email', 'chat_theme'];
+const ALLOWED_PATCH = ['address', 'phone', 'hours', 'menu', 'bot_name', 'bot_accent', 'description', 'notification_email', 'chat_theme', 'logo_url'];
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
