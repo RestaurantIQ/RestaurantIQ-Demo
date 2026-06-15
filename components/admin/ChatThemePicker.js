@@ -99,11 +99,11 @@ function MiniCard({ themeKey, theme, isSelected, onSelect }) {
           borderRadius: v.r === '3px' ? 2 : 4,
           background: `${v.gold}10`,
         }}>
-          <span style={{ fontFamily: theme.fontDisplay, fontSize: 10, color: v.gold, fontStyle: 'italic', lineHeight: 1 }}>LF</span>
+          <span style={{ fontFamily: theme.fontDisplay, fontSize: 10, color: v.gold, fontStyle: 'italic', lineHeight: 1 }}>MR</span>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 8.5, fontFamily: theme.fontDisplay, color: v.ink, letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>La Fontana</div>
-          <div style={{ fontSize: 7, color: v.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>Ristorante</div>
+          <div style={{ fontSize: 8.5, fontFamily: theme.fontDisplay, color: v.ink, letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Mein Restaurant</div>
+          <div style={{ fontSize: 7, color: v.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>Ihr Chatbot</div>
         </div>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 3,

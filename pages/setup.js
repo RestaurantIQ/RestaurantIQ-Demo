@@ -47,8 +47,8 @@ export default function Setup() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
               { key: 'secret',   label: 'Setup-Passwort (SETUP_SECRET)', type: 'password', placeholder: 'Dein SETUP_SECRET aus Vercel' },
-              { key: 'name',     label: 'Restaurantname',                 type: 'text',     placeholder: 'La Fontana di Capri' },
-              { key: 'username', label: 'Benutzername',                   type: 'text',     placeholder: 'lafontana' },
+              { key: 'name',     label: 'Restaurantname',                 type: 'text',     placeholder: 'Zum Goldenen Löwen' },
+              { key: 'username', label: 'Benutzername',                   type: 'text',     placeholder: 'goldener-loewe' },
               { key: 'password', label: 'Passwort',                       type: 'password', placeholder: 'Sicheres Passwort wählen' },
             ].map(({ key, label, type, placeholder }) => (
               <div key={key}>
