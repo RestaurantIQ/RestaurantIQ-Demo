@@ -54,14 +54,14 @@ export default async function handler(req, res) {
   let uploadRes;
   try {
     uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/logos/${storagePath}`, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
+        apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
         'Content-Type': contentType,
-        'Content-Length': String(body.length),
         'x-upsert': 'true',
       },
-      body: new Blob([body], { type: contentType }),
+      body,
     });
   } catch (err) {
     console.error('upload-logo fetch error:', err);
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
   if (!uploadRes.ok) {
     const errText = await uploadRes.text().catch(() => '');
     console.error('upload-logo supabase error:', uploadRes.status, errText);
-    return res.status(500).json({ error: 'Upload fehlgeschlagen: ' + errText });
+    return res.status(500).json({ error: `Upload fehlgeschlagen (${uploadRes.status}): ${errText}` });
   }
 
   const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/logos/${storagePath}`;
