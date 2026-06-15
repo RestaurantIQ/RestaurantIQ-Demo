@@ -1,20 +1,5 @@
 import { getSession } from '../../lib/session';
-
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
-
-function db(path, options = {}) {
-  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=representation',
-      ...(options.headers || {}),
-    },
-  });
-}
+import { db } from '../../lib/db';
 
 const PUBLIC_SELECT = 'name,address,phone,hours,bot_name,bot_accent,description,chat_theme';
 const PRIVATE_SELECT = `${PUBLIC_SELECT},menu,notification_email,username`;

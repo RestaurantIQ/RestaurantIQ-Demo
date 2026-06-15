@@ -47,6 +47,7 @@ export default function Admin() {
   const [dateFilter, setDateFilter]     = useState('alle');
   const [calDay, setCalDay]             = useState(null);
 
+  const [search, setSearch]             = useState('');
   const [newResModal, setNewResModal]   = useState(false);
   const [newResForm, setNewResForm]     = useState(EMPTY_FORM);
   const [newResLoading, setNewResLoading] = useState(false);
@@ -172,6 +173,10 @@ export default function Admin() {
     if (dateFilter==='morgen') return r.datum===tm;
     if (dateFilter==='woche') { const d=parseDatum(r.datum); return d&&d>=wr.from&&d<=wr.to; }
     if (dateFilter==='tag'&&calDay) return r.datum===calDay;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      return r.name?.toLowerCase().includes(q) || r.telefon?.includes(q) || r.email?.toLowerCase().includes(q);
+    }
     return true;
   });
 
@@ -288,8 +293,15 @@ export default function Admin() {
         </>}
 
         {tab==='reservations' && <>
-          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
-            <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit'}}>+ Neue Reservierung</button>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,gap:10}}>
+            <input
+              type="text"
+              placeholder="Name, Telefon oder E-Mail suchen…"
+              value={search}
+              onChange={e=>{setSearch(e.target.value);setDateFilter('alle');setStatusFilter('alle');}}
+              style={{flex:1,padding:'8px 12px',border:'1px solid #e0e0e5',borderRadius:8,fontSize:13,fontFamily:'inherit',background:'#fff',color:'#1d1d1f',maxWidth:320}}
+            />
+            <button onClick={()=>setNewResModal(true)} style={{fontSize:13,fontWeight:500,padding:'7px 16px',background:'#1d1d1f',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>+ Neue Reservierung</button>
           </div>
           <div style={{display:'flex',gap:8,marginBottom:10,flexWrap:'wrap'}}>
             {[{key:'alle',label:'Alle'},{key:'heute',label:'Heute'},{key:'morgen',label:'Morgen'},{key:'woche',label:'Diese Woche'}].map(f=>(

@@ -156,21 +156,21 @@ export default function ProfileTab() {
         <p style={{ fontSize: 11, color: '#9e9ea0', marginTop: 6 }}>Neue Reservierungsanfragen werden an diese Adresse gesendet.</p>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
-        <button onClick={save} disabled={saving} style={{ background: '#1d1d1f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 13, fontWeight: 500, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1, fontFamily: 'inherit' }}>
-          {saving ? 'Speichern...' : 'Speichern'}
-        </button>
-        {saved && <span style={{ fontSize: 13, color: '#3a9e5f', fontWeight: 500 }}>Gespeichert</span>}
-        {error && <span style={{ fontSize: 13, color: '#c0392b' }}>{error}</span>}
-      </div>
-
-      <div style={{ borderTop: '1px solid #e0e0e5', paddingTop: 28, marginBottom: 32 }}>
+      <div style={{ borderTop: '1px solid #e0e0e5', paddingTop: 28, marginBottom: 28 }}>
         <h3 style={{ fontSize: 15, fontWeight: 600, color: '#1d1d1f', marginBottom: 6 }}>Chat-Design</h3>
         <p style={{ fontSize: 13, color: '#6e6e73', marginBottom: 16 }}>So sieht der Chatbot für Ihre Gäste aus. Wählen Sie einen Stil.</p>
         <ChatThemePicker
           selectedTheme={form.chat_theme}
           onSelect={val => set('chat_theme', val)}
         />
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
+        <button onClick={save} disabled={saving} style={{ background: '#1d1d1f', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 13, fontWeight: 500, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1, fontFamily: 'inherit' }}>
+          {saving ? 'Speichern...' : 'Speichern'}
+        </button>
+        {saved && <span style={{ fontSize: 13, color: '#3a9e5f', fontWeight: 500 }}>Gespeichert</span>}
+        {error && <span style={{ fontSize: 13, color: '#c0392b' }}>{error}</span>}
       </div>
 
       <div style={{ borderTop: '1px solid #e0e0e5', paddingTop: 28, marginBottom: 24 }}>

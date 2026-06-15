@@ -1,9 +1,8 @@
 import nodemailer from 'nodemailer';
 import { createConfirmToken } from '../../lib/session';
+import { db } from '../../lib/db';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
-const BASE_URL     = process.env.NEXT_PUBLIC_BASE_URL || 'https://restaurant-iq-demo.vercel.app';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://restaurantiq.de';
 
 const reserveRateLimit = new Map();
 function isRateLimited(ip) {
@@ -25,26 +24,10 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-function db(path, options = {}) {
-  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=representation',
-      ...(options.headers || {}),
-    },
-  });
-}
-
 function getMailer() {
   return nodemailer.createTransport({
     service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
+    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
   });
 }
 
@@ -208,7 +191,7 @@ export default async function handler(req, res) {
   const id = saved?.id;
 
   const availRes  = await db(
-    `availability?datum=eq.${encodeURIComponent(datum)}&uhrzeit=eq.${encodeURIComponent(uhrzeit)}&select=id,tische_frei`
+    `availability?datum=eq.${encodeURIComponent(datum)}&uhrzeit=eq.${encodeURIComponent(uhrzeit)}&restaurant_id=eq.${restaurant_id}&select=id,tische_frei`
   );
   const availData = await availRes.json();
   if (availData?.[0]?.tische_frei > 0) {
