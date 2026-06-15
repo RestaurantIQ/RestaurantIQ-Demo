@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { CHAT_THEMES } from '../components/admin/ChatThemePicker';
 
 const suggestions = [
   "Ich möchte einen Tisch reservieren",
@@ -9,7 +10,7 @@ const suggestions = [
   "Wie kann ich euch erreichen?"
 ];
 
-function TicketCard({ reservation, restaurantName }) {
+function TicketCard({ reservation, restaurantName, theme }) {
   const { name, datum, uhrzeit, personen, sonderwunsch } = reservation;
   return (
     <div className="ticket-card">
@@ -19,27 +20,12 @@ function TicketCard({ reservation, restaurantName }) {
       </div>
       <div className="ticket-divider" />
       <div className="ticket-rows">
-        <div className="ticket-row">
-          <span className="ticket-label">Name</span>
-          <span className="ticket-value">{name}</span>
-        </div>
-        <div className="ticket-row">
-          <span className="ticket-label">Datum</span>
-          <span className="ticket-value">{datum}</span>
-        </div>
-        <div className="ticket-row">
-          <span className="ticket-label">Uhrzeit</span>
-          <span className="ticket-value">{uhrzeit} Uhr</span>
-        </div>
-        <div className="ticket-row">
-          <span className="ticket-label">Personen</span>
-          <span className="ticket-value">{personen}</span>
-        </div>
+        <div className="ticket-row"><span className="ticket-label">Name</span><span className="ticket-value">{name}</span></div>
+        <div className="ticket-row"><span className="ticket-label">Datum</span><span className="ticket-value">{datum}</span></div>
+        <div className="ticket-row"><span className="ticket-label">Uhrzeit</span><span className="ticket-value">{uhrzeit} Uhr</span></div>
+        <div className="ticket-row"><span className="ticket-label">Personen</span><span className="ticket-value">{personen}</span></div>
         {sonderwunsch && (
-          <div className="ticket-row">
-            <span className="ticket-label">Hinweis</span>
-            <span className="ticket-value">{sonderwunsch}</span>
-          </div>
+          <div className="ticket-row"><span className="ticket-label">Hinweis</span><span className="ticket-value">{sonderwunsch}</span></div>
         )}
       </div>
       <div className="ticket-divider" />
@@ -59,6 +45,7 @@ export default function Home() {
   const bottomRef = useRef(null);
   const router = useRouter();
   const [restaurantInfo, setRestaurantInfo] = useState(null);
+  // widget uses ?restaurant=xxx query param
   const username = router.isReady ? (router.query.restaurant || null) : undefined;
 
   useEffect(() => {
@@ -69,10 +56,14 @@ export default function Home() {
       .catch(() => {});
   }, [username]);
 
-  const restaurantName = restaurantInfo?.name || '';
+  const restaurantName = restaurantInfo?.name || 'RestaurantIQ';
   const restaurantPhone = restaurantInfo?.phone || '';
-  const restaurantSub   = restaurantInfo?.address || '';
-  const initials = restaurantName.split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
+  const restaurantSub = restaurantInfo?.address || '';
+  const initials = restaurantName.split(/\s+/).map(w => w[0].toUpperCase()).join('').slice(0, 2) || 'RQ';
+
+  const themeKey = restaurantInfo?.chat_theme || 'elegant';
+  const theme = CHAT_THEMES[themeKey] || CHAT_THEMES.elegant;
+  const v = theme.vars;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -112,7 +103,6 @@ export default function Home() {
       });
       const data = await res.json();
       const reply = data.reply || 'Ein Fehler ist aufgetreten.';
-
       let finalMessages = [...newMessages, { role: 'assistant', content: reply }];
 
       if (data.reservation) {
@@ -122,25 +112,15 @@ export default function Home() {
           body: JSON.stringify({ ...data.reservation, username }),
         });
         if (reserveRes.ok) {
-          finalMessages = [...finalMessages, {
-            role: 'assistant',
-            type: 'ticket',
-            reservation: data.reservation,
-            content: '',
-          }];
+          finalMessages = [...finalMessages, { role: 'assistant', type: 'ticket', reservation: data.reservation, content: '' }];
         } else {
-          finalMessages = [...finalMessages, {
-            role: 'assistant',
-            content: `Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: ${restaurantPhone}.`,
-          }];
+          finalMessages = [...finalMessages, { role: 'assistant', content: `Die Anfrage konnte leider nicht übermittelt werden. Bitte rufen Sie uns direkt an: ${restaurantPhone}.` }];
         }
       }
-
       setMessages(finalMessages);
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Verbindungsfehler. Bitte versuchen Sie es erneut.' }]);
     }
-
     setLoading(false);
   }
 
@@ -153,27 +133,27 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap');
+        @import url('${theme.fontUrl}');
 
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-          --bg:      #f5f0e8;
-          --surface: #fdfaf5;
-          --ink:     #1a1510;
-          --ink-2:   #2e2820;
-          --ink-3:   #5c5448;
-          --muted:   #9e978c;
-          --gold:    #a8864a;
-          --gold-lt: #c9a96e;
-          --line:    rgba(26,21,16,0.09);
-          --r:       10px;
+          --bg:      ${v.bg};
+          --surface: ${v.surface};
+          --ink:     ${v.ink};
+          --ink-2:   ${v.ink2};
+          --ink-3:   ${v.ink3};
+          --muted:   ${v.muted};
+          --gold:    ${v.gold};
+          --gold-lt: ${v.goldLt};
+          --line:    ${v.line};
+          --r:       ${v.r};
         }
 
         html, body { height: 100%; background: var(--bg); }
 
         body {
-          font-family: 'Outfit', sans-serif;
+          font-family: ${theme.fontBody};
           font-weight: 300;
           color: var(--ink);
           -webkit-font-smoothing: antialiased;
@@ -201,10 +181,7 @@ export default function Home() {
         }
 
         @media (min-width: 520px) {
-          .shell {
-            height: 100svh;
-            box-shadow: 0 0 0 1px rgba(168,134,74,0.15), 0 8px 60px rgba(26,21,16,0.12);
-          }
+          .shell { box-shadow: 0 0 0 1px rgba(168,134,74,0.15), 0 8px 60px rgba(26,21,16,0.12); }
         }
 
         .header {
@@ -222,12 +199,7 @@ export default function Home() {
           position: absolute;
           bottom: 0; left: 0; right: 0;
           height: 1px;
-          background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(168,134,74,0.2) 20%,
-            rgba(168,134,74,0.5) 50%,
-            rgba(168,134,74,0.2) 80%,
-            transparent 100%);
+          background: linear-gradient(90deg, transparent 0%, rgba(168,134,74,0.2) 20%, rgba(168,134,74,0.5) 50%, rgba(168,134,74,0.2) 80%, transparent 100%);
         }
 
         .mark {
@@ -263,7 +235,7 @@ export default function Home() {
         }
 
         .mark-inner {
-          font-family: 'Cormorant', serif;
+          font-family: ${theme.fontDisplay};
           font-weight: 400; font-size: 18px;
           color: var(--gold); letter-spacing: 0.02em; line-height: 1;
           font-style: italic;
@@ -272,7 +244,7 @@ export default function Home() {
         .header-meta { flex: 1; min-width: 0; }
 
         .header-name {
-          font-family: 'Cormorant', serif;
+          font-family: ${theme.fontDisplay};
           font-weight: 400; font-size: 19px;
           color: var(--ink); letter-spacing: 0.06em;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -369,92 +341,20 @@ export default function Home() {
           box-shadow: 0 2px 16px rgba(26,21,16,0.07), 0 1px 4px rgba(26,21,16,0.04);
         }
 
-        .ticket-header {
-          padding: 11px 16px 9px;
-          background: rgba(168,134,74,0.04);
-        }
-
-        .ticket-restaurant {
-          font-size: 9px;
-          font-weight: 500;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: var(--gold);
-          margin-bottom: 3px;
-        }
-
-        .ticket-title {
-          font-family: 'Cormorant', serif;
-          font-size: 16px;
-          font-weight: 400;
-          color: var(--ink);
-          letter-spacing: 0.03em;
-        }
-
-        .ticket-divider {
-          height: 1px;
-          background: rgba(168,134,74,0.15);
-        }
-
+        .ticket-header { padding: 11px 16px 9px; background: rgba(168,134,74,0.04); }
+        .ticket-restaurant { font-size: 9px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
+        .ticket-title { font-family: ${theme.fontDisplay}; font-size: 16px; font-weight: 400; color: var(--ink); letter-spacing: 0.03em; }
+        .ticket-divider { height: 1px; background: rgba(168,134,74,0.15); }
         .ticket-rows { padding: 8px 16px; }
-
-        .ticket-row {
-          display: flex;
-          align-items: baseline;
-          gap: 12px;
-          padding: 5px 0;
-          border-bottom: 1px solid rgba(26,21,16,0.05);
-        }
-
+        .ticket-row { display: flex; align-items: baseline; gap: 12px; padding: 5px 0; border-bottom: 1px solid rgba(26,21,16,0.05); }
         .ticket-row:last-child { border-bottom: none; }
+        .ticket-label { font-size: 10px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); width: 60px; flex-shrink: 0; }
+        .ticket-value { font-size: 13px; font-weight: 400; color: var(--ink-2); letter-spacing: 0.01em; }
+        .ticket-status { display: flex; align-items: center; gap: 7px; padding: 9px 16px; background: rgba(168,134,74,0.03); }
+        .ticket-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #6db57e; flex-shrink: 0; animation: pulse 2.5s ease-in-out infinite; }
+        .ticket-status-text { font-size: 10px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 
-        .ticket-label {
-          font-size: 10px;
-          font-weight: 400;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: var(--muted);
-          width: 60px;
-          flex-shrink: 0;
-        }
-
-        .ticket-value {
-          font-size: 13px;
-          font-weight: 400;
-          color: var(--ink-2);
-          letter-spacing: 0.01em;
-        }
-
-        .ticket-status {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          padding: 9px 16px;
-          background: rgba(168,134,74,0.03);
-        }
-
-        .ticket-status-dot {
-          width: 6px; height: 6px;
-          border-radius: 50%;
-          background: #6db57e;
-          flex-shrink: 0;
-          animation: pulse 2.5s ease-in-out infinite;
-        }
-
-        .ticket-status-text {
-          font-size: 10px;
-          font-weight: 400;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: var(--muted);
-        }
-
-        .typing-row {
-          display: flex;
-          margin-bottom: 10px;
-          animation: rise 0.3s ease both;
-        }
-
+        .typing-row { display: flex; margin-bottom: 10px; animation: rise 0.3s ease both; }
         .typing-bubble {
           background: var(--surface);
           border: 1px solid var(--line);
@@ -463,35 +363,19 @@ export default function Home() {
           display: flex; gap: 5px; align-items: center;
           box-shadow: 0 2px 12px rgba(26,21,16,0.06);
         }
-
-        .typing-bubble span {
-          width: 4px; height: 4px;
-          background: var(--gold);
-          border-radius: 50%; opacity: 0.3;
-          animation: blink 1.3s ease-in-out infinite;
-        }
+        .typing-bubble span { width: 4px; height: 4px; background: var(--gold); border-radius: 50%; opacity: 0.3; animation: blink 1.3s ease-in-out infinite; }
         .typing-bubble span:nth-child(2) { animation-delay: 0.18s; }
         .typing-bubble span:nth-child(3) { animation-delay: 0.36s; }
+        @keyframes blink { 0%,80%,100% { opacity: 0.3; transform: scaleY(1); } 40% { opacity: 1; transform: scaleY(1.35); } }
 
-        @keyframes blink {
-          0%,80%,100% { opacity: 0.3; transform: scaleY(1); }
-          40%          { opacity: 1;  transform: scaleY(1.35); }
-        }
-
-        .suggestions {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          margin-bottom: 10px;
-          animation: rise 0.5s 0.08s cubic-bezier(0.16,1,0.3,1) both;
-        }
+        .suggestions { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; animation: rise 0.5s 0.08s cubic-bezier(0.16,1,0.3,1) both; }
 
         .suggestion {
           background: transparent;
           border: 1px solid rgba(168,134,74,0.28);
           border-radius: 20px;
           color: var(--ink-3);
-          font-family: 'Outfit', sans-serif;
+          font-family: ${theme.fontBody};
           font-size: 12.5px;
           font-weight: 400;
           letter-spacing: 0.025em;
@@ -504,20 +388,9 @@ export default function Home() {
           outline: none;
         }
 
-        .suggestion:hover {
-          background: var(--ink-2);
-          color: #f0ebe0;
-          border-color: var(--ink-2);
-          border-left-color: var(--gold-lt);
-        }
+        .suggestion:hover { background: var(--ink-2); color: #f0ebe0; border-color: var(--ink-2); }
 
-        .input-area {
-          flex-shrink: 0;
-          background: var(--bg);
-          padding: 10px 18px 12px;
-          position: relative;
-        }
-
+        .input-area { flex-shrink: 0; background: var(--bg); padding: 10px 18px 12px; position: relative; }
         .input-area::before {
           content: '';
           position: absolute;
@@ -537,22 +410,17 @@ export default function Home() {
           transition: border-color 0.2s, box-shadow 0.2s;
           box-shadow: 0 1px 4px rgba(26,21,16,0.05);
         }
-
-        .input-row:focus-within {
-          border-color: rgba(168,134,74,0.5);
-          box-shadow: 0 0 0 3px rgba(168,134,74,0.08), 0 1px 4px rgba(26,21,16,0.05);
-        }
+        .input-row:focus-within { border-color: rgba(168,134,74,0.5); box-shadow: 0 0 0 3px rgba(168,134,74,0.08), 0 1px 4px rgba(26,21,16,0.05); }
 
         .input-field {
           flex: 1;
           background: transparent;
           border: none; outline: none;
-          font-family: 'Outfit', sans-serif;
+          font-family: ${theme.fontBody};
           font-size: 13.5px; font-weight: 300;
           color: var(--ink); padding: 5px 0;
           letter-spacing: 0.01em;
         }
-
         .input-field::placeholder { color: var(--muted); font-style: italic; }
 
         .send-btn {
@@ -567,54 +435,15 @@ export default function Home() {
           transition: all 0.18s;
           outline: none;
         }
-
-        .send-btn:hover:not(:disabled) {
-          background: var(--gold);
-          border-color: var(--gold);
-          color: #fff;
-        }
-
+        .send-btn:hover:not(:disabled) { background: var(--gold); border-color: var(--gold); color: #fff; }
         .send-btn:disabled { opacity: 0.3; cursor: default; }
         .send-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
-        .footer-bar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 7px;
-          margin-top: 8px;
-        }
-
-        .ki-hint {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 9px;
-          font-weight: 400;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: var(--muted);
-          opacity: 0.6;
-        }
-
-        .ki-hint-dot {
-          width: 4px; height: 4px; border-radius: 50%;
-          background: var(--gold); opacity: 0.7;
-        }
-
+        .footer-bar { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 8px; }
+        .ki-hint { display: flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); opacity: 0.6; }
+        .ki-hint-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: 0.7; }
         .footer-sep { font-size: 9px; color: var(--muted); opacity: 0.35; }
-
-        .footer-link {
-          font-size: 9px;
-          font-weight: 400;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: var(--muted);
-          opacity: 0.5;
-          text-decoration: none;
-          transition: opacity 0.15s;
-        }
-
+        .footer-link { font-size: 9px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); opacity: 0.5; text-decoration: none; transition: opacity 0.15s; }
         .footer-link:hover { opacity: 0.9; }
       `}</style>
 
@@ -622,7 +451,10 @@ export default function Home() {
         <header className="header">
           <div className="mark">
             <div className="mark-corner-tl" />
-            <div className="mark-inner">{initials}</div>
+            {restaurantInfo?.logo_url
+              ? <img src={restaurantInfo.logo_url} alt={restaurantName} style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 2 }} />
+              : <div className="mark-inner">{initials}</div>
+            }
           </div>
           <div className="header-meta">
             <div className="header-name">{restaurantName}</div>
@@ -640,16 +472,13 @@ export default function Home() {
             if (m.type === 'ticket') {
               return (
                 <div key={i} className="ticket-row-wrap">
-                  <TicketCard reservation={m.reservation} restaurantName={restaurantName} />
+                  <TicketCard reservation={m.reservation} restaurantName={restaurantName} theme={theme} />
                 </div>
               );
             }
             return (
               <div key={i} className={`row ${m.role === 'user' ? 'user' : 'bot'}`}>
-                <div
-                  className="bubble"
-                  dangerouslySetInnerHTML={{ __html: formatText(m.content) }}
-                />
+                <div className="bubble" dangerouslySetInnerHTML={{ __html: formatText(m.content) }} />
               </div>
             );
           })}
@@ -657,14 +486,7 @@ export default function Home() {
           {showSuggestions && (
             <div className="suggestions">
               {suggestions.map((s, i) => (
-                <button
-                  key={i}
-                  className="suggestion"
-                  onClick={() => {
-                    setShowSuggestions(false);
-                    sendMessage(s);
-                  }}
-                >
+                <button key={i} className="suggestion" onClick={() => { setShowSuggestions(false); sendMessage(s); }}>
                   {s}
                 </button>
               ))}
@@ -688,21 +510,11 @@ export default function Home() {
               className="input-field"
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
               placeholder="Ihre Frage…"
               autoComplete="off"
             />
-            <button
-              className="send-btn"
-              onClick={() => sendMessage()}
-              disabled={loading}
-              aria-label="Senden"
-            >
+            <button className="send-btn" onClick={() => sendMessage()} disabled={loading} aria-label="Senden">
               <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
           </div>

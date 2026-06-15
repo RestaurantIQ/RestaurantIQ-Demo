@@ -131,6 +131,7 @@ const GLOBAL = `
     background: var(--riq-text); color: #fff; border-color: var(--riq-text);
   }
   .riq-pill:hover:not(.active) { border-color: #b8b4ac; }
+  .riq-pill:active { transform: translateY(1px); }
 
   .riq-btn-primary {
     padding: 9px 18px; background: var(--riq-text); color: #fff;

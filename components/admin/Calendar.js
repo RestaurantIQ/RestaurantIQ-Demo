@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 function parseDatum(datum) {
   if (!datum) return null;
@@ -47,14 +48,14 @@ export default function Calendar({ reservations, slots, onSelectDay, selectedDay
   const td = todayStr();
 
   return (
-    <div style={{background:'#fff',borderRadius:12,padding:20,border:'1px solid #e0e0e5'}}>
+    <div style={{background:'var(--riq-surface)',borderRadius:12,padding:20,border:'1px solid var(--riq-border)'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-        <button onClick={prev} style={{background:'none',border:'1px solid #e0e0e5',borderRadius:8,padding:'6px 14px',cursor:'pointer',fontSize:14,color:'#1d1d1f'}}>←</button>
-        <span style={{fontSize:15,fontWeight:600,color:'#1d1d1f'}}>{MONTHS[month]} {year}</span>
-        <button onClick={next} style={{background:'none',border:'1px solid #e0e0e5',borderRadius:8,padding:'6px 14px',cursor:'pointer',fontSize:14,color:'#1d1d1f'}}>→</button>
+        <button onClick={prev} style={{background:'none',border:'1px solid var(--riq-border)',borderRadius:8,padding:'6px 12px',cursor:'pointer',color:'var(--riq-text)',display:'flex',alignItems:'center'}}><ChevronLeft size={16} strokeWidth={1.5} /></button>
+        <span style={{fontSize:15,fontWeight:600,color:'var(--riq-text)'}}>{MONTHS[month]} {year}</span>
+        <button onClick={next} style={{background:'none',border:'1px solid var(--riq-border)',borderRadius:8,padding:'6px 12px',cursor:'pointer',color:'var(--riq-text)',display:'flex',alignItems:'center'}}><ChevronRight size={16} strokeWidth={1.5} /></button>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:6}}>
-        {DAYS.map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'#6e6e73',fontWeight:500,padding:'4px 0'}}>{d}</div>)}
+        {DAYS.map(d=><div key={d} style={{textAlign:'center',fontSize:11,color:'var(--riq-muted)',fontWeight:500,padding:'4px 0'}}>{d}</div>)}
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
         {cells.map((d,i) => {
@@ -69,13 +70,13 @@ export default function Calendar({ reservations, slots, onSelectDay, selectedDay
 
           let bg = 'transparent', border = '1px solid transparent', dayColor = '#c7c7cc', badge = null;
 
-          if (isToday && !info) { bg = '#f5f5f7'; border = '1px solid #e0e0e5'; dayColor = '#1d1d1f'; }
+          if (isToday && !info) { bg = 'var(--riq-bg)'; border = '1px solid var(--riq-border)'; dayColor = 'var(--riq-text)'; }
           if (info) {
-            if (hasNew) { bg='#fff8ed'; border='1px solid #f0d080'; dayColor='#1d1d1f'; badge={color:'#d4860a',bg:'#fef3d0',label:total}; }
-            else        { bg='#edfbf2'; border='1px solid #a8e6c0'; dayColor='#1d1d1f'; badge={color:'#3a9e5f',bg:'#c8f0d8',label:total}; }
+            if (hasNew) { bg='#fff8ed'; border='1px solid #f0d080'; dayColor='var(--riq-text)'; badge={color:'#d4860a',bg:'#fef3d0',label:total}; }
+            else        { bg='#edfbf2'; border='1px solid #a8e6c0'; dayColor='var(--riq-text)'; badge={color:'#3a9e5f',bg:'#c8f0d8',label:total}; }
             if (isToday) border=`2px solid ${hasNew?'#d4860a':'#3a9e5f'}`;
           }
-          if (isSelected) { border = '2px solid #1d1d1f'; dayColor = '#1d1d1f'; }
+          if (isSelected) { border = '2px solid var(--riq-text)'; dayColor = 'var(--riq-text)'; }
 
           return (
             <div key={i} onClick={() => onSelectDay(label)}
@@ -90,11 +91,11 @@ export default function Calendar({ reservations, slots, onSelectDay, selectedDay
           );
         })}
       </div>
-      <div style={{display:'flex',gap:16,marginTop:12,fontSize:11,color:'#6e6e73',flexWrap:'wrap'}}>
+      <div style={{display:'flex',gap:16,marginTop:12,fontSize:11,color:'var(--riq-muted)',flexWrap:'wrap'}}>
         <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#d4860a',marginRight:4,verticalAlign:'middle'}}/>Neu</span>
         <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#3a9e5f',marginRight:4,verticalAlign:'middle'}}/>Bestätigt</span>
-        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'#e0e0e5',marginRight:4,verticalAlign:'middle'}}/>Verfügbar</span>
-        <span style={{marginLeft:'auto',fontSize:11,color:'#6e6e73'}}>Auf Tag klicken zum Verwalten</span>
+        <span><span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'var(--riq-border)',marginRight:4,verticalAlign:'middle'}}/>Verfügbar</span>
+        <span style={{marginLeft:'auto',fontSize:11,color:'var(--riq-muted)'}}>Auf Tag klicken zum Verwalten</span>
       </div>
     </div>
   );
